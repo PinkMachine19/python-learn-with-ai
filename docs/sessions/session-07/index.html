@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 07 — Errors and Exceptions — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-gate">Session 07 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+    </div>
+    <h1>Errors and Exceptions</h1>
+    <p class="subtitle">This is the Layer 1 gate. Real data is messy — missing keys, wrong types, invalid input. We learn to handle failure deliberately instead of letting the whole program crash.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain what an exception is and how it differs from a normal return value</li>
+        <li>Use try/except to catch a specific exception type and recover</li>
+        <li>Use else and finally correctly</li>
+        <li>Raise your own exception with a clear message using raise</li>
+        <li>Explain why catching Exception broadly is usually a mistake</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What happens when Python hits an error like <code>country["capital"]</code> on a dict with no "capital" key, if there is no try/except around it?</p>
+        <label class="quiz-option" data-val="a">It silently returns None</label>
+        <label class="quiz-option" data-val="b">It raises a KeyError, and the program stops (unless something up the call stack catches it)</label>
+        <label class="quiz-option" data-val="c">It logs a warning and continues to the next line</label>
+        <label class="quiz-option" data-val="d">It automatically retries with a default value</label>
+        <div class="explanation">An unhandled exception propagates up the call stack, printing a traceback, and stops the program (or whichever thread/request it happened in) once it reaches the top with nothing to catch it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Given <code>try:\n    value = country["capital"]\nexcept KeyError:\n    value = "Unknown"</code>, what is <code>value</code> if "capital" is missing?</p>
+        <label class="quiz-option" data-val="a">The program crashes with a KeyError</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the except block runs and assigns the fallback</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string, regardless of the except block</label>
+        <div class="explanation">The <code>try</code> block's <code>KeyError</code> is caught by the matching <code>except KeyError:</code> clause, which runs instead of crashing, assigning "Unknown" to <code>value</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is the difference between an except block's code and a finally block's code?</p>
+        <label class="quiz-option" data-val="a">They are identical — finally is just another name for except</label>
+        <label class="quiz-option" data-val="b">except only runs if a matching error occurred; finally always runs, whether an error occurred or not</label>
+        <label class="quiz-option" data-val="c">finally only runs if no error occurred</label>
+        <label class="quiz-option" data-val="d">except runs before the try block; finally runs after</label>
+        <div class="explanation"><code>except</code> is conditional on a matching exception being raised. <code>finally</code> is unconditional — it always executes, useful for cleanup like closing a file, regardless of whether an error happened.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You write <code>raise ValueError("population must be positive")</code> inside a function. What happens?</p>
+        <label class="quiz-option" data-val="a">It prints the message and continues normally</label>
+        <label class="quiz-option" data-val="b">It immediately stops normal execution and raises a ValueError with that message, to be caught by a caller or crash the program</label>
+        <label class="quiz-option" data-val="c">It logs the message silently to a file</label>
+        <label class="quiz-option" data-val="d">It is a syntax error — raise cannot take a message</label>
+        <div class="explanation"><code>raise</code> deliberately triggers an exception. Execution of the current function stops immediately at that line, and the exception propagates up until something catches it (or the program crashes with that message).</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is <code>except Exception:</code> (catching everything) usually considered a mistake?</p>
+        <label class="quiz-option" data-val="a">It is a syntax error in modern Python</label>
+        <label class="quiz-option" data-val="b">It silently swallows bugs you did not anticipate, hiding real problems (like a typo) behind the same fallback as expected errors</label>
+        <label class="quiz-option" data-val="c">It is slower than catching a specific exception</label>
+        <label class="quiz-option" data-val="d">Exception is not a real class in Python</label>
+        <div class="explanation">Catching everything means a genuine bug — like a typo'd variable name raising <code>NameError</code> — gets silently treated the same as an expected, recoverable error. This hides real problems instead of surfacing them. Catch the specific exception type you actually expect.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Errors and Exceptions</h2>
+
+    <h3>What is an exception?</h3>
+    <p>When something goes wrong, Python does not silently return a bad value — it raises an exception, which immediately stops normal execution and propagates upward looking for something to handle it.</p>
+    <pre><code>country = {"name": "Kenya"}
+print(country["capital"])
+# Traceback (most recent call last):
+#   ...
+# KeyError: 'capital'
+# Program stops here unless something catches it</code></pre>
+
+    <h3>Catching a specific exception with try/except</h3>
+    <p>Wrap the risky code in <code>try</code>, and handle the specific failure in a matching <code>except</code>. Only exceptions of that type (or a subclass) are caught — everything else still propagates.</p>
+    <pre><code>country = {"name": "Kenya"}
+
+try:
+    capital = country["capital"]
+except KeyError:
+    capital = "Unknown"
+
+print(capital)  # "Unknown" — no crash</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">try</span>risky code runs</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">except KeyError</span>handled here</div>
+      <div class="diagram-caption">A caught exception is handled locally; an uncaught one keeps propagating up the call stack.</div>
+    </div>
+
+    <h3>else and finally</h3>
+    <p>An optional <code>else</code> block runs only if the <code>try</code> block succeeded with no exception. An optional <code>finally</code> block always runs, whether or not an exception occurred — used for cleanup.</p>
+    <pre><code>try:
+    capital = country["capital"]
+except KeyError:
+    print("No capital on file")
+else:
+    print("Found capital:", capital)  # only runs if no exception
+finally:
+    print("Lookup attempt finished")  # always runs</code></pre>
+
+    <h3>Raising your own exceptions</h3>
+    <p>You are not limited to reacting to Python's built-in errors. Use <code>raise</code> to signal that your own code has hit an invalid state, with a message explaining what went wrong.</p>
+    <pre><code>def set_population(country, value):
+    if value &lt; 0:
+        raise ValueError(f"population must be positive, got {value}")
+    country["population"] = value
+
+country = {"name": "Kenya"}
+set_population(country, 54000000)  # fine
+
+set_population(country, -5)
+# Traceback (most recent call last):
+#   ...
+# ValueError: population must be positive, got -5</code></pre>
+
+    <h3>Catch specific exceptions, not everything</h3>
+    <p>Catching a broad <code>Exception</code> hides real bugs by treating every kind of failure — including ones you never intended to handle — the same way. Always catch the narrowest exception type that matches what you actually expect to go wrong.</p>
+    <pre><code># Risky: hides a typo (NameError) behind the same fallback as a real missing key
+try:
+    value = coutnry["capital"]   # typo! raises NameError, not KeyError
+except Exception:
+    value = "Unknown"             # bug is silently hidden
+
+# Better: only catch what you actually expect
+try:
+    value = country["capital"]
+except KeyError:
+    value = "Unknown"             # a real typo would now crash loudly, as it should</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Layer 1 gate:</strong> This is the last Layer 1 session. Every remaining layer assumes you can read a traceback, choose the right exception to catch, and know the difference between recoverable and unexpected failures.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write a safe country lookup function that handles missing keys and invalid input using try/except, else, and finally, plus a function that raises its own exception.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>errors_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and the country data</strong></p>
+
+        <pre><code># errors_lab.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa"},  # note: no population key
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write a function that reads population safely with try/except</strong></p>
+
+        <pre><code>def get_population(country):
+    try:
+        return country["population"]
+    except KeyError:
+        return None
+
+print(get_population(countries[0]))  # 54000000
+print(get_population(countries[1]))  # None — no crash</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add else and finally to see the full flow</strong></p>
+
+        <pre><code>def report_population(country):
+    try:
+        pop = country["population"]
+    except KeyError:
+        print(country["name"], "has no population on file")
+    else:
+        print(country["name"], "population is", pop)
+    finally:
+        print("Lookup complete for", country["name"])
+
+report_population(countries[0])
+report_population(countries[1])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write a function that raises ValueError on invalid input</strong></p>
+
+        <pre><code>def set_population(country, value):
+    if not isinstance(value, int) or value &lt; 0:
+        raise ValueError(f"population must be a non-negative int, got {value!r}")
+    country["population"] = value
+
+set_population(countries[1], 31000000)  # fine
+print(countries[1])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Call set_population with bad input inside a try/except and confirm it is caught</strong></p>
+
+        <pre><code>try:
+    set_population(countries[1], -5)
+except ValueError as e:
+    print("Rejected:", e)</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>errors_lab.py</code></td>
+            <td>Created</td>
+            <td>Demonstrates try/except/else/finally and raising a custom ValueError.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-07/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 1 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add errors_lab.py docs/sessions/session-07/index.html
+git commit -m "session-07: handle missing keys with try/except and raise ValueError on invalid input"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why is catching KeyError specifically safer than catching Exception broadly?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">get_population catches KeyError specifically, not a broad Exception</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">else and finally are both demonstrated and their firing conditions are correct</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">set_population raises ValueError with a clear, informative message on invalid input</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The raised ValueError is caught elsewhere with try/except ValueError as e</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No except clause in the file catches a bare Exception</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What happens when Python hits an error like <code>country["capital"]</code> on a dict with no "capital" key, if there is no try/except around it?</p>
+        <label class="quiz-option" data-val="a">It silently returns None</label>
+        <label class="quiz-option" data-val="b">It raises a KeyError, and the program stops (unless something up the call stack catches it)</label>
+        <label class="quiz-option" data-val="c">It logs a warning and continues to the next line</label>
+        <label class="quiz-option" data-val="d">It automatically retries with a default value</label>
+        <div class="explanation">An unhandled exception propagates up the call stack, printing a traceback, and stops the program (or whichever thread/request it happened in) once it reaches the top with nothing to catch it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Given <code>try:\n    value = country["capital"]\nexcept KeyError:\n    value = "Unknown"</code>, what is <code>value</code> if "capital" is missing?</p>
+        <label class="quiz-option" data-val="a">The program crashes with a KeyError</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the except block runs and assigns the fallback</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string, regardless of the except block</label>
+        <div class="explanation">The <code>try</code> block's <code>KeyError</code> is caught by the matching <code>except KeyError:</code> clause, which runs instead of crashing, assigning "Unknown" to <code>value</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is the difference between an except block's code and a finally block's code?</p>
+        <label class="quiz-option" data-val="a">They are identical — finally is just another name for except</label>
+        <label class="quiz-option" data-val="b">except only runs if a matching error occurred; finally always runs, whether an error occurred or not</label>
+        <label class="quiz-option" data-val="c">finally only runs if no error occurred</label>
+        <label class="quiz-option" data-val="d">except runs before the try block; finally runs after</label>
+        <div class="explanation"><code>except</code> is conditional on a matching exception being raised. <code>finally</code> is unconditional — it always executes, useful for cleanup like closing a file, regardless of whether an error happened.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You write <code>raise ValueError("population must be positive")</code> inside a function. What happens?</p>
+        <label class="quiz-option" data-val="a">It prints the message and continues normally</label>
+        <label class="quiz-option" data-val="b">It immediately stops normal execution and raises a ValueError with that message, to be caught by a caller or crash the program</label>
+        <label class="quiz-option" data-val="c">It logs the message silently to a file</label>
+        <label class="quiz-option" data-val="d">It is a syntax error — raise cannot take a message</label>
+        <div class="explanation"><code>raise</code> deliberately triggers an exception. Execution of the current function stops immediately at that line, and the exception propagates up until something catches it (or the program crashes with that message).</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is <code>except Exception:</code> (catching everything) usually considered a mistake?</p>
+        <label class="quiz-option" data-val="a">It is a syntax error in modern Python</label>
+        <label class="quiz-option" data-val="b">It silently swallows bugs you did not anticipate, hiding real problems (like a typo) behind the same fallback as expected errors</label>
+        <label class="quiz-option" data-val="c">It is slower than catching a specific exception</label>
+        <label class="quiz-option" data-val="d">Exception is not a real class in Python</label>
+        <div class="explanation">Catching everything means a genuine bug — like a typo'd variable name raising <code>NameError</code> — gets silently treated the same as an expected, recoverable error. This hides real problems instead of surfacing them. Catch the specific exception type you actually expect.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does Python prefer "ask forgiveness" (try/except) over "look before you leap" (checking <code>if "capital" in country</code> first) in many cases? Can you think of an argument for each style?</li>
+        <li>What real production bug could <code>except Exception: pass</code> hide that a specific <code>except KeyError:</code> would not?</li>
+        <li>In the lab, what would happen if you called <code>set_population(countries[1], "fifty")</code> — a string instead of a number? Trace through the isinstance check.</li>
+        <li>How does raising your own exception with a clear message help the next person (including future you) debug faster than a generic crash?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Silent data corruption:</strong> Catching too broadly (or not catching at all) means one bad record in a dataset can either crash your entire program or, worse, silently produce wrong results that are hard to trace back to their cause.</li>
+        <li><strong>Class validation (Layer 2):</strong> In Session 09, class constructors will validate their inputs the same way <code>set_population</code> does here — raising a clear exception is how a class protects itself from being created in an invalid state.</li>
+        <li><strong>Real API calls (Layer 7):</strong> In Session 38, a real network call can fail for a dozen reasons — no connection, bad response, rate limiting. Without this session, you cannot handle any of them gracefully, and one flaky network call would crash the whole application.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Exceptions — try/except/else/finally, raising your own exceptions with raise, and why catching narrowly matters.</p>
+      <p><strong>Unlocks:</strong> You can now write code that fails safely and predictably instead of crashing on the first messy input — the last Layer 1 skill before we start modelling real objects.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 08 — What Classes Are and Why</a>. Layer 2 begins. We stop passing raw dictionaries around and start modelling a Country as a class.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

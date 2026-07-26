@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 12 — Composition — Objects Containing Objects — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-current">Session 12</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+    </div>
+    <h1>Composition — Objects Containing Objects</h1>
+    <p class="subtitle">Real applications are built from many small, focused classes working together, not one giant class doing everything. We build a CountryExplorer that holds a list of Country objects.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Store a list of class instances as an attribute of another class</li>
+        <li>Write a method on the outer class that loops over and delegates to the inner instances' own methods</li>
+        <li>Explain the difference between composition (has-a) and the inheritance relationship we have not covered yet</li>
+        <li>Add an instance to a composed collection after construction</li>
+        <li>Trace a method call from the outer object down into an inner object's own method</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
+        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
+        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
+        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
+        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
+        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
+        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
+        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
+        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
+        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
+        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 10), and just collects the results.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
+        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
+        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
+        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
+        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
+        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 02's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
+        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
+        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
+        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
+        <label class="quiz-option" data-val="d">It depends on the population values</label>
+        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 02, just now calling a method instead of reading a dict key.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
+        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
+        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
+        <label class="quiz-option" data-val="d">There is no real difference</label>
+        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 06.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Composition</h2>
+
+    <h3>One class holding instances of another</h3>
+    <p>Composition means an object's attribute is itself another object (or a collection of them) — a "has-a" relationship, as opposed to the "is-a" relationship of inheritance, which we are deliberately not covering yet.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries  # a list of Country instances</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">CountryExplorer</span>.countries → [ ]</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">holds</span>Country, Country,
+Country</div>
+      <div class="diagram-caption">CountryExplorer HAS a list of Country instances — it does not become one, it holds references to several.</div>
+    </div>
+
+    <h3>Delegating to inner objects</h3>
+    <p>The outer class does not need to know HOW to summarize a country — it simply asks each Country instance to summarize itself, using the method that instance already has.</p>
+    <pre><code>explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]  # delegates to each Country
+
+print(explorer.summaries())
+# ['Kenya (Africa): pop. 54,000,000', 'Peru (Americas): pop. 33,000,000']</code></pre>
+
+    <h3>Growing the collection after construction</h3>
+    <p>Since self.countries is just a list, everything from Session 02 still applies to it.</p>
+    <pre><code>nigeria = Country(name="Nigeria", region="Africa", population=223000000)
+explorer.countries.append(nigeria)
+print(len(explorer.countries))  # one more than before</code></pre>
+
+    <h3>A method that operates across the whole collection</h3>
+    <p>This is where composition starts to pay off — the outer class can offer operations that make sense at the collection level, built from what each inner object already knows.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]
+
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+    def find_by_region(self, region):
+        return [c for c in self.countries if c.region == region]</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a CountryExplorer class that composes a list of Country instances and offers collection-level operations by delegating to each one.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>explorer_composed.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country and an empty CountryExplorer</strong></p>
+
+        <pre><code># explorer_composed.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Construct an explorer with 3 countries</strong></p>
+
+        <pre><code>explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Ghana", region="Africa", population=31000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(len(explorer.countries))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add a summaries() method that delegates to each Country</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+for line in explorer.summaries():
+    print(line)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add total_population() and find_by_region() methods</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]
+
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+    def find_by_region(self, region):
+        return [c for c in self.countries if c.region == region]
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Ghana", region="Africa", population=31000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(explorer.total_population())
+print([c.name for c in explorer.find_by_region("Africa")])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Add a country after construction and confirm total_population updates</strong></p>
+
+        <pre><code>explorer.countries.append(Country(name="Nigeria", region="Africa", population=223000000))
+print(explorer.total_population())  # reflects the new total automatically</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>explorer_composed.py</code></td>
+            <td>Created</td>
+            <td>CountryExplorer composes and delegates to a list of Country instances.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-12/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add explorer_composed.py docs/sessions/session-12/index.html
+git commit -m "session-12: compose CountryExplorer from a list of Country instances"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does total_population() automatically reflect a country added after construction, without any changes to total_population itself?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">CountryExplorer stores a list of Country instances as self.countries</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">summaries() delegates to each Country instance's own summary() method</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">total_population() and find_by_region() both operate across the whole collection</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A country is appended after construction and total_population() is shown to reflect it</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No logic that belongs on Country (like formatting a summary) is duplicated inside CountryExplorer</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
+        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
+        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
+        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
+        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
+        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
+        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
+        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
+        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
+        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
+        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 10), and just collects the results.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
+        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
+        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
+        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
+        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
+        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 02's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
+        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
+        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
+        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
+        <label class="quiz-option" data-val="d">It depends on the population values</label>
+        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 02, just now calling a method instead of reading a dict key.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
+        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
+        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
+        <label class="quiz-option" data-val="d">There is no real difference</label>
+        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 06.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does total_population() automatically pick up the newly appended country without any code change to total_population itself? Trace through what self.countries actually contains at call time.</li>
+        <li>What would go wrong if CountryExplorer tried to reimplement summary formatting itself instead of calling c.summary()?</li>
+        <li>Can you think of a real application where "one object holding a collection of other objects" is the natural shape? (Hint: think of any list-based UI you have used.)</li>
+        <li>How is CountryExplorer.countries similar to and different from the plain list of dictionaries we used in Session 02?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Duplicated logic:</strong> If CountryExplorer reimplemented formatting or validation instead of delegating to Country's own methods, a bug fix would need to happen in two places — and they would inevitably drift out of sync over time.</li>
+        <li><strong>Conditional rendering / logic (Session 13):</strong> The next session adds conditional logic inside methods, such as handling an empty collection. Composition is what makes "no countries yet" a meaningful, testable state to handle.</li>
+        <li><strong>The whole rest of the project:</strong> Every remaining layer — mock data, testing, architecture, real APIs — operates on a composed structure just like CountryExplorer. This is the shape the entire application is built from.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Composition — one class holding instances of another, and delegating collection-level work to each inner instance's own methods.</p>
+      <p><strong>Unlocks:</strong> You can now build a real application out of small, focused, cooperating classes instead of one giant class doing everything.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 13 — Conditional Logic in Methods</a>. We handle the cases where things are missing or empty — conditional logic inside methods, like an empty country list or a country with no known capital.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 02 — Lists and Iteration — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-current">Session 02</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+    </div>
+    <h1>Lists and Iteration</h1>
+    <p class="subtitle">A single country dictionary is not a country explorer. We need to hold many of them — that means lists, indexing, and loops.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Create a list using literal syntax and understand that it is ordered and mutable</li>
+        <li>Access items by index, including negative indexing</li>
+        <li>Use len() and iterate with a for loop</li>
+        <li>Explain the difference between mutating methods (.append, .sort) and non-mutating operations</li>
+        <li>Store a list of dictionaries — the shape our whole project will use</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
+        <label class="quiz-option" data-val="a">"Kenya"</label>
+        <label class="quiz-option" data-val="b">"Ghana"</label>
+        <label class="quiz-option" data-val="c">"Peru"</label>
+        <label class="quiz-option" data-val="d">An IndexError</label>
+        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="c">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>countries[-1]</code> return for the same list?</p>
+        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
+        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
+        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
+        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
+        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
+        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
+        <label class="quiz-option" data-val="d">A TypeError</label>
+        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="c">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
+        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
+        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
+        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
+        <label class="quiz-option" data-val="d">A copy of the whole list</label>
+        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="c">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
+        <label class="quiz-option" data-val="a">A list of strings</label>
+        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
+        <label class="quiz-option" data-val="c">A list of dictionaries</label>
+        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
+        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Python Lists and Iteration</h2>
+
+    <h3>What is a list?</h3>
+    <p>A list is an ordered, mutable sequence of values. Unlike a dictionary, items are accessed by position (index), not by name.</p>
+    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
+
+print(countries[0])   # "Kenya"  — first item, index 0
+print(countries[1])   # "Ghana"
+print(countries[-1])  # "Peru"   — last item, negative index
+print(len(countries)) # 3</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">index 0</span>"Kenya"</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">index 1</span>"Ghana"</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">index 2 / -1</span>"Peru"</div>
+      <div class="diagram-caption">Index counts up from 0 on the left, and down from -1 on the right — both point into the same list.</div>
+    </div>
+
+    <h3>Iterating with a for loop</h3>
+    <p>The most common way to process every item in a list is a <code>for ... in</code> loop. No manual index counting required.</p>
+    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
+
+for country in countries:
+    print(country)
+# Kenya
+# Ghana
+# Peru
+
+# When you need the index too, use enumerate()
+for i, country in enumerate(countries):
+    print(i, country)
+# 0 Kenya
+# 1 Ghana
+# 2 Peru</code></pre>
+
+    <h3>Mutating vs non-mutating operations</h3>
+    <p>Some list methods change the list in place and return <code>None</code>. Others return a new value and leave the original untouched. Confusing the two is a very common bug.</p>
+    <pre><code>nums = [3, 1, 2]
+
+nums.append(9)     # mutates in place -&gt; [3, 1, 2, 9]
+nums.sort()         # mutates in place -&gt; [1, 2, 3, 9]
+
+# sorted() is non-mutating — it returns a NEW list
+original = [3, 1, 2]
+result = sorted(original)
+print(original)  # [3, 1, 2] — unchanged
+print(result)    # [1, 2, 3] — new list</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">.sort()</span>nums → [1, 2, 3, 9]
+(same object)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">sorted()</span>original unchanged
+result = new list</div>
+      <div class="diagram-caption">.sort() mutates the original object; sorted() leaves it alone and hands back a new list.</div>
+    </div>
+
+    <h3>A list of dictionaries — our project's core data shape</h3>
+    <p>Combining what we learned in Session 01 with lists gives us exactly what a real application needs: a collection of structured records.</p>
+    <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru",  "region": "Americas", "population": 33000000},
+]
+
+for country in countries:
+    print(country["name"], "-", country["region"])
+# Kenya - Africa
+# Ghana - Africa
+# Peru - Americas</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Why this matters for the project:</strong> Every screen of our Country Explorer app — search, filtering, display — starts from exactly this shape: a list of dictionaries. Everything from here forward operates on this structure.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Store three countries as a list of dictionaries, iterate over it, and prove the mutating vs non-mutating distinction.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>countries.py</code> that builds on Session 01's single dictionary.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file</strong></p>
+
+        <pre><code># countries.py</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Build a list of at least 3 country dictionaries</strong></p>
+        <p>Reuse the shape from Session 01 — each item needs at least name, region, and population.</p>
+        <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru",  "region": "Americas", "population": 33000000},
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Iterate and print each country's name</strong></p>
+        <p>Use a plain for loop, no enumerate yet.</p>
+        <pre><code>for country in countries:
+    print(country["name"])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Iterate with enumerate() to also print position</strong></p>
+
+        <pre><code>for i, country in enumerate(countries):
+    print(f"{i}: {country['name']}")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Add a country with .append()</strong></p>
+        <p>Print the list before and after to confirm it mutated in place.</p>
+        <pre><code>print("Before:", len(countries))
+countries.append({"name": "Japan", "region": "Asia", "population": 125000000})
+print("After:", len(countries))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <p><strong>Prove sorted() does not mutate</strong></p>
+        <p>Sort the country names alphabetically without touching the original list.</p>
+        <pre><code>names = [c["name"] for c in countries] if False else None  # ignore, next session
+name_list = ["Peru", "Ghana", "Kenya", "Japan"]
+sorted_names = sorted(name_list)
+print("Original order:", name_list)
+print("Sorted copy:", sorted_names)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <p><strong>Access the last item with negative indexing</strong></p>
+
+        <pre><code>print("Last country added:", countries[-1]["name"])</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>countries.py</code></td>
+            <td>Created</td>
+            <td>Builds a list of dictionaries and demonstrates iteration.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-02/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add countries.py docs/sessions/session-02/index.html
+git commit -m "session-02: store countries in a list, iterate, and separate mutating from non-mutating ops"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "What is the difference between .sort() and sorted(), and why does it matter?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">The list is declared with <code>[]</code> literal syntax containing at least 3 dictionaries</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A plain <code>for ... in</code> loop is used and prints correctly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3"><code>enumerate()</code> is used at least once with both index and value</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4"><code>.append()</code> is demonstrated and shown to mutate in place</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5"><code>sorted()</code> is demonstrated and shown to NOT mutate the original</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">Negative indexing is used at least once</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c7" />
+        <label for="c7">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
+        <label class="quiz-option" data-val="a">"Kenya"</label>
+        <label class="quiz-option" data-val="b">"Ghana"</label>
+        <label class="quiz-option" data-val="c">"Peru"</label>
+        <label class="quiz-option" data-val="d">An IndexError</label>
+        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="c">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>countries[-1]</code> return for the same list?</p>
+        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
+        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
+        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
+        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
+        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
+        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
+        <label class="quiz-option" data-val="d">A TypeError</label>
+        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="c">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
+        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
+        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
+        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
+        <label class="quiz-option" data-val="d">A copy of the whole list</label>
+        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="c">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
+        <label class="quiz-option" data-val="a">A list of strings</label>
+        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
+        <label class="quiz-option" data-val="c">A list of dictionaries</label>
+        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
+        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why do you think Python chose zero-based indexing instead of starting at 1?</li>
+        <li>If <code>.append()</code> mutates in place and returns <code>None</code>, what would <code>countries = countries.append(x)</code> incorrectly leave <code>countries</code> as? Try it.</li>
+        <li>When would negative indexing actually save you from an error-prone calculation?</li>
+        <li>Why is "a list of dictionaries" a more useful shape than three separate parallel lists (names, regions, populations)?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>The append-return bug:</strong> A very common beginner mistake is writing <code>x = some_list.append(item)</code>, expecting <code>x</code> to be the updated list. It is actually <code>None</code>, because mutating methods return nothing. This trips people up for years if never explained explicitly.</li>
+        <li><strong>List comprehensions (Session 03):</strong> The next session builds directly on for-loop iteration. If you cannot trace what a for loop does step by step, list comprehensions will look like meaningless syntax instead of a shorthand for something you already understand.</li>
+        <li><strong>Testing (Layer 5):</strong> Later, you will write tests that assert on list contents and order. Without understanding indexing and iteration, you cannot reason about what a test assertion is actually checking.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Lists — indexing (including negative), len(), for-loop iteration, enumerate(), mutating vs non-mutating operations.</p>
+      <p><strong>Unlocks:</strong> You can now hold and process a real collection of records — the shape our whole Country Explorer project uses.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 03 — List Comprehensions</a>. We will learn to transform and filter this list without a manual for-loop, using list comprehensions.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

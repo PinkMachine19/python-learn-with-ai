@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 15 — Object Identity and Equality — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-gate">Session 15 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+    </div>
+    <h1>Object Identity and Equality</h1>
+    <p class="subtitle">This is the Layer 2 gate. Two Country instances can hold identical data yet not be "the same" — understanding why is essential before we start tracking objects by identity in collections.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain the difference between is (identity) and == (equality)</li>
+        <li>Predict the default behaviour of == on a plain class with no __eq__ defined</li>
+        <li>Implement __eq__ so two instances with the same data compare equal</li>
+        <li>Explain why id() returns a different value for two distinct instances, even with identical attributes</li>
+        <li>Recognise when identity comparison (is) is actually the correct tool, e.g. is None</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>a = Country(name="Kenya", region="Africa", population=54000000)</code> and <code>b = Country(name="Kenya", region="Africa", population=54000000)</code> with NO __eq__ defined, what does <code>a == b</code> return?</p>
+        <label class="quiz-option" data-val="a">True — because all their attribute values match</label>
+        <label class="quiz-option" data-val="b">False — by default, == falls back to identity comparison (is), and a and b are two separate instances</label>
+        <label class="quiz-option" data-val="c">A TypeError — you cannot compare instances</label>
+        <label class="quiz-option" data-val="d">It depends on the order the instances were created</label>
+        <div class="explanation">Without a custom <code>__eq__</code>, Python's default equality check for objects is identical to <code>is</code> — same object in memory, not same data. Two separately constructed instances are never == by default, no matter how identical their attributes look.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>a is b</code> check, as opposed to <code>a == b</code>?</p>
+        <label class="quiz-option" data-val="a">They check exactly the same thing in Python</label>
+        <label class="quiz-option" data-val="b"><code>is</code> checks whether a and b refer to the exact same object in memory; <code>==</code> checks value equality (which can be customized)</label>
+        <label class="quiz-option" data-val="c"><code>is</code> is only valid for strings and numbers</label>
+        <label class="quiz-option" data-val="d"><code>is</code> checks attribute equality; == checks memory address</label>
+        <div class="explanation"><code>is</code> is identity comparison — are these literally the same object? <code>==</code> is equality comparison — by default the same as <code>is</code> for custom classes, but overridable via <code>__eq__</code> to compare by value instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>After adding <code>def __eq__(self, other):\n    return self.name == other.name and self.region == other.region and self.population == other.population</code> to Country, what does a == b return for the a, b from question 1?</p>
+        <label class="quiz-option" data-val="a">Still False — __eq__ has no effect on ==</label>
+        <label class="quiz-option" data-val="b">True — == now uses your custom comparison, and every field matches</label>
+        <label class="quiz-option" data-val="c">A TypeError, because __eq__ cannot be defined for classes</label>
+        <label class="quiz-option" data-val="d">True only if a is b is also True</label>
+        <div class="explanation">Defining <code>__eq__</code> overrides the default identity-based comparison. Python calls your method whenever <code>==</code> is used between two Country instances, and since every field matches, it returns True.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>After defining __eq__ as above, is a is b now True as well?</p>
+        <label class="quiz-option" data-val="a">Yes — __eq__ also changes what is checks</label>
+        <label class="quiz-option" data-val="b">No — is is unaffected by __eq__ and still checks memory identity; a and b remain two distinct objects</label>
+        <label class="quiz-option" data-val="c">It becomes undefined behaviour</label>
+        <label class="quiz-option" data-val="d">Only if population also happens to be 0</label>
+        <div class="explanation"><code>__eq__</code> only customizes <code>==</code>. <code>is</code> always checks raw identity and cannot be overridden by a class — a and b are still two separate objects in memory, regardless of how you define equality.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is x is None considered more correct/idiomatic than x == None in Python?</p>
+        <label class="quiz-option" data-val="a">They behave identically, it is pure style</label>
+        <label class="quiz-option" data-val="b">None is a true singleton — there is only ever one None object — so identity comparison is the semantically precise and conventional check</label>
+        <label class="quiz-option" data-val="c">== None always raises an error</label>
+        <label class="quiz-option" data-val="d">is None is faster but semantically identical, so it never matters</label>
+        <div class="explanation">Python guarantees there is exactly one <code>None</code> object in the entire program. Checking identity against it is both the idiomatic style and avoids any surprises from a class that might override <code>__eq__</code> in an unexpected way.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Identity vs Equality</h2>
+
+    <h3>Two instances with identical data are not automatically equal</h3>
+    <p>This surprises many people coming from other backgrounds. By default, comparing two custom-class instances with == checks whether they are the exact same object — not whether their data matches.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+
+print(a == b)  # False! Same data, but no __eq__ defined
+print(a is b)  # False — definitely two separate objects
+print(a is a)  # True — an object is always identical to itself</code></pre>
+
+    <h3>id() reveals the underlying memory identity</h3>
+    <p>Every object has a unique identity while it exists, which id() reveals as a number (conceptually, its memory address). This is what is actually compares.</p>
+    <pre><code>print(id(a))  # some large number, e.g. 140234...
+print(id(b))  # a DIFFERENT large number
+print(id(a) == id(b))  # False
+print(a is b)           # False — is is really just id(a) == id(b)</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">a</span>id: 1001
+name: "Kenya"</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">b</span>id: 1002
+name: "Kenya"</div>
+      <div class="diagram-caption">a and b are separate objects with separate identities, even though their contents happen to match.</div>
+    </div>
+
+    <h3>Defining __eq__ to compare by value</h3>
+    <p>If you want == to mean "same data" instead of "same object", define __eq__ yourself. This is a dunder method — a special, double-underscore method Python calls automatically for a specific operator, similar in spirit to __init__.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name
+            and self.region == other.region
+            and self.population == other.population
+        )
+
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+
+print(a == b)  # True now — __eq__ compares field by field
+print(a is b)  # Still False — is is never affected by __eq__</code></pre>
+
+    <h3>When identity (is) is actually the right tool</h3>
+    <p>is is not "wrong" — it is the correct choice when you specifically care about object identity, most commonly when comparing against the None singleton.</p>
+    <pre><code>capital = None
+
+if capital is None:      # idiomatic — checking identity against the None singleton
+    print("No capital on file")
+
+# vs. == which would also work here, but is not the conventional style
+if capital == None:      # works, but not idiomatic Python
+    print("No capital on file")</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Layer 2 gate:</strong> This is the last Layer 2 session. Every remaining layer assumes you can correctly reason about whether two objects are "the same" versus merely "equal" — this distinction underlies testing assertions in Layer 5 and data deduplication in Layer 4.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Prove the default identity-based equality, implement a custom __eq__, and demonstrate is None as the idiomatic check.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>identity_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with a Country class and NO __eq__ yet</strong></p>
+
+        <pre><code># identity_lab.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create two instances with identical data and compare them</strong></p>
+        <p>Before running: predict what a == b will print, and why.</p>
+        <pre><code>a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+
+print("a == b:", a == b)  # what do you expect?
+print("a is b:", a is b)
+print("id(a):", id(a))
+print("id(b):", id(b))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add __eq__ to compare by value and re-run the comparison</strong></p>
+
+        <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name
+            and self.region == other.region
+            and self.population == other.population
+        )
+
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+print("a == b now:", a == b)  # True
+print("a is b still:", a is b)  # still False</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Prove __eq__ correctly returns False for genuinely different data</strong></p>
+
+        <pre><code>c = Country(name="Peru", region="Americas", population=33000000)
+print("a == c:", a == c)  # False — different data, correctly not equal</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Demonstrate is None as the idiomatic missing-value check</strong></p>
+        <p>Give Country an optional capital and check it both ways, noting which is idiomatic.</p>
+        <pre><code>capital = None
+print(capital is None)   # idiomatic
+print(capital == None)   # works, but not the conventional style — explain why in a comment</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>identity_lab.py</code></td>
+            <td>Created</td>
+            <td>Demonstrates default identity-based equality, a custom __eq__, and is None.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-15/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 2 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add identity_lab.py docs/sessions/session-15/index.html
+git commit -m "session-15: implement value-based __eq__ and distinguish it from identity"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does a is b stay False even after I defined __eq__ to make a == b return True?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">a == b is printed and observed to be False BEFORE __eq__ is added</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">__eq__ is implemented comparing every relevant field</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">a == b is proven True after __eq__ is added, using two separately constructed instances with identical data</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">a is b is proven to remain False throughout, unaffected by __eq__</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">is None is used and preferred over == None with a comment explaining why</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>a = Country(name="Kenya", region="Africa", population=54000000)</code> and <code>b = Country(name="Kenya", region="Africa", population=54000000)</code> with NO __eq__ defined, what does <code>a == b</code> return?</p>
+        <label class="quiz-option" data-val="a">True — because all their attribute values match</label>
+        <label class="quiz-option" data-val="b">False — by default, == falls back to identity comparison (is), and a and b are two separate instances</label>
+        <label class="quiz-option" data-val="c">A TypeError — you cannot compare instances</label>
+        <label class="quiz-option" data-val="d">It depends on the order the instances were created</label>
+        <div class="explanation">Without a custom <code>__eq__</code>, Python's default equality check for objects is identical to <code>is</code> — same object in memory, not same data. Two separately constructed instances are never == by default, no matter how identical their attributes look.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>a is b</code> check, as opposed to <code>a == b</code>?</p>
+        <label class="quiz-option" data-val="a">They check exactly the same thing in Python</label>
+        <label class="quiz-option" data-val="b"><code>is</code> checks whether a and b refer to the exact same object in memory; <code>==</code> checks value equality (which can be customized)</label>
+        <label class="quiz-option" data-val="c"><code>is</code> is only valid for strings and numbers</label>
+        <label class="quiz-option" data-val="d"><code>is</code> checks attribute equality; == checks memory address</label>
+        <div class="explanation"><code>is</code> is identity comparison — are these literally the same object? <code>==</code> is equality comparison — by default the same as <code>is</code> for custom classes, but overridable via <code>__eq__</code> to compare by value instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>After adding <code>def __eq__(self, other):\n    return self.name == other.name and self.region == other.region and self.population == other.population</code> to Country, what does a == b return for the a, b from question 1?</p>
+        <label class="quiz-option" data-val="a">Still False — __eq__ has no effect on ==</label>
+        <label class="quiz-option" data-val="b">True — == now uses your custom comparison, and every field matches</label>
+        <label class="quiz-option" data-val="c">A TypeError, because __eq__ cannot be defined for classes</label>
+        <label class="quiz-option" data-val="d">True only if a is b is also True</label>
+        <div class="explanation">Defining <code>__eq__</code> overrides the default identity-based comparison. Python calls your method whenever <code>==</code> is used between two Country instances, and since every field matches, it returns True.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>After defining __eq__ as above, is a is b now True as well?</p>
+        <label class="quiz-option" data-val="a">Yes — __eq__ also changes what is checks</label>
+        <label class="quiz-option" data-val="b">No — is is unaffected by __eq__ and still checks memory identity; a and b remain two distinct objects</label>
+        <label class="quiz-option" data-val="c">It becomes undefined behaviour</label>
+        <label class="quiz-option" data-val="d">Only if population also happens to be 0</label>
+        <div class="explanation"><code>__eq__</code> only customizes <code>==</code>. <code>is</code> always checks raw identity and cannot be overridden by a class — a and b are still two separate objects in memory, regardless of how you define equality.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is x is None considered more correct/idiomatic than x == None in Python?</p>
+        <label class="quiz-option" data-val="a">They behave identically, it is pure style</label>
+        <label class="quiz-option" data-val="b">None is a true singleton — there is only ever one None object — so identity comparison is the semantically precise and conventional check</label>
+        <label class="quiz-option" data-val="c">== None always raises an error</label>
+        <label class="quiz-option" data-val="d">is None is faster but semantically identical, so it never matters</label>
+        <div class="explanation">Python guarantees there is exactly one <code>None</code> object in the entire program. Checking identity against it is both the idiomatic style and avoids any surprises from a class that might override <code>__eq__</code> in an unexpected way.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Before running the lab, did you correctly predict that a == b would be False without __eq__? If not, what was your mental model, and how has it changed?</li>
+        <li>Why does Python NOT give every class value-based equality by default? Can you think of a reason that would be a bad default?</li>
+        <li>If you were writing a test in Layer 5 that checks "did this function return the right Country?", would you use == or is? Why?</li>
+        <li>How does the id()-based explanation of is connect back to the shared-reference behaviour of dictionaries from Session 01?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>False negatives in comparisons:</strong> Code that assumes two identically-built objects are automatically == (without a custom __eq__) will silently fail comparisons that should have succeeded — a subtle bug that only appears when you actually try to compare two objects and get a surprising False.</li>
+        <li><strong>Testing assertions (Layer 5):</strong> Test frameworks in Session 29 rely heavily on == to check "did the function return what I expected?" If a class does not implement __eq__, every such test will need clumsy, error-prone field-by-field comparisons instead of a clean assertEqual.</li>
+        <li><strong>Deduplicating data (Layer 4):</strong> When we design data contracts and work with real data sources in Layer 4, detecting duplicate records requires exactly the value-based equality this session teaches — the default identity comparison would treat every record as unique, even genuine duplicates.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Identity (is) vs equality (==) — the default identity-based comparison for custom classes, overriding it with __eq__, and when is is still the right tool.</p>
+      <p><strong>Unlocks:</strong> You can now reason precisely about whether two objects are literally the same or merely hold the same data — required for every comparison-heavy session ahead.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 16 — What Is State in a Program?</a>. Layer 3 begins. We start tracking data that changes over the lifetime of a running program — state.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 17 — Updating State via Methods — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-current">Session 17</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+    </div>
+    <h1>Updating State via Methods</h1>
+    <p class="subtitle">Direct attribute assignment lets anyone set invalid state from anywhere. This session channels every state change through named, validating methods instead.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Rewrite direct attribute mutation as a named, validating method call</li>
+        <li>Design a method name that clearly communicates what state change it performs</li>
+        <li>Validate a proposed state change before applying it, reusing Session 07's exception patterns</li>
+        <li>Explain why "one method, one clear responsibility" makes state changes traceable</li>
+        <li>Add a second controlled-update method to CountryExplorer for adding a country safely</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
+        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
+        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
+        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
+        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
+        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 07's raise) before any bad data is ever stored.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
+        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
+        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
+        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
+        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
+        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
+        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
+        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
+        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
+        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
+        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 16)?</p>
+        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
+        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
+        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
+        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
+        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
+        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
+        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
+        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
+        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
+        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Controlled State Updates</h2>
+
+    <h3>From direct assignment to a named method</h3>
+    <p>Session 10 already introduced grow_population as a validating method. This session generalizes that pattern: every state change should go through a method, never a bare attribute assignment from outside the class.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value  # only reachable if the value passed validation</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">proposed value</span>-999999</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">validation</span>rejected
+(ValueError)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">self.population</span>unchanged</div>
+      <div class="diagram-caption">A method acts as a checkpoint — invalid values are rejected before they ever reach the attribute.</div>
+    </div>
+
+    <h3>Naming a method to communicate intent</h3>
+    <p>A generic update(field, value) method either needs complicated per-field logic or skips validation entirely. Specific method names — set_population, grow_population, set_capital — each validate exactly one clear case.</p>
+    <pre><code># Avoid: a generic method that has to guess what "field" even means
+def update(self, field, value):
+    setattr(self, field, value)  # no validation possible here — dangerous
+
+# Prefer: specific, self-documenting, individually validated methods
+def set_capital(self, new_capital):
+    if not new_capital:
+        raise ValueError("capital cannot be empty")
+    self.capital = new_capital</code></pre>
+
+    <h3>Extending the pattern to CountryExplorer</h3>
+    <p>The same discipline applies to the collection-level state from Session 12 — an add_country method guarantees every item in the list is actually a valid Country.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(len(explorer.countries))  # 1
+
+# explorer.add_country("not a country")  # raises TypeError — caught before corrupting the list</code></pre>
+
+    <h3>Why this actually solves Session 16's risk</h3>
+    <p>Once population can only change through grow_population or set_population, tracing an unexpected value means checking those two call sites — not the entire codebase.</p>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Add set_population, set_capital, and add_country as controlled, validating state-change methods, replacing direct attribute assignment.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>controlled_state.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country including grow_population from Session 10</strong></p>
+
+        <pre><code># controlled_state.py
+class Country:
+    def __init__(self, name, region, population, capital=None):
+        self.name = name
+        self.region = region
+        self.population = population
+        self.capital = capital
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add set_population and set_capital methods, both validating</strong></p>
+
+        <pre><code>class Country:
+    def __init__(self, name, region, population, capital=None):
+        self.name = name
+        self.region = region
+        self.population = population
+        self.capital = capital
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+
+    def set_capital(self, new_capital):
+        if not new_capital:
+            raise ValueError("capital cannot be empty")
+        self.capital = new_capital</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Prove invalid changes are rejected and valid state is preserved</strong></p>
+
+        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
+
+try:
+    k.set_population(-5)
+except ValueError as e:
+    print("Rejected:", e)
+
+print("Population still valid:", k.population)  # unchanged — still 54000000
+
+try:
+    k.set_capital("")
+except ValueError as e:
+    print("Rejected:", e)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add add_country to CountryExplorer with type validation</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(k)
+print(len(explorer.countries))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Attempt to add an invalid item and confirm it is rejected</strong></p>
+
+        <pre><code>try:
+    explorer.add_country("not a country")
+except TypeError as e:
+    print("Rejected:", e)
+
+print("Collection still valid, length:", len(explorer.countries))  # still 1</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>controlled_state.py</code></td>
+            <td>Created</td>
+            <td>Replaces direct attribute assignment with validating set_population, set_capital, and add_country methods.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-17/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add controlled_state.py docs/sessions/session-17/index.html
+git commit -m "session-17: channel all state changes through validating methods"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does the object's state stay valid even after I tried to set an invalid population?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">set_population and set_capital both validate before assigning</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A rejected set_population call is proven to leave the previous valid population untouched</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">add_country validates its argument type before appending to self.countries</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A rejected add_country call is proven to leave the collection's length unchanged</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No code in the file assigns to .population, .capital, or .countries directly from outside the class</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
+        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
+        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
+        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
+        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
+        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 07's raise) before any bad data is ever stored.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
+        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
+        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
+        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
+        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
+        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
+        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
+        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
+        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
+        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
+        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 16)?</p>
+        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
+        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
+        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
+        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
+        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
+        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
+        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
+        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
+        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
+        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Compare this session's code to Session 16's uncontrolled mutation demo. Walk through, step by step, why the exact same invalid value (-999999 or empty string) is now safely rejected.</li>
+        <li>What would a generic update(field, value) version of set_population and set_capital look like, and why is it worse for validation specifically?</li>
+        <li>If a bug report said "population went negative somewhere," how would having these controlled methods change your debugging process compared to Session 16's version?</li>
+        <li>Is there a state change you can think of for Country or CountryExplorer that this session did not cover, but probably should have its own controlled method?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Silent data corruption returns:</strong> If even one code path in a large project still assigns .population directly instead of calling set_population, the guarantee this whole session builds is broken — controlled state updates only work if EVERY mutation goes through the checkpoint, with no exceptions.</li>
+        <li><strong>Event handling (Session 18):</strong> The next session adds user input as a trigger for these exact methods. Without a solid, validated set_population/set_capital to call INTO, handling user input safely is not possible.</li>
+        <li><strong>Data contracts (Layer 4):</strong> Session 26 formalizes exactly this kind of validation using type hints and dataclasses — this session is the hand-rolled version of a discipline that later gets language-level support.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Controlled state updates — validating, specifically-named methods as the only path to changing an object's state, replacing direct attribute assignment.</p>
+      <p><strong>Unlocks:</strong> Country and CountryExplorer can no longer silently enter an invalid state — every change is validated at a single, traceable checkpoint.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 18 — Handling User Input</a>. We connect these controlled methods to an actual trigger: input typed by a user at the keyboard.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

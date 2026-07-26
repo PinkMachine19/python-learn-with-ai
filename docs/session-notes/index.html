@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session Notes — Python Learning</title>
+  <link rel="stylesheet" href="../styles.css" />
+
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../syllabus/index.html">Syllabus</a>
+    <a href="../sessions/index.html">Sessions</a>
+    <a href="../quizzes/index.html">Quizzes</a>
+    <a href="../labs/index.html">Labs</a>
+    <a href="../architecture/index.html">Architecture</a>
+    <a href="../session-notes/index.html" class="active">Notes</a>
+    <a href="../commit-reviews/index.html">Commits</a>
+    <a href="../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <h1>Session Notes</h1>
+    <p class="subtitle">
+      Running notes from each session. Questions raised and answered. Confusing moments recorded.
+      Breakthroughs noted. This is the human side of the learning log.
+    </p>
+
+    <div class="alert alert-info">
+      <strong>For AI sessions:</strong> After each session, add a note entry here summarising what was
+      covered, any questions that came up, any concepts that needed extra explanation, and the final quiz score.
+    </div>
+
+    <h2>Note Format</h2>
+    <pre><code>&lt;div class="card"&gt;
+  &lt;div style="display:flex; justify-content:space-between;"&gt;
+    &lt;span class="card-title"&gt;Session NN — Title&lt;/span&gt;
+    &lt;span style="color:var(--text-muted);font-size:13px;"&gt;YYYY-MM-DD&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;p&gt;&lt;strong&gt;Covered:&lt;/strong&gt; ...&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Questions raised:&lt;/strong&gt; ...&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Confusion points:&lt;/strong&gt; ...&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Quiz scores:&lt;/strong&gt; Pre: X/5 · Post: X/5&lt;/p&gt;
+  &lt;p&gt;&lt;strong&gt;Passed?&lt;/strong&gt; Yes / No (repeat)&lt;/p&gt;
+&lt;/div&gt;</code></pre>
+
+    <hr />
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Pre-curriculum — Project Setup</span>
+        <span style="color:var(--text-muted);font-size:13px;">2026-07-26</span>
+      </div>
+      <p><strong>Covered:</strong> Full 40-session Python Fundamentals curriculum designed, mirroring the
+      structure of the source React course. Repository structure created. All documentation infrastructure
+      generated. No code written yet.</p>
+      <p><strong>Decisions made:</strong> pip, minimal CSS dark theme (reused from the source course), plain
+      Python (no external framework), static HTML docs, mock data before real APIs, a single running
+      project — the Country Explorer — built incrementally across all 40 sessions.</p>
+      <p><strong>Next:</strong> Session 01 — Dictionaries.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 1 — Python Foundations (Sessions 01–07)</span>
+      </div>
+      <p><strong>Covered:</strong> Before we build anything, we must be fluent in the core data structures and control flow that every later session relies on: dictionaries, lists, functions, and error handling.</p>
+      <p><strong>Gate session:</strong> Session 07 — Errors and Exceptions.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 2 — Object-Oriented Basics (Sessions 08–15)</span>
+      </div>
+      <p><strong>Covered:</strong> We start modelling real things as classes. Every concept here maps to something in Layer 1 — a class is just a structured way of grouping the dictionaries and functions you already know.</p>
+      <p><strong>Gate session:</strong> Session 15 — Object Identity and Equality.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 3 — State & Interactivity (Sessions 16–22)</span>
+      </div>
+      <p><strong>Covered:</strong> State is data that changes over time. We learn to track it safely on objects, take input from a user, and compute values instead of duplicating them.</p>
+      <p><strong>Gate session:</strong> Session 22 — Computed Properties.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 4 — Mock Data (Sessions 23–26)</span>
+      </div>
+      <p><strong>Covered:</strong> Real teams build against fake data before a real data source exists. We design data contracts and a data-access layer independent of where the data actually comes from.</p>
+      <p><strong>Gate session:</strong> Session 26 — Designing Data Contracts.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 5 — Testing (Sessions 27–31)</span>
+      </div>
+      <p><strong>Covered:</strong> Testing is introduced gradually alongside the code it tests, using pytest. We test behavior — what a function or class does — not implementation details.</p>
+      <p><strong>Gate session:</strong> Session 31 — Testing the Data Layer with Mocks.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 6 — Architecture (Sessions 32–36)</span>
+      </div>
+      <p><strong>Covered:</strong> With the foundations in place, we learn to structure a Python project for long-term maintainability: package layout, reusable modules, and recognizing tight coupling.</p>
+      <p><strong>Gate session:</strong> Session 36 — Architecture Review.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span class="card-title">Layer 7 — Real World (Sessions 37–40)</span>
+      </div>
+      <p><strong>Covered:</strong> Only now do we touch the filesystem and a real network API. By this point we have the vocabulary to understand exactly what changed and why it matters.</p>
+      <p><strong>Gate session:</strong> Session 40 — Capstone Review.</p>
+    </div>
+
+
+  </div>
+</main>
+
+</body>
+</html>

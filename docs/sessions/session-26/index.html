@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 26 — Designing Data Contracts — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-gate">Session 26 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
+    </div>
+    <h1>Designing Data Contracts</h1>
+    <p class="subtitle">This is the Layer 4 gate. We formalize the informal "contract" from Session 23 using type hints and dataclasses, catching shape mismatches automatically instead of hoping.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Add type hints to a function or method signature</li>
+        <li>Define a class using @dataclass instead of a hand-written __init__</li>
+        <li>Explain what type hints do and do not enforce at runtime</li>
+        <li>Validate that a raw dict matches the expected contract before constructing an instance from it</li>
+        <li>Compare the dataclass version of Country to the hand-written version from Session 09</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
+        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
+        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
+        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
+        <label class="quiz-option" data-val="d">Only in Python 2</label>
+        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 09?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
+        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
+        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
+        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
+        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 09, while still producing an ordinary class.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 15 value-based __eq__ behavior?</p>
+        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
+        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 15 built manually</label>
+        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
+        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
+        <div class="explanation">This directly connects back to Session 15: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
+        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
+        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
+        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
+        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 09's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
+        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
+        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
+        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
+        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
+        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 20's discipline) catches this immediately, with a clear message.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Data Contracts with Type Hints and Dataclasses</h2>
+
+    <h3>Type hints — documentation, not enforcement</h3>
+    <p>A type hint tells readers (and tools like editors and type checkers) what type a value is expected to be. Python itself does not check this at runtime — it is a critical fact to internalize, since it is easy to assume otherwise.</p>
+    <pre><code>def summary(country: dict) -&gt; str:
+    return f"{country['name']} ({country['region']})"
+
+# This "should" be wrong according to the type hint, but Python runs it anyway:
+print(summary(42))
+# TypeError happens INSIDE the function body (42 is not subscriptable),
+# not because the type hint was checked and enforced upfront</code></pre>
+
+    <h3>@dataclass — less boilerplate, same underlying class</h3>
+    <p>A dataclass declares its fields with type hints, and Python auto-generates __init__ (and by default, __eq__) from those declarations — directly replacing Session 09's hand-written boilerplate.</p>
+    <pre><code>from dataclasses import dataclass
+
+@dataclass
+class Country:
+    name: str
+    region: str
+    population: int
+
+kenya = Country(name="Kenya", region="Africa", population=54000000)
+print(kenya.name)        # "Kenya" — same as before
+print(kenya.population)  # 54000000
+
+peru1 = Country(name="Peru", region="Americas", population=33000000)
+peru2 = Country(name="Peru", region="Americas", population=33000000)
+print(peru1 == peru2)  # True — free, field-by-field equality (Session 15's manual __eq__, generated automatically)</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">field declarations</span>name: str
+region: str
+population: int</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">@dataclass generates</span>__init__, __eq__</div>
+      <div class="diagram-caption">@dataclass reads the field declarations and generates __init__ and __eq__ for you — the same result as Sessions 09 and 15, without the boilerplate.</div>
+    </div>
+
+    <h3>Type hints still don't stop bad values at construction</h3>
+    <p>A dataclass will happily accept a value of the wrong type — the hint is not checked. This is why explicit validation, at the boundary where raw external data enters the program, is still necessary.</p>
+    <pre><code>bad = Country(name="Kenya", region="Africa", population="fifty-four-million")
+print(bad.population)  # "fifty-four-million" — a string, accepted without complaint!
+# This will fail confusingly later, wherever population is actually used as a number</code></pre>
+
+    <h3>Validating the contract before construction</h3>
+    <p>Combining Session 20's validation discipline with the dataclass gives us both convenience AND safety: check the raw dict's shape and types explicitly, THEN construct.</p>
+    <pre><code>def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data
+
+def build_country(data):
+    validate_country_record(data)
+    return Country(**data)</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Layer 4 gate:</strong> This is the last Layer 4 session. Every remaining layer assumes you understand that type hints document intent but do not enforce it, and that explicit validation is what actually protects the boundary between raw external data and your application.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Convert Country to a dataclass, prove type hints are not enforced, and add explicit contract validation for raw records loaded from JSON.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>contracts_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country as a dataclass</strong></p>
+
+        <pre><code># contracts_lab.py
+from dataclasses import dataclass
+
+@dataclass
+class Country:
+    name: str
+    region: str
+    population: int
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Prove the free __eq__ works, connecting back to Session 15</strong></p>
+
+        <pre><code>a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+print("a == b:", a == b)   # True — generated automatically
+print("a is b:", a is b)   # False — still separate objects</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Prove type hints are not enforced at construction</strong></p>
+
+        <pre><code>bad = Country(name="Kenya", region="Africa", population="not a number")
+print(bad.population)              # accepted anyway!
+print(type(bad.population))        # &lt;class 'str'&gt; — the hint did nothing to stop this</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write validate_country_record() checking both presence and type</strong></p>
+
+        <pre><code>def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Validate a batch of raw records, including a deliberately bad one, and skip failures gracefully</strong></p>
+        <p>Reuse the Session 14 pattern of catching per-record errors without losing the whole batch.</p>
+        <pre><code>raw_records = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Bad Data", "region": "Africa", "population": "fifty"},  # wrong type
+    {"name": "Also Bad", "region": "Africa"},                          # missing key
+]
+
+good_countries = []
+for r in raw_records:
+    try:
+        validate_country_record(r)
+        good_countries.append(Country(**r))
+    except (ValueError, TypeError) as e:
+        print(f"Rejected {r!r}: {e}")
+
+print("Valid countries:", len(good_countries))</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>contracts_lab.py</code></td>
+            <td>Created</td>
+            <td>Converts Country to a dataclass and adds explicit contract validation for raw records.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-26/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 4 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add contracts_lab.py docs/sessions/session-26/index.html
+git commit -m "session-26: formalize the country data contract with dataclasses and explicit validation"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does population="not a number" get accepted by Country(**data) even though population is type-hinted as int?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">Country is defined using @dataclass with type-hinted fields</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">The free, generated __eq__ is proven with two separately constructed, identically-valued instances</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A wrong-typed value is passed to the dataclass and shown to be accepted anyway, proving hints are not enforced</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">validate_country_record() checks both key presence and value type, raising clear errors</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">A batch including a bad record is processed, with bad records rejected individually and good ones kept</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
+        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
+        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
+        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
+        <label class="quiz-option" data-val="d">Only in Python 2</label>
+        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 09?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
+        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
+        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
+        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
+        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 09, while still producing an ordinary class.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 15 value-based __eq__ behavior?</p>
+        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
+        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 15 built manually</label>
+        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
+        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
+        <div class="explanation">This directly connects back to Session 15: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
+        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
+        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
+        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
+        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 09's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
+        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
+        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
+        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
+        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
+        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 20's discipline) catches this immediately, with a clear message.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why do you think Python chose not to enforce type hints at runtime by default, when other languages do enforce their type systems? What tradeoff does this represent?</li>
+        <li>How does validate_country_record() in this session compare to validate_population() from Session 20? What is genuinely new versus what is the same idea applied at a different level?</li>
+        <li>If a real API someday returns population as a string like "54000000" (valid digits, but the wrong TYPE), would your current validate_country_record() accept or reject it? Is that the right behavior?</li>
+        <li>How does the dataclass's generated __init__ relate back to everything you learned about __init__ and self in Session 09?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Trusting type hints as enforcement:</strong> A very common and dangerous misconception is believing type hints protect you from bad data at runtime. This session should permanently correct that — hints inform tooling and readers, but only explicit validation actually protects your program.</li>
+        <li><strong>Testing the data layer (Session 31):</strong> The tests you write for CountryRepository in Layer 5 will directly exercise validate_country_record() with both good and bad records — this session's validation logic IS what gets tested.</li>
+        <li><strong>Real, messy API data (Layer 7):</strong> A real external API is far less trustworthy than your own mock or JSON data — it can return unexpected types, missing fields, or malformed values at any time. The validation discipline from this session is what stands between that chaos and your application crashing.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Type hints as documentation (not enforcement), dataclasses as a concise way to define structured classes, and explicit validation as the real protection at data boundaries.</p>
+      <p><strong>Unlocks:</strong> The Country data contract is now explicit, documented, and actually enforced — the last Layer 4 skill before we start testing everything we've built.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 27 — Why We Test and What to Test</a>. Layer 5 begins. We start testing this application deliberately, instead of manually re-running scripts to check our work.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

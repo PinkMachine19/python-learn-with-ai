@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 04 — Functions and Lambda — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-current">Session 04</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+    </div>
+    <h1>Functions and Lambda</h1>
+    <p class="subtitle">Every piece of logic we have written so far has been repeated inline. Functions let us name a piece of logic once and reuse it — the basis for everything from here forward.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Define a function with def, including default parameter values</li>
+        <li>Explain the difference between a parameter and an argument, and between positional and keyword arguments</li>
+        <li>Use return to send a value back to the caller, and understand a function with no return gives back None</li>
+        <li>Write a small lambda expression and know when it is (and is not) appropriate</li>
+        <li>Pass a function as an argument to sorted() using the key parameter</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
+        <label class="quiz-option" data-val="a">None — the function only prints</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
+        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
+        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
+        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
+        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
+        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
+        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
+        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
+        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string</label>
+        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
+        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
+        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
+        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
+        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
+        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
+        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
+        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
+        <label class="quiz-option" data-val="d">It reverses the sort order</label>
+        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Functions and Lambda</h2>
+
+    <h3>Defining a function</h3>
+    <p>A function packages up logic under a name so it can be called repeatedly instead of copy-pasted.</p>
+    <pre><code>def greet(name):
+    return f"Hello, {name}"
+
+print(greet("Kenya"))  # "Hello, Kenya"
+print(greet("Ghana"))  # "Hello, Ghana"</code></pre>
+
+    <h3>return vs print — a critical distinction</h3>
+    <p><code>print()</code> displays something to the console as a side effect. <code>return</code> sends a value back to whoever called the function, so it can be stored, passed along, or used in another expression. A function with no <code>return</code> statement evaluates to <code>None</code>.</p>
+    <pre><code>def broken_greet(name):
+    print(f"Hello, {name}")   # side effect — does NOT return anything
+
+result = broken_greet("Kenya")   # prints "Hello, Kenya" as a side effect
+print(result)                     # None — nothing was returned</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">print()</span>side effect
+(console only)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">return</span>value flows back
+to the caller</div>
+      <div class="diagram-caption">print() sends text to the console; return sends a value back into the calling code so it can be used further.</div>
+    </div>
+
+    <h3>Default parameter values</h3>
+    <p>A parameter can have a default, used whenever the caller omits that argument.</p>
+    <pre><code>def region_label(name, region="Unknown"):
+    return f"{name} ({region})"
+
+print(region_label("Kenya", "Africa"))  # "Kenya (Africa)"
+print(region_label("Atlantis"))          # "Atlantis (Unknown)" — default used</code></pre>
+
+    <h3>Lambda — a small, anonymous function</h3>
+    <p>A lambda is a function expression with no name, written on one line, with the result implicitly returned. Lambdas are for short, throwaway logic — usually passed straight into another function.</p>
+    <pre><code># Full function
+def get_pop(c):
+    return c["population"]
+
+# Equivalent lambda
+get_pop = lambda c: c["population"]
+
+# Where lambdas actually shine: passed inline as an argument
+countries = [
+    {"name": "Kenya", "population": 54000000},
+    {"name": "Ghana", "population": 31000000},
+]
+by_population = sorted(countries, key=lambda c: c["population"])
+print([c["name"] for c in by_population])  # ['Ghana', 'Kenya']</code></pre>
+
+    <h3>When to use a full function instead of a lambda</h3>
+    <p>If the logic needs a name for clarity, spans more than one line, or is reused in several places, write a real <code>def</code> function. A lambda is for a single, obvious, inline expression only.</p>
+    <pre><code># Bad: cramming multi-step logic into a lambda hurts readability
+# label = lambda c: c["name"] + " (" + c["region"] + ")" if c.get("region") else c["name"]
+
+# Good: a real function with a name says what it does
+def format_label(c):
+    if c.get("region"):
+        return f"{c['name']} ({c['region']})"
+    return c["name"]</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write reusable functions for formatting and sorting countries, including one lambda used with sorted().
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>functions_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and the country list</strong></p>
+
+        <pre><code># functions_lab.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write a function that formats one country as a label</strong></p>
+        <p>Give <code>region</code> a default value of <code>"Unknown"</code>.</p>
+        <pre><code>def format_country(name, region="Unknown"):
+    return f"{name} ({region})"
+
+print(format_country("Kenya", "Africa"))
+print(format_country("Atlantis"))  # uses the default</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write a function that returns the population, and one that prints it</strong></p>
+        <p>Call both and print the results to see the return-vs-print difference for yourself.</p>
+        <pre><code>def get_population(country):
+    return country["population"]
+
+def show_population(country):
+    print(country["name"], "has population", country["population"])
+
+result = show_population(countries[0])
+print("show_population returned:", result)  # None
+print("get_population returned:", get_population(countries[0]))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Sort countries by population using a lambda</strong></p>
+
+        <pre><code>by_population = sorted(countries, key=lambda c: c["population"])
+for c in by_population:
+    print(c["name"], c["population"])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Sort countries by population, descending</strong></p>
+        <p>Look up the reverse parameter of sorted().</p>
+        <pre><code>by_population_desc = sorted(countries, key=lambda c: c["population"], reverse=True)
+print([c["name"] for c in by_population_desc])</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>functions_lab.py</code></td>
+            <td>Created</td>
+            <td>Demonstrates function definitions, defaults, return vs print, and lambda with sorted().</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-04/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add functions_lab.py docs/sessions/session-04/index.html
+git commit -m "session-04: define reusable functions and sort with a lambda key"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did show_population() print the value but return None, and why does that matter?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">At least one function uses a default parameter value</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">The return-vs-print distinction is demonstrated explicitly, printing the None result</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">At least one lambda is written and used as the key argument to sorted()</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">sorted() is used both ascending and with reverse=True</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No lambda spans more than one expression</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
+        <label class="quiz-option" data-val="a">None — the function only prints</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
+        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
+        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
+        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
+        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
+        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
+        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
+        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
+        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string</label>
+        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
+        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
+        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
+        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
+        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
+        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
+        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
+        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
+        <label class="quiz-option" data-val="d">It reverses the sort order</label>
+        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does Python separate "produce a value" (return) from "display a value" (print) instead of combining them?</li>
+        <li>Rewrite the <code>lambda c: c["population"]</code> from the lab as a full <code>def</code> function. Which version is more readable in context?</li>
+        <li>What would happen if you forgot the <code>return</code> keyword inside <code>get_population</code>? Try it and observe.</li>
+        <li>Can you think of a case in the project ahead where a default parameter value would prevent a bug?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>The forgotten-return bug:</strong> Forgetting <code>return</code> is one of the most common beginner mistakes. The function appears to work (it prints correctly) but every caller that tries to use its result gets <code>None</code> instead — a bug that only shows up downstream.</li>
+        <li><strong>Data-layer functions (Layer 4):</strong> Session 24 builds a data-access layer entirely out of functions like the ones in this lab. If return values are not understood, that entire layer will silently pass <code>None</code> around.</li>
+        <li><strong>Sorting and filtering UI logic:</strong> Nearly every "sort by X" or "filter by Y" feature in real software is built on exactly the <code>key=lambda</code> pattern from this session.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Functions — def, parameters, defaults, return vs print, and lambda expressions used as sort keys.</p>
+      <p><strong>Unlocks:</strong> You can now name and reuse logic instead of repeating it, and pass small functions as arguments to other functions.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 05 — Unpacking and *args/**kwargs</a>. We will learn to unpack values out of lists and dicts in one line, and accept flexible numbers of arguments with *args and **kwargs.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

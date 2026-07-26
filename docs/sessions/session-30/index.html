@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 30 — Testing Classes and State Changes — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-current">Session 30</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+    </div>
+    <h1>Testing Classes and State Changes</h1>
+    <p class="subtitle">Not every method returns a meaningful value — many exist to change an object's state over time. We test that state changes correctly, using setup/teardown fixtures for clean, isolated tests.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Write a test that verifies a mutation happened by checking state before and after</li>
+        <li>Use a pytest fixture to set up a fresh instance for every test, avoiding shared state between tests</li>
+        <li>Test that CountryExplorer's add_country correctly updates its computed properties</li>
+        <li>Test a multi-step sequence of state changes, not just a single call</li>
+        <li>Explain why sharing one instance across many tests is risky</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why is checking state BOTH before and after a mutating call more thorough than only checking the state after?</p>
+        <label class="quiz-option" data-val="a">It is not more thorough — checking only after is always sufficient</label>
+        <label class="quiz-option" data-val="b">Confirming the "before" value is what you expect rules out a test that passes by coincidence — e.g. the value happening to already equal the expected "after" value for an unrelated reason</label>
+        <label class="quiz-option" data-val="c">pytest requires a before-check for every test</label>
+        <label class="quiz-option" data-val="d">This only matters for numeric attributes</label>
+        <div class="explanation">A test that never checks the "before" state cannot rule out that the method call did nothing at all, if the value happened to coincidentally already match the expected result — checking both is a stronger, more trustworthy test.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is a pytest fixture, in the sense of def fresh_explorer(): return CountryExplorer(countries=[]) decorated with @pytest.fixture?</p>
+        <label class="quiz-option" data-val="a">A way to permanently modify pytest's configuration</label>
+        <label class="quiz-option" data-val="b">A reusable setup function that pytest automatically calls and injects into any test function that names it as a parameter, giving each test a fresh, isolated starting object</label>
+        <label class="quiz-option" data-val="c">A special kind of assertion</label>
+        <label class="quiz-option" data-val="d">A way to skip slow tests automatically</label>
+        <div class="explanation">A fixture provides reusable setup logic. Any test function that takes the fixture's name as a parameter automatically receives a freshly created object from it — every test gets its own independent starting point, with no manual setup code repeated in each test.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is sharing ONE CountryExplorer instance across many different test functions (instead of a fresh one per test, via a fixture) risky?</p>
+        <label class="quiz-option" data-val="a">There is no risk; sharing is always safe and faster</label>
+        <label class="quiz-option" data-val="b">A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test's starting state, since it is the same shared, mutable object — Session 01's reference lesson applied to testing itself</label>
+        <label class="quiz-option" data-val="c">pytest automatically prevents shared state between tests</label>
+        <label class="quiz-option" data-val="d">Only numeric state can leak between tests</label>
+        <div class="explanation">This is Session 01's and Session 16's reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You want to test that CountryExplorer.total_population correctly reflects a country added via add_country(). What should the test check?</p>
+        <label class="quiz-option" data-val="a">Only that add_country() itself does not raise an exception</label>
+        <label class="quiz-option" data-val="b">That total_population BEFORE adding equals one value, and total_population AFTER calling add_country() correctly reflects the new total — the computed property tracking the mutation correctly</label>
+        <label class="quiz-option" data-val="c">That country_count is a string</label>
+        <label class="quiz-option" data-val="d">Nothing needs to be checked; @property is always correct by definition</label>
+        <div class="explanation">This directly verifies Session 22's guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>A test performs THREE sequential state changes (e.g. grow_population twice, then set_population once) and checks only the final value. What does this kind of test verify that three separate single-step tests would not?</p>
+        <label class="quiz-option" data-val="a">Nothing extra — it is equivalent to three separate tests</label>
+        <label class="quiz-option" data-val="b">That the methods compose correctly across a realistic sequence of operations, not just in isolation — catching bugs that only appear when state changes happen one after another</label>
+        <label class="quiz-option" data-val="c">This kind of test is never useful</label>
+        <label class="quiz-option" data-val="d">It verifies that pytest itself is installed correctly</label>
+        <div class="explanation">Some bugs only emerge from a REALISTIC SEQUENCE of state changes — for instance, a method that assumes it is always called first might behave incorrectly the second time. A multi-step test exercises this more realistic scenario that isolated single-call tests would miss.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Testing State Changes</h2>
+
+    <h3>Checking state before and after</h3>
+    <p>A thorough state-change test confirms the "before" value is what you expect, performs the mutation, and confirms the "after" value is correct — ruling out a test that would coincidentally pass even if the method silently did nothing.</p>
+    <pre><code>from country import Country
+
+def test_grow_population_changes_state():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    assert k.population == 54000000   # confirm the "before" state explicitly
+
+    k.grow_population(1000000)
+
+    assert k.population == 55000000   # confirm the "after" state</code></pre>
+
+    <h3>Fixtures — fresh, isolated setup for every test</h3>
+    <p>A fixture is reusable setup logic pytest automatically provides to any test that asks for it by parameter name — guaranteeing every test starts from a clean, independent instance.</p>
+    <pre><code>import pytest
+from country import Country
+
+@pytest.fixture
+def kenya():
+    return Country(name="Kenya", region="Africa", population=54000000)
+
+def test_grow_population(kenya):        # pytest automatically calls kenya() and passes the result in
+    kenya.grow_population(1000000)
+    assert kenya.population == 55000000
+
+def test_set_population(kenya):          # a COMPLETELY SEPARATE, fresh instance — not shared with the test above
+    kenya.set_population(99)
+    assert kenya.population == 99</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">fixture</span>kenya()</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">test A</span>fresh instance</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">test B</span>fresh instance</div>
+      <div class="diagram-caption">A fixture builds a brand-new instance for each test that requests it — no test can accidentally leak mutated state into another.</div>
+    </div>
+
+    <h3>The risk of a shared instance across tests</h3>
+    <p>Without a fixture, using one module-level instance across many tests means a mutation in one test silently carries into the next — a direct real-world consequence of the reference-sharing behaviour from Session 01 and 16.</p>
+    <pre><code># RISKY — a single shared instance across tests
+shared_kenya = Country(name="Kenya", region="Africa", population=54000000)
+
+def test_a_grows_population():
+    shared_kenya.grow_population(1000000)
+    assert shared_kenya.population == 55000000  # passes
+
+def test_b_expects_original_population():
+    assert shared_kenya.population == 54000000  # FAILS — test_a's mutation leaked in!
+    # This test's result now depends on test execution ORDER, which is a serious design flaw</code></pre>
+
+    <h3>Testing a computed property tracking a mutation</h3>
+    <p>Combining Session 22's computed properties with state-change testing verifies the whole chain works correctly together.</p>
+    <pre><code>from country import Country, CountryExplorer
+
+@pytest.fixture
+def empty_explorer():
+    return CountryExplorer(countries=[])
+
+def test_total_population_reflects_added_country(empty_explorer):
+    assert empty_explorer.total_population == 0   # before
+
+    empty_explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+
+    assert empty_explorer.total_population == 54000000   # after — automatically correct</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Add CountryExplorer to country.py, then test state changes using fixtures, before/after checks, and a multi-step sequence.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>Extends <code>country.py</code> and adds <code>tests/test_state_changes.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Add CountryExplorer with add_country and computed properties to country.py</strong></p>
+
+        <pre><code># country.py (additions)
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write fixtures for a fresh Country and a fresh empty CountryExplorer</strong></p>
+
+        <pre><code># tests/test_state_changes.py
+import pytest
+from country import Country, CountryExplorer
+
+@pytest.fixture
+def kenya():
+    return Country(name="Kenya", region="Africa", population=54000000)
+
+@pytest.fixture
+def empty_explorer():
+    return CountryExplorer(countries=[])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write before/after tests for grow_population and set_population</strong></p>
+
+        <pre><code>def test_grow_population_changes_state(kenya):
+    assert kenya.population == 54000000
+    kenya.grow_population(1000000)
+    assert kenya.population == 55000000
+
+def test_set_population_changes_state(kenya):
+    assert kenya.population == 54000000
+    kenya.set_population(1)
+    assert kenya.population == 1</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Test add_country updating both computed properties</strong></p>
+
+        <pre><code>def test_add_country_updates_computed_properties(empty_explorer, kenya):
+    assert empty_explorer.country_count == 0
+    assert empty_explorer.total_population == 0
+
+    empty_explorer.add_country(kenya)
+
+    assert empty_explorer.country_count == 1
+    assert empty_explorer.total_population == 54000000</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a multi-step sequence test</strong></p>
+        <p>Grow twice, then set once, checking the final value reflects all three operations correctly.</p>
+        <pre><code>def test_multi_step_population_sequence(kenya):
+    kenya.grow_population(1000000)   # 54,000,000 -&gt; 55,000,000
+    kenya.grow_population(2000000)   # 55,000,000 -&gt; 57,000,000
+    kenya.set_population(60000000)   # -&gt; 60,000,000 directly
+    assert kenya.population == 60000000</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country.py</code></td>
+            <td>Modified</td>
+            <td>Adds CountryExplorer with add_country and computed properties.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_state_changes.py</code></td>
+            <td>Created</td>
+            <td>Fixture-based, isolated tests for state changes, computed properties, and multi-step sequences.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-30/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country.py tests/test_state_changes.py docs/sessions/session-30/index.html
+git commit -m "session-30: test state changes with fixtures, before/after checks, and multi-step sequences"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does using a fixture instead of one shared module-level instance prevent tests from affecting each other?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">kenya and empty_explorer are defined as @pytest.fixture functions, not shared module-level instances</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">At least two tests check state explicitly before AND after a mutating call</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">test_add_country_updates_computed_properties verifies both country_count and total_population</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A multi-step sequence test performs at least 3 chained state changes and checks the final result</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">All tests pass when run independently AND in any order (confirm by running pytest normally, which does not guarantee a fixed order)</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why is checking state BOTH before and after a mutating call more thorough than only checking the state after?</p>
+        <label class="quiz-option" data-val="a">It is not more thorough — checking only after is always sufficient</label>
+        <label class="quiz-option" data-val="b">Confirming the "before" value is what you expect rules out a test that passes by coincidence — e.g. the value happening to already equal the expected "after" value for an unrelated reason</label>
+        <label class="quiz-option" data-val="c">pytest requires a before-check for every test</label>
+        <label class="quiz-option" data-val="d">This only matters for numeric attributes</label>
+        <div class="explanation">A test that never checks the "before" state cannot rule out that the method call did nothing at all, if the value happened to coincidentally already match the expected result — checking both is a stronger, more trustworthy test.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is a pytest fixture, in the sense of def fresh_explorer(): return CountryExplorer(countries=[]) decorated with @pytest.fixture?</p>
+        <label class="quiz-option" data-val="a">A way to permanently modify pytest's configuration</label>
+        <label class="quiz-option" data-val="b">A reusable setup function that pytest automatically calls and injects into any test function that names it as a parameter, giving each test a fresh, isolated starting object</label>
+        <label class="quiz-option" data-val="c">A special kind of assertion</label>
+        <label class="quiz-option" data-val="d">A way to skip slow tests automatically</label>
+        <div class="explanation">A fixture provides reusable setup logic. Any test function that takes the fixture's name as a parameter automatically receives a freshly created object from it — every test gets its own independent starting point, with no manual setup code repeated in each test.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is sharing ONE CountryExplorer instance across many different test functions (instead of a fresh one per test, via a fixture) risky?</p>
+        <label class="quiz-option" data-val="a">There is no risk; sharing is always safe and faster</label>
+        <label class="quiz-option" data-val="b">A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test's starting state, since it is the same shared, mutable object — Session 01's reference lesson applied to testing itself</label>
+        <label class="quiz-option" data-val="c">pytest automatically prevents shared state between tests</label>
+        <label class="quiz-option" data-val="d">Only numeric state can leak between tests</label>
+        <div class="explanation">This is Session 01's and Session 16's reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You want to test that CountryExplorer.total_population correctly reflects a country added via add_country(). What should the test check?</p>
+        <label class="quiz-option" data-val="a">Only that add_country() itself does not raise an exception</label>
+        <label class="quiz-option" data-val="b">That total_population BEFORE adding equals one value, and total_population AFTER calling add_country() correctly reflects the new total — the computed property tracking the mutation correctly</label>
+        <label class="quiz-option" data-val="c">That country_count is a string</label>
+        <label class="quiz-option" data-val="d">Nothing needs to be checked; @property is always correct by definition</label>
+        <div class="explanation">This directly verifies Session 22's guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>A test performs THREE sequential state changes (e.g. grow_population twice, then set_population once) and checks only the final value. What does this kind of test verify that three separate single-step tests would not?</p>
+        <label class="quiz-option" data-val="a">Nothing extra — it is equivalent to three separate tests</label>
+        <label class="quiz-option" data-val="b">That the methods compose correctly across a realistic sequence of operations, not just in isolation — catching bugs that only appear when state changes happen one after another</label>
+        <label class="quiz-option" data-val="c">This kind of test is never useful</label>
+        <label class="quiz-option" data-val="d">It verifies that pytest itself is installed correctly</label>
+        <div class="explanation">Some bugs only emerge from a REALISTIC SEQUENCE of state changes — for instance, a method that assumes it is always called first might behave incorrectly the second time. A multi-step test exercises this more realistic scenario that isolated single-call tests would miss.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Rewrite one of this session's fixture-based tests using a single shared module-level instance instead. Can you construct a second test that would now fail due to leaked state?</li>
+        <li>Why does test_add_country_updates_computed_properties need to check BOTH country_count and total_population, rather than just one of them?</li>
+        <li>What real bug would the multi-step sequence test catch that three separate single-step tests might miss?</li>
+        <li>How does pytest deciding to call kenya() fresh for every test that requests it relate to Session 09's lesson that every __init__ call creates an independent instance?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Order-dependent test failures:</strong> Tests that share mutable state can pass or fail depending on the ORDER they happen to run in — an extremely confusing and hard-to-diagnose category of bug in a test suite, entirely avoided by fixtures.</li>
+        <li><strong>Testing the data layer (Session 31):</strong> The next session — the Layer 5 gate — applies these exact same fixture and state-testing techniques to CountryRepository, using a mock data source built specifically for testing.</li>
+        <li><strong>Safe architecture refactoring (Layer 6):</strong> A test suite with reliable, isolated tests (thanks to fixtures) is what makes Layer 6's refactoring sessions safe — an unreliable, order-dependent suite would give false confidence or false alarms during a refactor.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Testing state changes with before/after assertions, pytest fixtures for isolated setup, and multi-step sequence testing.</p>
+      <p><strong>Unlocks:</strong> You can now write reliable, independent tests for any object whose behavior involves changing over time — not just functions that simply return a value.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 31 — Testing the Data Layer with Mocks</a>. Layer 5 gate. We test the data-access layer itself, using a small mock repository built specifically for testing, isolated from real data entirely.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

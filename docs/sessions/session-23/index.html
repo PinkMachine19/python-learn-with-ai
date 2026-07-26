@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 23 — Why Mock Data Matters — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-current">Session 23</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
+    </div>
+    <h1>Why Mock Data Matters</h1>
+    <p class="subtitle">Layer 4 begins. Real teams build and test an application's logic long before a real data source is ready. We formalize working against fake data on purpose.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain why building against mock data before a real API exists speeds up development</li>
+        <li>Write a mock data file that mirrors the shape a future real data source will have</li>
+        <li>Explain what a "contract" means in the context of data shape</li>
+        <li>Recognise this as a largely concept session, similar to Sessions 08 and 16</li>
+        <li>Identify the risk of a mock data shape silently diverging from the real data shape it is meant to mirror</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why would a team build the Country Explorer's search feature against a hand-written mock_countries.py file instead of waiting for a real API to be ready?</p>
+        <label class="quiz-option" data-val="a">Mock data is always more accurate than real data</label>
+        <label class="quiz-option" data-val="b">It lets development and testing of the application logic proceed independently of an external dependency that might be slow, unavailable, or still being built</label>
+        <label class="quiz-option" data-val="c">Real APIs cannot be used during development for legal reasons</label>
+        <label class="quiz-option" data-val="d">There is no real benefit; it is just tradition</label>
+        <div class="explanation">Depending on an external, possibly-unfinished, possibly-unreliable data source blocks all progress on everything else. Mock data lets the rest of the application be built, used, and tested completely independently.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does it mean for mock data to "mirror the shape" of a future real data source?</p>
+        <label class="quiz-option" data-val="a">The mock data must contain the exact same values as the real data will</label>
+        <label class="quiz-option" data-val="b">The mock data uses the same keys, types, and structure the real data is expected to have, even though the specific values are made up</label>
+        <label class="quiz-option" data-val="c">Shape does not matter, only the total count of records matters</label>
+        <label class="quiz-option" data-val="d">Mock data should always be empty</label>
+        <div class="explanation">If real data will have <code>name</code>, <code>region</code>, and <code>population</code> keys with string/string/int types, the mock data should use exactly the same keys and types — even though "Kenya" and 54000000 are made-up placeholder values, not scraped from a real source.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is a "contract" in the sense used by this session?</p>
+        <label class="quiz-option" data-val="a">A legal document required before writing any code</label>
+        <label class="quiz-option" data-val="b">An agreed-upon shape/structure that data is expected to have, so that code written against mock data continues working once real data (matching that same shape) replaces it</label>
+        <label class="quiz-option" data-val="c">A Python built-in type</label>
+        <label class="quiz-option" data-val="d">A synonym for "constructor"</label>
+        <div class="explanation">A data contract is the agreed structure — which keys exist, what types they hold — that all code can rely on. As long as real data honors the same contract as the mock data, code built against the mock keeps working without changes.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What risk exists if the mock data's shape silently diverges from what the real data source will actually provide (e.g. mock uses "pop", but the real API returns "population")?</p>
+        <label class="quiz-option" data-val="a">No risk — Python automatically reconciles differing key names</label>
+        <label class="quiz-option" data-val="b">All the code built and tested against the mock data will break the moment it is pointed at real data, since the contract was not actually honored</label>
+        <label class="quiz-option" data-val="c">This divergence is impossible in Python</label>
+        <label class="quiz-option" data-val="d">It only matters for numeric fields</label>
+        <div class="explanation">Mock data is only useful if it honestly represents the shape real data will have. If they diverge, all the work done "safely" against the mock turns out to be built on a false assumption, and breaks the moment real data is introduced.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is this session mostly concept, with a comparatively small lab?</p>
+        <label class="quiz-option" data-val="a">Because mock data has no real syntax of its own</label>
+        <label class="quiz-option" data-val="b">Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 24</label>
+        <label class="quiz-option" data-val="c">Because this topic is not actually important</label>
+        <label class="quiz-option" data-val="d">Because writing mock data always requires an external library</label>
+        <div class="explanation">This follows the same pattern established twice before in the curriculum: build the mental model first (why does this practice exist, what problem does it solve), then build the concrete implementation in the following session.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Why Mock Data Matters</h2>
+
+    <h3>Building against fake data on purpose</h3>
+    <p>Every session so far has technically used mock data — hand-typed Country instances. This session makes that a deliberate practice: build and test your application's real logic against a fake data source that mirrors what a real one will eventually look like.</p>
+    <pre><code># mock_countries.py — deliberately fake, but shaped like the real thing will be
+MOCK_COUNTRIES = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+    {"name": "Japan", "region": "Asia", "population": 125000000},
+    {"name": "Norway", "region": "Europe", "population": 5400000},
+]</code></pre>
+
+    <h3>A contract is a shape everyone agrees to honor</h3>
+    <p>The "contract" is simply: every country record has a name (str), a region (str), and a population (int). As long as both the mock data and a future real API honor this same contract, code written against one will keep working against the other.</p>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">mock data</span>same shape</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">contract</span>name, region,
+population</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">real API (later)</span>same shape</div>
+      <div class="diagram-caption">Application code depends on the SHAPE (the contract), not on whether the data source is mock or real.</div>
+    </div>
+
+    <h3>The independence this buys us</h3>
+    <p>With a mock data source in place, every remaining feature — search, filtering, the whole CountryExplorer built in Layer 2 and 3 — can be developed and fully exercised without a real API existing yet, or even being reachable over the network at all.</p>
+    <pre><code>from mock_countries import MOCK_COUNTRIES
+
+countries = [Country.from_dict(r) for r in MOCK_COUNTRIES]
+explorer = CountryExplorer(countries=countries)
+print(explorer.total_population)   # works completely offline, no network needed</code></pre>
+
+    <h3>The risk: silent divergence from the real shape</h3>
+    <p>Mock data is only useful if it honestly represents what real data will look like. If the mock and the eventual real source disagree on key names or types, everything built "safely" against the mock will break the moment real data arrives — an important risk to keep in mind as we build Session 26's formal data contracts.</p>
+
+    <div class="alert alert-warning">
+      <strong>Concept session:</strong> Like Sessions 08 and 16, the goal here is understanding the practice before building the concrete implementation in Session 24.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write a mock country dataset with 10 records mirroring the eventual real API shape, and build the full explorer entirely offline from it.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>mock_countries.py</code> and a small script that uses it.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create mock_countries.py with 10 diverse records</strong></p>
+        <p>Use a variety of regions and population sizes — this will matter for later filtering exercises.</p>
+        <pre><code># mock_countries.py
+MOCK_COUNTRIES = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Nigeria", "region": "Africa", "population": 223000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+    {"name": "Canada", "region": "Americas", "population": 38000000},
+    {"name": "Brazil", "region": "Americas", "population": 216000000},
+    {"name": "Japan", "region": "Asia", "population": 125000000},
+    {"name": "India", "region": "Asia", "population": 1428000000},
+    {"name": "Norway", "region": "Europe", "population": 5400000},
+    {"name": "Germany", "region": "Europe", "population": 84000000},
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create explore_offline.py that imports the mock and builds Country instances</strong></p>
+
+        <pre><code># explore_offline.py
+from mock_countries import MOCK_COUNTRIES
+
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
+
+countries = [Country.from_dict(r) for r in MOCK_COUNTRIES]
+print(len(countries))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Build a CountryExplorer entirely offline, with total_population and country_count as @property</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+explorer = CountryExplorer(countries=countries)
+print(explorer.country_count)
+print(explorer.total_population)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Print every summary, proving the whole application works with zero network access</strong></p>
+
+        <pre><code>for c in explorer.countries:
+    print(c.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a comment describing the contract: what keys and types every record must have</strong></p>
+        <p>This will become Session 26's formal data contract — write it in plain English for now.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>mock_countries.py</code></td>
+            <td>Created</td>
+            <td>A mock dataset of 10 countries mirroring the eventual real API shape.</td>
+          </tr>
+          <tr>
+            <td><code>explore_offline.py</code></td>
+            <td>Created</td>
+            <td>Builds the full explorer entirely from mock data, no network needed.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-23/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add mock_countries.py explore_offline.py docs/sessions/session-23/index.html
+git commit -m "session-23: build a mock dataset and run the explorer entirely offline"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "What is the "contract" mock_countries.py is honoring, and why does that matter for a future real data source?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">mock_countries.py contains at least 10 records with varied regions and populations</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">Every record uses consistent keys (name, region, population) with consistent types</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">explore_offline.py builds Country instances and a CountryExplorer entirely from the mock data</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">total_population and country_count are computed and printed correctly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">A written comment describes the data contract in plain English</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why would a team build the Country Explorer's search feature against a hand-written mock_countries.py file instead of waiting for a real API to be ready?</p>
+        <label class="quiz-option" data-val="a">Mock data is always more accurate than real data</label>
+        <label class="quiz-option" data-val="b">It lets development and testing of the application logic proceed independently of an external dependency that might be slow, unavailable, or still being built</label>
+        <label class="quiz-option" data-val="c">Real APIs cannot be used during development for legal reasons</label>
+        <label class="quiz-option" data-val="d">There is no real benefit; it is just tradition</label>
+        <div class="explanation">Depending on an external, possibly-unfinished, possibly-unreliable data source blocks all progress on everything else. Mock data lets the rest of the application be built, used, and tested completely independently.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does it mean for mock data to "mirror the shape" of a future real data source?</p>
+        <label class="quiz-option" data-val="a">The mock data must contain the exact same values as the real data will</label>
+        <label class="quiz-option" data-val="b">The mock data uses the same keys, types, and structure the real data is expected to have, even though the specific values are made up</label>
+        <label class="quiz-option" data-val="c">Shape does not matter, only the total count of records matters</label>
+        <label class="quiz-option" data-val="d">Mock data should always be empty</label>
+        <div class="explanation">If real data will have <code>name</code>, <code>region</code>, and <code>population</code> keys with string/string/int types, the mock data should use exactly the same keys and types — even though "Kenya" and 54000000 are made-up placeholder values, not scraped from a real source.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is a "contract" in the sense used by this session?</p>
+        <label class="quiz-option" data-val="a">A legal document required before writing any code</label>
+        <label class="quiz-option" data-val="b">An agreed-upon shape/structure that data is expected to have, so that code written against mock data continues working once real data (matching that same shape) replaces it</label>
+        <label class="quiz-option" data-val="c">A Python built-in type</label>
+        <label class="quiz-option" data-val="d">A synonym for "constructor"</label>
+        <div class="explanation">A data contract is the agreed structure — which keys exist, what types they hold — that all code can rely on. As long as real data honors the same contract as the mock data, code built against the mock keeps working without changes.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What risk exists if the mock data's shape silently diverges from what the real data source will actually provide (e.g. mock uses "pop", but the real API returns "population")?</p>
+        <label class="quiz-option" data-val="a">No risk — Python automatically reconciles differing key names</label>
+        <label class="quiz-option" data-val="b">All the code built and tested against the mock data will break the moment it is pointed at real data, since the contract was not actually honored</label>
+        <label class="quiz-option" data-val="c">This divergence is impossible in Python</label>
+        <label class="quiz-option" data-val="d">It only matters for numeric fields</label>
+        <div class="explanation">Mock data is only useful if it honestly represents the shape real data will have. If they diverge, all the work done "safely" against the mock turns out to be built on a false assumption, and breaks the moment real data is introduced.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is this session mostly concept, with a comparatively small lab?</p>
+        <label class="quiz-option" data-val="a">Because mock data has no real syntax of its own</label>
+        <label class="quiz-option" data-val="b">Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 24</label>
+        <label class="quiz-option" data-val="c">Because this topic is not actually important</label>
+        <label class="quiz-option" data-val="d">Because writing mock data always requires an external library</label>
+        <div class="explanation">This follows the same pattern established twice before in the curriculum: build the mental model first (why does this practice exist, what problem does it solve), then build the concrete implementation in the following session.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>What would break in explore_offline.py if one mock record used "pop" instead of "population" as a key? Where exactly would the failure occur?</li>
+        <li>Why is it valuable that explore_offline.py runs with literally zero network access?</li>
+        <li>Can you think of a real project (not this one) where you have seen or could imagine mock data being useful before a backend was ready?</li>
+        <li>What is the cost of maintaining mock data as the "real" contract evolves over time? How would you keep them in sync?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Blocked development:</strong> Without mock data, building and testing the Country Explorer's logic would be blocked on a real, possibly unfinished or unreliable API being available — an unnecessary dependency for logic that has nothing to do with networking.</li>
+        <li><strong>The data access layer (Session 24):</strong> The next session wraps this mock data behind a proper repository interface — the mock dataset from this session becomes the first "backend" that repository talks to.</li>
+        <li><strong>Data contracts (Session 26):</strong> The plain-English contract description written in this lab becomes the formal, enforced contract in Session 26, using type hints and dataclasses.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Deliberately building and testing against mock data that mirrors a real data source's shape, and the concept of a data contract.</p>
+      <p><strong>Unlocks:</strong> The entire application can now be developed and demonstrated completely independent of any real, external data source.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 24 — Building a Data Access Layer</a>. We wrap this mock data behind a proper data-access layer, separating "how data is fetched" from "what the application does with it."</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

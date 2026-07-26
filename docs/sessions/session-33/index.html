@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 33 — Reusable Functions and Modules — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-current">Session 33</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+    </div>
+    <h1>Reusable Functions and Modules</h1>
+    <p class="subtitle">With a clean package structure in place, we identify genuinely reusable logic scattered across the project and extract it into shared, well-tested functions.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Identify duplicated or near-duplicated logic across different parts of the project</li>
+        <li>Extract that logic into a single, well-named, reusable function</li>
+        <li>Write a docstring that documents a function's parameters, return value, and behavior clearly</li>
+        <li>Add tests for the newly extracted function to close a coverage gap</li>
+        <li>Distinguish "reusable" from "premature abstraction" — extracting too early or unnecessarily</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
+        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
+        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
+        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
+        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
+        <div class="explanation">This is Session 06's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
+        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
+        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
+        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
+        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
+        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
+        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
+        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
+        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
+        <div class="explanation">A focused, direct test of the extracted function (following Session 29's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
+        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
+        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
+        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
+        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
+        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Where is the most sensible place, given Session 32's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
+        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
+        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 32</label>
+        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
+        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
+        <div class="explanation">This follows directly from Session 32's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Extracting Reusable Logic</h2>
+
+    <h3>Spotting duplicated logic</h3>
+    <p>As a project grows, similar formatting or calculation logic tends to appear in more than one place. The first step is noticing it — comparing what several pieces of code are actually doing, not just how they look on the surface.</p>
+    <pre><code># Duplication scattered across the project:
+
+# models.py
+def summary(self):
+    return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+# some future report-generation code, formatting the same kind of number again
+def population_report_line(name, population):
+    return f"{name}: {population:,} people"</code></pre>
+
+    <h3>Extracting one shared function</h3>
+    <p>Once genuine, ongoing duplication is identified, extract it into one well-named function, and update every call site to use it — exactly the "one place to change" principle from Session 06.</p>
+    <pre><code># country_explorer/formatting.py
+def format_population(value):
+    """Format a population count with comma separators.
+
+    Args:
+        value: the population as an int.
+    Returns:
+        A string like "54,000,000".
+    """
+    return f"{value:,}"
+
+# models.py
+from .formatting import format_population
+
+def summary(self):
+    return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">summary()</span>f"{pop:,}"</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">report line</span>f"{pop:,}"</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">format_population()</span>one shared function</div>
+      <div class="diagram-caption">Two near-identical formatting expressions collapse into one shared, tested, documented function.</div>
+    </div>
+
+    <h3>Documenting the extracted function with a docstring</h3>
+    <p>A function meant to be reused across the project deserves clear documentation of what it takes and what it returns, directly alongside the code — readable via help() and by anyone reading the source.</p>
+
+    <h3>Testing the extracted function directly</h3>
+    <p>A focused test of the standalone function is simpler than relying on it being indirectly exercised through summary() or other larger tests.</p>
+    <pre><code># tests/test_formatting.py
+from country_explorer.formatting import format_population
+
+def test_format_population_adds_commas():
+    assert format_population(54000000) == "54,000,000"
+
+def test_format_population_small_number():
+    assert format_population(5) == "5"</code></pre>
+
+    <h3>When NOT to extract — premature abstraction</h3>
+    <p>If two pieces of code happen to look similar right now, but represent genuinely different concepts likely to change independently, forcing them into a shared function adds coupling without a real benefit. Extraction should follow real, ongoing duplication of one actual idea — not surface-level resemblance.</p>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Extract a shared, documented, tested format_population function, and identify (without necessarily extracting) a case of premature abstraction.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A new module <code>country_explorer/formatting.py</code> plus <code>tests/test_formatting.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create formatting.py with format_population and a clear docstring</strong></p>
+
+        <pre><code># country_explorer/formatting.py
+def format_population(value):
+    """Format a population count with comma separators.
+
+    Args:
+        value: the population as an int.
+    Returns:
+        A string like "54,000,000".
+    """
+    return f"{value:,}"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Update models.py's summary() to use the extracted function</strong></p>
+
+        <pre><code># country_explorer/models.py
+from .formatting import format_population
+
+class Country:
+    # ... existing code ...
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write direct tests for format_population</strong></p>
+
+        <pre><code># tests/test_formatting.py
+from country_explorer.formatting import format_population
+
+def test_format_population_adds_commas():
+    assert format_population(54000000) == "54,000,000"
+
+def test_format_population_small_number():
+    assert format_population(0) == "0"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Run the full test suite, confirming summary()'s existing tests still pass unchanged</strong></p>
+        <p>This proves the extraction was behavior-preserving.</p>
+        <pre><code># pytest -v</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a short comment describing a case of near-identical-looking code you deliberately did NOT merge, and why</strong></p>
+        <p>This exercises the "premature abstraction" judgment call — invent a plausible example if needed, e.g. two functions that both happen to check "value > 0" but for conceptually different reasons.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_explorer/formatting.py</code></td>
+            <td>Created</td>
+            <td>A shared, documented, reusable population formatting function.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Modified</td>
+            <td>summary() now uses the extracted, shared function.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_formatting.py</code></td>
+            <td>Created</td>
+            <td>Direct, focused tests for the extracted function.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-33/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 4 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_explorer/formatting.py country_explorer/models.py tests/test_formatting.py docs/sessions/session-33/index.html
+git commit -m "session-33: extract and test a reusable format_population function"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "How did I confirm this extraction was purely a refactor and did not change summary()'s existing observable behavior?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">format_population has a clear docstring describing its argument and return value</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">models.py's summary() calls the extracted function instead of duplicating the formatting inline</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">test_formatting.py directly and independently tests format_population</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The full pre-existing test suite (Sessions 27-32) still passes after this change</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">A written comment identifies a plausible case of premature abstraction that was deliberately NOT merged</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
+        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
+        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
+        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
+        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
+        <div class="explanation">This is Session 06's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
+        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
+        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
+        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
+        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
+        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
+        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
+        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
+        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
+        <div class="explanation">A focused, direct test of the extracted function (following Session 29's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
+        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
+        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
+        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
+        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
+        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Where is the most sensible place, given Session 32's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
+        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
+        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 32</label>
+        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
+        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
+        <div class="explanation">This follows directly from Session 32's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Before this session, summary()'s formatting logic was only tested indirectly through summary()'s own tests. Why is a direct test of format_population still valuable now that it exists?</li>
+        <li>Can you find another piece of logic anywhere in the project (Sessions 1-32) that is duplicated and could benefit from this same extraction treatment?</li>
+        <li>What is the cost of extracting something too early, before a second real use case actually exists? Contrast that with the cost of NOT extracting genuinely duplicated logic.</li>
+        <li>How does docstring documentation differ in purpose from the reflection comments you've written throughout this curriculum?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Silent formatting drift:</strong> Without extracting shared formatting logic, a future change to how numbers should display (e.g. adding a currency symbol) risks being applied in one place and forgotten in another, producing visibly inconsistent output across the application.</li>
+        <li><strong>Utility modules (Session 34):</strong> The next session builds on this exact pattern, extracting more substantial, cross-cutting utility logic into its own dedicated module — formatting.py is the first, smallest example of that broader pattern.</li>
+        <li><strong>Recognizing coupling problems (Session 35):</strong> Learning to correctly judge WHEN to extract (and when NOT to, per premature abstraction) is a prerequisite for Session 35's harder judgment call: recognizing when a class has taken on too much responsibility.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Identifying genuine duplication, extracting it into a documented, tested, reusable function, and recognizing premature abstraction as a real risk to avoid.</p>
+      <p><strong>Unlocks:</strong> You can now confidently spot and safely extract reusable logic from a growing codebase, backed by tests that prove the extraction changed nothing about behavior.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 34 — Building Utility Modules</a>. We build a more substantial, standalone utility module — logic that supports the whole application without being tied to any one class.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture — Python Learning</title>
+  <link rel="stylesheet" href="../styles.css" />
+
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../syllabus/index.html">Syllabus</a>
+    <a href="../sessions/index.html">Sessions</a>
+    <a href="../quizzes/index.html">Quizzes</a>
+    <a href="../labs/index.html">Labs</a>
+    <a href="../architecture/index.html" class="active">Architecture</a>
+    <a href="../session-notes/index.html">Notes</a>
+    <a href="../commit-reviews/index.html">Commits</a>
+    <a href="../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <h1>Architecture Decisions</h1>
+    <p class="subtitle">
+      Every structural decision in this project is documented here with the reason behind it.
+      Architecture is not decided by instinct — it is decided consciously and recorded.
+    </p>
+
+    <div class="alert alert-info">
+      When we make a new structural decision — where a file goes, why a module is split,
+      why a pattern was chosen — it gets recorded here before or immediately after the commit.
+      The full, evolving record lives in <code>ARCHITECTURE.md</code> at the project root,
+      built out across Sessions 32 and 36, and finalized in Session 40.
+    </div>
+
+    <h2>Entry Format</h2>
+    <div class="card">
+      <p><strong>Decision:</strong> What we decided.</p>
+      <p><strong>Session:</strong> When we decided it.</p>
+      <p><strong>Why:</strong> The reasoning.</p>
+      <p><strong>Alternatives considered:</strong> What else we could have done.</p>
+      <p><strong>Consequence:</strong> What this decision requires or prevents in the future.</p>
+    </div>
+
+    <hr />
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span class="card-title">ADR-001 — Repository Pattern for Data Access</span>
+        <span class="badge badge-layer">Session 24</span>
+      </div>
+      <p><strong>Decision:</strong> Wrap all data access behind a <code>CountryRepository</code> class with a stable <code>get_all()</code>/<code>find_by_region()</code>/<code>search()</code> interface.</p>
+      <p><strong>Why:</strong> Application logic should not need to know or care whether data comes from an in-memory mock list, a JSON file, or a real API. Proven across three genuinely different data sources by Session 38 with zero changes to the repository's own methods.</p>
+      <p><strong>Alternatives considered:</strong> Letting every part of the app import mock data directly. Rejected — this would tightly couple application logic to one specific data source.</p>
+      <p><strong>Consequence:</strong> Any future data source must be adapted to return data in the same raw shape the repository expects.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span class="card-title">ADR-002 — Package Structure by Responsibility</span>
+        <span class="badge badge-layer">Session 32</span>
+      </div>
+      <p><strong>Decision:</strong> Split the growing single file into a <code>country_explorer</code> package with <code>models.py</code>, <code>repository.py</code>, <code>validators.py</code>, <code>formatting.py</code>, and <code>search.py</code>.</p>
+      <p><strong>Why:</strong> Grouping by responsibility keeps each module focused and easier to navigate as the project grows.</p>
+      <p><strong>Alternatives considered:</strong> Splitting by curriculum layer instead. Rejected — responsibility-based grouping stays meaningful independent of how the curriculum itself is structured.</p>
+      <p><strong>Consequence:</strong> Every new piece of cross-cutting logic must be evaluated for which existing module — or a new one — it belongs in.</p>
+    </div>
+
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <span class="card-title">ADR-003 — Prop Drilling in Composed UI-Layer Classes (Unresolved)</span>
+        <span class="badge badge-gate">Session 35</span>
+      </div>
+      <p><strong>Decision:</strong> None yet — documents a known problem, not a fix.</p>
+      <p><strong>Why this is a problem:</strong> A layered <code>App → NavigationPanel → MenuSection → CountryExplorer</code> structure requires every intermediate layer to forward a reference it does not otherwise use.</p>
+      <p><strong>Status:</strong> Deliberately left unresolved. A future iteration might explore a shared context object or dependency injection.</p>
+    </div>
+
+
+  </div>
+</main>
+
+</body>
+</html>

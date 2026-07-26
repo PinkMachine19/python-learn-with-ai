@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 31 — Testing the Data Layer with Mocks — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-gate">Session 31 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+    </div>
+    <h1>Testing the Data Layer with Mocks</h1>
+    <p class="subtitle">This is the Layer 5 gate. We test CountryRepository in complete isolation, using a small, controlled fake dataset — no real files, no real network, ever.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Test CountryRepository by constructing it around a small, hand-written fake dataset</li>
+        <li>Test that validate_country_record correctly accepts good records and rejects bad ones</li>
+        <li>Explain why testing the repository this way requires zero real files or network access</li>
+        <li>Write a test that verifies get_all() and find_by_region() both return the correct Country instances</li>
+        <li>Connect every prior Layer 5 technique (fixtures, exact-content assertions, pytest.raises) into one cohesive test file</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why does testing CountryRepository with a small hand-written fake dataset (not the real mock_countries.py or countries.json) make the tests more reliable?</p>
+        <label class="quiz-option" data-val="a">It does not — using the real data is always better for tests</label>
+        <label class="quiz-option" data-val="b">A small, controlled dataset built specifically for the test keeps the test focused, fast, and independent of the size or future changes of the real mock/JSON data — this is Session 24's repository design paying off directly</label>
+        <label class="quiz-option" data-val="c">pytest requires all test data to be under 5 records</label>
+        <label class="quiz-option" data-val="d">Fake data is required by law for testing</label>
+        <div class="explanation">This is exactly why CountryRepository was designed (Session 24) to accept any data source through its constructor: a test can build one around a tiny, purpose-built dataset with known values, making the test fast, focused, and immune to unrelated changes in the real mock data file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A test constructs CountryRepository(raw_data=[{"name": "Testland", "region": "Testregion", "population": 1}]) and calls repo.get_all(). What should it assert?</p>
+        <label class="quiz-option" data-val="a">That the repository object itself equals the raw_data list</label>
+        <label class="quiz-option" data-val="b">That the returned list contains exactly one Country instance with name=="Testland", confirming from_dict conversion happened correctly</label>
+        <label class="quiz-option" data-val="c">Nothing — repositories cannot be meaningfully tested</label>
+        <label class="quiz-option" data-val="d">That get_all() returns the string "Testland"</label>
+        <div class="explanation">This verifies the repository's actual job: fetching raw data AND converting it into proper Country instances (Session 24's get_all implementation). Checking the specific resulting instance's fields confirms the conversion is correct.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>How would you test that validate_country_record (Session 26) correctly rejects a record with population as a string instead of an int?</p>
+        <label class="quiz-option" data-val="a">Call it and manually read the printed output</label>
+        <label class="quiz-option" data-val="b">Use pytest.raises(TypeError) around the call, with a record deliberately containing a wrong-typed population value</label>
+        <label class="quiz-option" data-val="c">This cannot be tested with pytest</label>
+        <label class="quiz-option" data-val="d">Only valid records can be used in tests</label>
+        <div class="explanation">This is the same technique from Session 28/29 applied to Session 26's validation function — pytest.raises(TypeError) confirms the specific, correct failure mode occurs for a deliberately malformed input.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is testing the data layer this way (in-memory fake data, zero files, zero network) considered a genuine unit test rather than a slower integration test?</p>
+        <label class="quiz-option" data-val="a">There is no meaningful distinction between the two</label>
+        <label class="quiz-option" data-val="b">A unit test isolates the code under test from external systems (files, network, databases); by injecting fake in-memory data through the constructor, the repository's OWN logic is tested completely independent of any real external dependency</label>
+        <label class="quiz-option" data-val="c">Integration tests are always faster than unit tests</label>
+        <label class="quiz-option" data-val="d">Unit tests require an internet connection, unlike integration tests</label>
+        <div class="explanation">A unit test verifies one unit of logic in isolation. By injecting fake data directly (rather than reading a real file or hitting a real API), the test verifies CountryRepository's own logic — completely decoupled from whether a real file or API happens to be available or correctly formatted at test time.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>A test suite for this project now spans country.py's Country and CountryExplorer classes plus CountryRepository — around a dozen test functions total. What has this Layer 5 investment actually purchased for Layer 6 (Architecture, next)?</p>
+        <label class="quiz-option" data-val="a">Nothing directly useful for refactoring</label>
+        <label class="quiz-option" data-val="b">The ability to refactor the project's internal structure confidently, because the test suite will immediately flag if a refactor accidentally changes any tested behavior</label>
+        <label class="quiz-option" data-val="c">Tests have no relationship to future refactoring work</label>
+        <label class="quiz-option" data-val="d">Tests make future features impossible to add</label>
+        <div class="explanation">This is the payoff promised back in Session 27: a real, working test suite is what makes Layer 6's architecture refactoring sessions safe to approach boldly, since any accidental behavior change during a reorganization will be caught immediately.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Testing the Data Layer in Isolation</h2>
+
+    <h3>Building the repository around fake, in-memory data</h3>
+    <p>Session 24's design — accepting any raw_data through the constructor — is exactly what makes this possible: a test can supply a tiny, purpose-built dataset instead of the real mock file or a real JSON file.</p>
+    <pre><code>from country import Country, CountryRepository
+
+def test_get_all_converts_raw_data_to_country_instances():
+    fake_data = [
+        {"name": "Testland", "region": "Testregion", "population": 1},
+    ]
+    repo = CountryRepository(raw_data=fake_data)
+
+    result = repo.get_all()
+
+    assert len(result) == 1
+    assert isinstance(result[0], Country)
+    assert result[0].name == "Testland"
+    assert result[0].population == 1</code></pre>
+
+    <h3>Testing find_by_region against a known fake dataset</h3>
+    <p>A small, deliberately crafted dataset — with known regions — makes it trivial to assert on exact results, following Session 29's exact-content discipline.</p>
+    <pre><code>def test_find_by_region_filters_correctly():
+    fake_data = [
+        {"name": "Testland", "region": "Africa", "population": 1},
+        {"name": "Otherland", "region": "Europe", "population": 2},
+        {"name": "Thirdland", "region": "Africa", "population": 3},
+    ]
+    repo = CountryRepository(raw_data=fake_data)
+
+    result = repo.find_by_region("Africa")
+
+    assert [c.name for c in result] == ["Testland", "Thirdland"]</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">fake_data</span>built by the
+test itself</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">CountryRepository</span>unmodified,
+real class</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">result</span>asserted exactly</div>
+      <div class="diagram-caption">The test supplies its own small, controlled dataset directly to the repository — no real file, no network, ever touched.</div>
+    </div>
+
+    <h3>Testing validate_country_record with good and bad records</h3>
+    <p>Session 26's validation function is tested the same way as any other function — normal case, and edge/error cases using pytest.raises.</p>
+    <pre><code>import pytest
+from country import validate_country_record
+
+def test_validate_accepts_correct_record():
+    data = {"name": "Kenya", "region": "Africa", "population": 54000000}
+    assert validate_country_record(data) == data  # unchanged, valid
+
+def test_validate_rejects_missing_field():
+    with pytest.raises(ValueError):
+        validate_country_record({"name": "Ghost Nation"})
+
+def test_validate_rejects_wrong_type():
+    with pytest.raises(TypeError):
+        validate_country_record({"name": "Kenya", "region": "Africa", "population": "fifty-four"})</code></pre>
+
+    <h3>This is a unit test, not an integration test</h3>
+    <p>Because everything happens in-memory, with no real file or network access, these tests run fast and are completely unaffected by whether a real file exists, is correctly formatted, or a real API happens to be reachable at test time.</p>
+
+    <div class="alert alert-warning">
+      <strong>Layer 5 gate:</strong> This is the last Layer 5 session. Every layer that follows assumes you can confidently write isolated tests for any piece of the application, using fake data injected through a well-designed constructor.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a complete, isolated test suite for CountryRepository and validate_country_record using small, purpose-built fake datasets.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>tests/test_repository.py</code>, extending country.py with CountryRepository and validate_country_record if not already present.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Ensure country.py has CountryRepository and validate_country_record</strong></p>
+
+        <pre><code># country.py (additions if not already present)
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]
+
+def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write tests for get_all() using a small fake dataset</strong></p>
+
+        <pre><code># tests/test_repository.py
+import pytest
+from country import Country, CountryRepository, validate_country_record
+
+def test_get_all_converts_to_country_instances():
+    fake_data = [{"name": "Testland", "region": "Testregion", "population": 1}]
+    repo = CountryRepository(raw_data=fake_data)
+    result = repo.get_all()
+    assert len(result) == 1
+    assert isinstance(result[0], Country)
+    assert result[0].name == "Testland"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write tests for find_by_region with exact-content assertions</strong></p>
+
+        <pre><code>def test_find_by_region_exact_matches():
+    fake_data = [
+        {"name": "Testland", "region": "Africa", "population": 1},
+        {"name": "Otherland", "region": "Europe", "population": 2},
+        {"name": "Thirdland", "region": "Africa", "population": 3},
+    ]
+    repo = CountryRepository(raw_data=fake_data)
+    result = repo.find_by_region("Africa")
+    assert [c.name for c in result] == ["Testland", "Thirdland"]
+
+def test_find_by_region_no_matches():
+    repo = CountryRepository(raw_data=[{"name": "Testland", "region": "Africa", "population": 1}])
+    assert repo.find_by_region("Antarctica") == []</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write validate_country_record tests: valid, missing field, wrong type</strong></p>
+
+        <pre><code>def test_validate_accepts_correct_record():
+    data = {"name": "Kenya", "region": "Africa", "population": 54000000}
+    assert validate_country_record(data) == data
+
+def test_validate_rejects_missing_field():
+    with pytest.raises(ValueError):
+        validate_country_record({"name": "Ghost Nation"})
+
+def test_validate_rejects_wrong_type():
+    with pytest.raises(TypeError):
+        validate_country_record({"name": "Kenya", "region": "Africa", "population": "fifty-four"})</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Run the full project test suite and confirm everything passes together</strong></p>
+        <p>Run pytest with no arguments from the project root — every test file from Sessions 28-31 should be discovered and pass.</p>
+        <pre><code># pytest -v</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country.py</code></td>
+            <td>Modified</td>
+            <td>Ensures CountryRepository and validate_country_record are present as real, importable code.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_repository.py</code></td>
+            <td>Created</td>
+            <td>A complete, isolated test suite for the data-access layer using in-memory fake data.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-31/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 5 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country.py tests/test_repository.py docs/sessions/session-31/index.html
+git commit -m "session-31: test the repository and validation logic in complete isolation"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why do none of these tests need a real file on disk or a network connection to run?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">CountryRepository tests construct it around a small, purpose-built fake dataset, not the real mock or JSON data</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">get_all() is tested for correct conversion into Country instances with correct field values</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">find_by_region() is tested for exact matches and for a no-match case</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">validate_country_record() is tested for a valid record, a missing field, and a wrong type</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">The entire project test suite (Sessions 28-31) passes together with a single pytest run</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why does testing CountryRepository with a small hand-written fake dataset (not the real mock_countries.py or countries.json) make the tests more reliable?</p>
+        <label class="quiz-option" data-val="a">It does not — using the real data is always better for tests</label>
+        <label class="quiz-option" data-val="b">A small, controlled dataset built specifically for the test keeps the test focused, fast, and independent of the size or future changes of the real mock/JSON data — this is Session 24's repository design paying off directly</label>
+        <label class="quiz-option" data-val="c">pytest requires all test data to be under 5 records</label>
+        <label class="quiz-option" data-val="d">Fake data is required by law for testing</label>
+        <div class="explanation">This is exactly why CountryRepository was designed (Session 24) to accept any data source through its constructor: a test can build one around a tiny, purpose-built dataset with known values, making the test fast, focused, and immune to unrelated changes in the real mock data file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A test constructs CountryRepository(raw_data=[{"name": "Testland", "region": "Testregion", "population": 1}]) and calls repo.get_all(). What should it assert?</p>
+        <label class="quiz-option" data-val="a">That the repository object itself equals the raw_data list</label>
+        <label class="quiz-option" data-val="b">That the returned list contains exactly one Country instance with name=="Testland", confirming from_dict conversion happened correctly</label>
+        <label class="quiz-option" data-val="c">Nothing — repositories cannot be meaningfully tested</label>
+        <label class="quiz-option" data-val="d">That get_all() returns the string "Testland"</label>
+        <div class="explanation">This verifies the repository's actual job: fetching raw data AND converting it into proper Country instances (Session 24's get_all implementation). Checking the specific resulting instance's fields confirms the conversion is correct.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>How would you test that validate_country_record (Session 26) correctly rejects a record with population as a string instead of an int?</p>
+        <label class="quiz-option" data-val="a">Call it and manually read the printed output</label>
+        <label class="quiz-option" data-val="b">Use pytest.raises(TypeError) around the call, with a record deliberately containing a wrong-typed population value</label>
+        <label class="quiz-option" data-val="c">This cannot be tested with pytest</label>
+        <label class="quiz-option" data-val="d">Only valid records can be used in tests</label>
+        <div class="explanation">This is the same technique from Session 28/29 applied to Session 26's validation function — pytest.raises(TypeError) confirms the specific, correct failure mode occurs for a deliberately malformed input.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is testing the data layer this way (in-memory fake data, zero files, zero network) considered a genuine unit test rather than a slower integration test?</p>
+        <label class="quiz-option" data-val="a">There is no meaningful distinction between the two</label>
+        <label class="quiz-option" data-val="b">A unit test isolates the code under test from external systems (files, network, databases); by injecting fake in-memory data through the constructor, the repository's OWN logic is tested completely independent of any real external dependency</label>
+        <label class="quiz-option" data-val="c">Integration tests are always faster than unit tests</label>
+        <label class="quiz-option" data-val="d">Unit tests require an internet connection, unlike integration tests</label>
+        <div class="explanation">A unit test verifies one unit of logic in isolation. By injecting fake data directly (rather than reading a real file or hitting a real API), the test verifies CountryRepository's own logic — completely decoupled from whether a real file or API happens to be available or correctly formatted at test time.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>A test suite for this project now spans country.py's Country and CountryExplorer classes plus CountryRepository — around a dozen test functions total. What has this Layer 5 investment actually purchased for Layer 6 (Architecture, next)?</p>
+        <label class="quiz-option" data-val="a">Nothing directly useful for refactoring</label>
+        <label class="quiz-option" data-val="b">The ability to refactor the project's internal structure confidently, because the test suite will immediately flag if a refactor accidentally changes any tested behavior</label>
+        <label class="quiz-option" data-val="c">Tests have no relationship to future refactoring work</label>
+        <label class="quiz-option" data-val="d">Tests make future features impossible to add</label>
+        <div class="explanation">This is the payoff promised back in Session 27: a real, working test suite is what makes Layer 6's architecture refactoring sessions safe to approach boldly, since any accidental behavior change during a reorganization will be caught immediately.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why would testing CountryRepository against the REAL mock_countries.py file (instead of a small fake dataset built in the test) make the test more fragile over time?</li>
+        <li>How many total tests have you written across Layer 5? What parts of the project (from Sessions 1-26) still have zero test coverage, and would they be worth adding tests for?</li>
+        <li>What is the relationship between this session's "inject fake data through the constructor" technique and Session 11's "explicit constructor arguments, not hidden global state" principle?</li>
+        <li>If you had to explain to someone why this project is now safer to refactor than it was at Session 20, what would you point to specifically?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Fragile, slow tests:</strong> Testing against real files or real APIs makes tests slow, flaky (network can fail for reasons unrelated to your code), and dependent on external state being correctly set up — exactly what isolated unit testing with fake data avoids.</li>
+        <li><strong>Unsafe refactoring (Layer 6):</strong> Without this session's test coverage of the data layer specifically, Layer 6's folder reorganization sessions would risk silently breaking how data flows through the repository, with nothing to catch it.</li>
+        <li><strong>Real APIs without a safety net (Layer 7):</strong> When Session 38 introduces a genuinely real, unreliable external API, having the repository's OWN logic already fully tested in isolation means only the new real-API-specific code needs new testing attention, not the whole data layer again.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Testing a data-access layer in complete isolation using small, purpose-built fake datasets injected through the constructor — true unit testing, not integration testing.</p>
+      <p><strong>Unlocks:</strong> The entire application — Country, CountryExplorer, CountryRepository, and validation — is now covered by a real, isolated, fast test suite. Layer 6's refactoring can proceed with confidence.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 32 — Package and Folder Organization</a>. Layer 6 begins. We reorganize the growing project into a proper package structure — everything up to now has lived in a handful of flat files.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

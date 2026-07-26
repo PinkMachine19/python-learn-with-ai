@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 37 — File I/O Deep Dive — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-current">Session 37</span>
+      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+    </div>
+    <h1>File I/O Deep Dive</h1>
+    <p class="subtitle">Layer 7 begins. We go deeper on file handling than Session 25's introduction — proper resource management, different file modes, and safely reading large files.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain why the with statement is the correct way to open a file, versus manual open()/close()</li>
+        <li>Use different file modes: read, write, append</li>
+        <li>Read a file line by line instead of loading it all into memory at once</li>
+        <li>Handle a file encoding issue gracefully</li>
+        <li>Refactor CountryRepository to build itself from a real file path, cleanly, using everything from this session</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why is <code>with open(path) as f: ...</code> preferred over manually calling <code>f = open(path)</code> and <code>f.close()</code> afterward?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two approaches</label>
+        <label class="quiz-option" data-val="b">The with statement guarantees the file is closed automatically when the block ends, even if an exception occurs inside it — manual close() calls are easy to skip accidentally, especially when an error happens first</label>
+        <label class="quiz-option" data-val="c">with is required syntax; manual open/close is not valid Python</label>
+        <label class="quiz-option" data-val="d">with only works for reading files, never writing</label>
+        <div class="explanation">This is a specific application of Session 07's error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the difference between opening a file with mode "w" versus mode "a"?</p>
+        <label class="quiz-option" data-val="a">They are identical</label>
+        <label class="quiz-option" data-val="b">"w" (write) overwrites the file's entire existing content; "a" (append) adds new content to the end, preserving what was already there</label>
+        <label class="quiz-option" data-val="c">"w" is for reading only; "a" is for writing only</label>
+        <label class="quiz-option" data-val="d">"a" always creates a brand new file, deleting any old one</label>
+        <div class="explanation">"w" truncates and overwrites — dangerous if you meant to keep existing content. "a" appends to the end of existing content without touching what came before, useful for something like an ongoing log file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why would you read a very large file line by line (with `for line in f:`) instead of `f.read()` all at once?</p>
+        <label class="quiz-option" data-val="a">There is no difference in memory usage between the two approaches</label>
+        <label class="quiz-option" data-val="b">Reading line by line only holds one line in memory at a time, while f.read() loads the ENTIRE file into memory at once — for a very large file, this could exhaust available memory</label>
+        <label class="quiz-option" data-val="c">f.read() is always faster regardless of file size</label>
+        <label class="quiz-option" data-val="d">Line-by-line reading is required for all files, always</label>
+        <div class="explanation">For files far larger than available memory, loading the whole thing with <code>f.read()</code> could crash the program or the machine. Iterating line by line processes the file incrementally, using a small, constant amount of memory regardless of the file's total size.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 07?</p>
+        <label class="quiz-option" data-val="a">Python automatically detects and handles any encoding correctly</label>
+        <label class="quiz-option" data-val="b">A UnicodeDecodeError is raised; wrapping the read in a try/except UnicodeDecodeError (or specifying the correct encoding explicitly) handles this gracefully</label>
+        <label class="quiz-option" data-val="c">The file silently reads as an empty string</label>
+        <label class="quiz-option" data-val="d">This can never happen in Python 3</label>
+        <div class="explanation">Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 07's try/except, or for specifying the correct encoding explicitly if it is known.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 24's original design?</p>
+        <label class="quiz-option" data-val="a">It requires rewriting get_all() and find_by_region() entirely from scratch</label>
+        <label class="quiz-option" data-val="b">It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository's own methods remain completely unchanged, exactly as Session 24 promised</label>
+        <label class="quiz-option" data-val="c">CountryExplorer must also be rewritten</label>
+        <label class="quiz-option" data-val="d">This refactor is not actually possible given the current design</label>
+        <div class="explanation">This is Session 24's payoff, delivered a third time (after the mock data and the simple JSON file in Session 25): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Robust File Handling</h2>
+
+    <h3>with — guaranteed cleanup, even on error</h3>
+    <p>The with statement (a "context manager") guarantees a file is properly closed when the block ends, whether it ends normally or because of an exception — directly connecting to Session 07's finally block concept, but automated and less error-prone.</p>
+    <pre><code># Risky — if something raises an exception between open() and close(), the file leaks open
+f = open("countries.json")
+data = f.read()
+f.close()  # this line is skipped entirely if the read() line raised an exception!
+
+# Safe — the file is guaranteed to close, no matter what happens inside the block
+with open("countries.json") as f:
+    data = f.read()
+# f is already closed here, even if an exception occurred inside the block</code></pre>
+
+    <h3>File modes</h3>
+    <p>The second argument to open() controls how the file is accessed: "r" (read, default), "w" (write, overwrites), "a" (append, preserves existing content).</p>
+    <pre><code># Read (default) — file must already exist
+with open("countries.json", "r") as f:
+    content = f.read()
+
+# Write — creates the file if missing, OVERWRITES if it exists
+with open("log.txt", "w") as f:
+    f.write("First line\n")
+
+# Append — creates the file if missing, adds to the END if it exists
+with open("log.txt", "a") as f:
+    f.write("Another line, added without erasing what was there\n")</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">mode "w"</span>old content
+replaced</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">mode "a"</span>old content kept,
+new appended</div>
+      <div class="diagram-caption">"w" replaces everything; "a" preserves existing content and adds to the end.</div>
+    </div>
+
+    <h3>Reading large files incrementally</h3>
+    <p>Iterating a file object directly reads it one line at a time, using a small, constant amount of memory — essential for files too large to comfortably fit in memory all at once.</p>
+    <pre><code># Loads the ENTIRE file into memory at once — risky for very large files
+with open("huge_log.txt") as f:
+    content = f.read()
+
+# Processes one line at a time — memory usage stays small regardless of file size
+with open("huge_log.txt") as f:
+    for line in f:
+        if "ERROR" in line:
+            print(line.strip())</code></pre>
+
+    <h3>Handling encoding issues</h3>
+    <p>Text files can be encoded differently. Specifying the encoding explicitly, or handling a decode error gracefully, prevents a crash on unexpected file content.</p>
+    <pre><code>try:
+    with open("countries.json", encoding="utf-8") as f:
+        content = f.read()
+except UnicodeDecodeError as e:
+    print(f"File is not valid UTF-8: {e}")
+    content = None</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Rebuild CountryRepository to read from a real file path using with, correct modes, and encoding-aware error handling, with zero changes to its existing methods.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>file_io_lab.py</code>, extending the country_explorer package.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and write a robust load_json_file function</strong></p>
+
+        <pre><code># file_io_lab.py
+import json
+
+def load_json_file(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"{path} does not exist — using an empty dataset")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"{path} contains invalid JSON: {e}")
+        return []
+    except UnicodeDecodeError as e:
+        print(f"{path} is not valid UTF-8: {e}")
+        return []</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add an append-mode logging function using mode "a"</strong></p>
+
+        <pre><code>def log_load_attempt(path, success):
+    with open("load_log.txt", "a") as f:
+        status = "SUCCESS" if success else "FAILED"
+        f.write(f"{status}: {path}\n")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Combine both into a robust repository-building function</strong></p>
+
+        <pre><code>from country_explorer import CountryRepository
+
+def build_repository_from_file(path):
+    data = load_json_file(path)
+    log_load_attempt(path, success=bool(data))
+    return CountryRepository(raw_data=data)
+
+repo = build_repository_from_file("countries.json")
+print(len(repo.get_all()))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Test the failure paths explicitly</strong></p>
+        <p>Try a missing file and confirm both the graceful fallback and the log entry.</p>
+        <pre><code>missing_repo = build_repository_from_file("does_not_exist.json")
+print(len(missing_repo.get_all()))  # 0 — graceful, no crash</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Read load_log.txt line by line and print only FAILED entries</strong></p>
+        <p>Practice the line-by-line iteration pattern on the log file you just created.</p>
+        <pre><code>with open("load_log.txt") as f:
+    for line in f:
+        if line.startswith("FAILED"):
+            print(line.strip())</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>file_io_lab.py</code></td>
+            <td>Created</td>
+            <td>Robust file loading with with, modes, encoding handling, and repository construction.</td>
+          </tr>
+          <tr>
+            <td><code>load_log.txt</code></td>
+            <td>Generated</td>
+            <td>An append-only log of file load attempts.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-37/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add file_io_lab.py load_log.txt docs/sessions/session-37/index.html
+git commit -m "session-37: robust file I/O with proper resource management and encoding handling"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does with open(...) as f: guarantee the file closes even if json.load(f) raises an exception inside the block?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">load_json_file uses with, not manual open()/close()</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">FileNotFoundError, json.JSONDecodeError, and UnicodeDecodeError are each caught separately with clear messages</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">log_load_attempt uses append mode ("a") and does not overwrite previous log entries</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">build_repository_from_file successfully constructs a working CountryRepository with zero changes to CountryRepository itself</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">load_log.txt is read back line by line, filtering for FAILED entries only</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why is <code>with open(path) as f: ...</code> preferred over manually calling <code>f = open(path)</code> and <code>f.close()</code> afterward?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two approaches</label>
+        <label class="quiz-option" data-val="b">The with statement guarantees the file is closed automatically when the block ends, even if an exception occurs inside it — manual close() calls are easy to skip accidentally, especially when an error happens first</label>
+        <label class="quiz-option" data-val="c">with is required syntax; manual open/close is not valid Python</label>
+        <label class="quiz-option" data-val="d">with only works for reading files, never writing</label>
+        <div class="explanation">This is a specific application of Session 07's error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the difference between opening a file with mode "w" versus mode "a"?</p>
+        <label class="quiz-option" data-val="a">They are identical</label>
+        <label class="quiz-option" data-val="b">"w" (write) overwrites the file's entire existing content; "a" (append) adds new content to the end, preserving what was already there</label>
+        <label class="quiz-option" data-val="c">"w" is for reading only; "a" is for writing only</label>
+        <label class="quiz-option" data-val="d">"a" always creates a brand new file, deleting any old one</label>
+        <div class="explanation">"w" truncates and overwrites — dangerous if you meant to keep existing content. "a" appends to the end of existing content without touching what came before, useful for something like an ongoing log file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why would you read a very large file line by line (with `for line in f:`) instead of `f.read()` all at once?</p>
+        <label class="quiz-option" data-val="a">There is no difference in memory usage between the two approaches</label>
+        <label class="quiz-option" data-val="b">Reading line by line only holds one line in memory at a time, while f.read() loads the ENTIRE file into memory at once — for a very large file, this could exhaust available memory</label>
+        <label class="quiz-option" data-val="c">f.read() is always faster regardless of file size</label>
+        <label class="quiz-option" data-val="d">Line-by-line reading is required for all files, always</label>
+        <div class="explanation">For files far larger than available memory, loading the whole thing with <code>f.read()</code> could crash the program or the machine. Iterating line by line processes the file incrementally, using a small, constant amount of memory regardless of the file's total size.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 07?</p>
+        <label class="quiz-option" data-val="a">Python automatically detects and handles any encoding correctly</label>
+        <label class="quiz-option" data-val="b">A UnicodeDecodeError is raised; wrapping the read in a try/except UnicodeDecodeError (or specifying the correct encoding explicitly) handles this gracefully</label>
+        <label class="quiz-option" data-val="c">The file silently reads as an empty string</label>
+        <label class="quiz-option" data-val="d">This can never happen in Python 3</label>
+        <div class="explanation">Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 07's try/except, or for specifying the correct encoding explicitly if it is known.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 24's original design?</p>
+        <label class="quiz-option" data-val="a">It requires rewriting get_all() and find_by_region() entirely from scratch</label>
+        <label class="quiz-option" data-val="b">It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository's own methods remain completely unchanged, exactly as Session 24 promised</label>
+        <label class="quiz-option" data-val="c">CountryExplorer must also be rewritten</label>
+        <label class="quiz-option" data-val="d">This refactor is not actually possible given the current design</label>
+        <div class="explanation">This is Session 24's payoff, delivered a third time (after the mock data and the simple JSON file in Session 25): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why would using mode "w" instead of "a" for log_load_attempt be a serious bug? What would happen to the log over multiple runs?</li>
+        <li>What would happen if build_repository_from_file used f.read() to load a truly enormous countries.json instead of relying on json.load's own internal handling? Is this a realistic concern for this specific project?</li>
+        <li>How does this session's with statement connect back to Session 07's finally block — are they solving a similar problem in a different way?</li>
+        <li>Why did CountryRepository itself need zero changes for this session's new, more robust file-loading logic to work?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Leaked file handles:</strong> Without with, an exception between opening and closing a file leaves it open indefinitely — in a long-running program handling many files, this can exhaust the operating system's limit on open file handles, causing mysterious failures far from the actual bug.</li>
+        <li><strong>Overwritten logs:</strong> Using mode "w" instead of "a" for an ongoing log file would silently erase all previous history every time the program restarts — a data-loss bug that is easy to make and often goes unnoticed until the history is actually needed.</li>
+        <li><strong>Real API responses (Session 38):</strong> The next session introduces genuinely unpredictable external data over the network — the same resource-management and error-handling discipline from this session (with, specific exception handling) applies directly to handling an HTTP connection safely.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Robust file I/O — the with statement for guaranteed cleanup, file modes, line-by-line reading for large files, and encoding-aware error handling.</p>
+      <p><strong>Unlocks:</strong> The project can now safely and robustly read from real files on disk, handling every realistic failure mode gracefully — the foundation for the real API work in the next session.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 38 — Calling a Real API with requests</a>. We connect to a real, live network API for the first time — the REST Countries API — replacing our JSON file with genuinely external, unpredictable data.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

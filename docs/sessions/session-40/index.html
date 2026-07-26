@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 40 — Capstone Review — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-gate">Session 40 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+    </div>
+    <h1>Capstone Review</h1>
+    <p class="subtitle">The final session. We walk through everything built across all seven layers, confirm the full test suite passes end to end, and reflect on the complete journey from a single dictionary to a real, tested, documented application.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Trace the Country Explorer's full architecture from raw data source to displayed summary</li>
+        <li>Run the complete, final test suite and confirm every layer's work still passes together</li>
+        <li>Update ARCHITECTURE.md with a final, whole-project retrospective</li>
+        <li>Answer the comprehensive review quiz spanning concepts from all seven layers</li>
+        <li>Articulate, in your own words, how each layer's concepts built directly on the layer before it</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Trace a request for data from the outside world to a displayed country summary. Which order is correct, given everything built across Layers 1, 2, and 4?</p>
+        <label class="quiz-option" data-val="a">Country.summary() runs first, then CountryRepository fetches data afterward</label>
+        <label class="quiz-option" data-val="b">CountryRepository fetches and validates raw data (Layer 4) -> converts it into Country instances via from_dict (Layer 2) -> CountryExplorer composes and operates on the collection (Layer 2/3) -> Country.summary() formats one instance for display (Layer 2)</label>
+        <label class="quiz-option" data-val="c">There is no meaningful order; all of these happen simultaneously with no dependency</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must exist before any data can be fetched</label>
+        <div class="explanation">This is the full data flow built up across the entire curriculum: raw data enters through the repository (fetched and validated), gets converted into proper objects, gets composed into a working collection, and finally gets formatted for display — each step depending on the layer before it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why does Country.grow_population() (Session 10/17) still work correctly even after the project was reorganized into a package (Session 32), extracted into shared utilities (Sessions 33-34), and pointed at three different data sources (Sessions 23, 25, 38)?</p>
+        <label class="quiz-option" data-val="a">It does not still work; it required rewriting at every one of those stages</label>
+        <label class="quiz-option" data-val="b">Because each of those changes respected the boundaries and contracts established earlier — the method's own logic never depended on package location, data source, or any other structural detail outside itself</label>
+        <label class="quiz-option" data-val="c">Python automatically fixes any breakage caused by refactoring</label>
+        <label class="quiz-option" data-val="d">grow_population happens to be a coincidentally trivial method with no real logic</label>
+        <div class="explanation">This is the deepest lesson of the whole curriculum: well-designed logic, properly encapsulated behind clear contracts (Session 11, 24, 26), remains stable even as everything AROUND it — file structure, data source, calling code — changes dramatically over time.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why does this capstone review explicitly re-run the full test suite one final time, given it has already been run after nearly every structural session since Layer 5?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary repetition with no additional value at this point</label>
+        <label class="quiz-option" data-val="b">It provides final, end-to-end confirmation that all seven layers of work — spanning very different kinds of changes (data sources, package structure, real network calls) — are still correctly integrated together as one working whole</label>
+        <label class="quiz-option" data-val="c">pytest results expire and must be re-verified at the end of every curriculum</label>
+        <label class="quiz-option" data-val="d">This step exists purely as a formality with no real technical purpose</label>
+        <div class="explanation">This is the ultimate proof-of-concept for the discipline built throughout Layer 5 and beyond: a test suite maintained consistently across dozens of structural changes provides genuine, verifiable confidence that the ENTIRE system still works correctly together — not just each part in isolation.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Looking back at Sessions 08, 16, and 23 (each a concept-only session establishing a new mental model before implementation) — why did the curriculum repeatedly use this same two-step pattern?</p>
+        <label class="quiz-option" data-val="a">It was accidental repetition with no deliberate design</label>
+        <label class="quiz-option" data-val="b">Understanding WHY a practice exists and what problem it solves produces more durable, transferable knowledge than memorizing HOW to use a tool without understanding its purpose — a pattern applied consistently to classes, state, and mock data alike</label>
+        <label class="quiz-option" data-val="c">Concept-only sessions were only used because there was not enough new syntax to teach otherwise</label>
+        <label class="quiz-option" data-val="d">This pattern has no relationship to how the sessions building on top of them turned out</label>
+        <div class="explanation">This consistent pedagogical choice — concept before implementation — is why, at the end of this curriculum, you should be able to explain WHY each major pattern (classes, state, mock data, testing) exists, not just recite its syntax, which is a direct measure of the durable, transferable understanding this course aimed for.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>The Layer 4 mock-data philosophy (Session 23) promised that application code would not need to change regardless of the data source. How many DIFFERENT data sources was CountryRepository actually pointed at across the curriculum, with zero changes to its own methods?</p>
+        <label class="quiz-option" data-val="a">One — only the original mock data</label>
+        <label class="quiz-option" data-val="b">Three — the in-memory mock list (Session 23), a real JSON file on disk (Session 25/37), and a real live network API (Session 38) — all with the exact same get_all()/find_by_region()/search() methods, unmodified</label>
+        <label class="quiz-option" data-val="c">This promise was never actually fulfilled anywhere in the curriculum</label>
+        <label class="quiz-option" data-val="d">Zero — CountryRepository was rewritten from scratch for each new source</label>
+        <div class="explanation">This is worth recognizing explicitly at the end of the curriculum: Session 24's repository design was validated not once, but three separate times, against three genuinely different kinds of data sources — direct, concrete proof that the architectural investment paid off.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — The Complete Country Explorer — End to End</h2>
+
+    <h3>The full architecture, traced from data to display</h3>
+    <p>Every layer of this curriculum contributed one piece of a single, coherent pipeline. Tracing it end to end shows how deeply each layer depended on the one before it.</p>
+    <pre><code># The full pipeline, built up across all 40 sessions:
+
+# 1. Layer 4 — a repository fetches and validates raw data
+#    (from mock data, a JSON file, or a real API — interchangeably)
+repo = CountryRepository(raw_data=fetch_countries_safely_and_adapt())
+
+# 2. Layer 2 — raw dicts become real, validated Country instances
+countries = repo.get_all()   # uses Country.from_dict() internally
+
+# 3. Layer 2/3 — a CountryExplorer composes and manages the working collection
+explorer = CountryExplorer(countries=countries)
+
+# 4. Layer 3 — computed properties derive values safely, with no drift risk
+print(explorer.total_population)   # @property, Session 22
+
+# 5. Layer 6 — shared utilities used consistently across the whole app
+results = explorer.search("ken")   # search.py, Session 34
+
+# 6. Layer 2 — each instance formats itself for display
+for c in results:
+    print(c.summary())             # formatting.py, Session 33</code></pre>
+
+    <h3>Why the architecture held up under change</h3>
+    <p>Country.summary() and grow_population() were written in Sessions 09-10. By Session 40, the project has been reorganized into a package, had shared logic extracted into utilities, and been pointed at three completely different data sources. Yet those original methods never needed to change — because they were built on clear, explicit contracts (Session 11) from the very beginning.</p>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">data source</span>changed 3x</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">package structure</span>reorganized</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">Country's own methods</span>unchanged
+since Session 10</div>
+      <div class="diagram-caption">Everything around the core logic changed dramatically over 40 sessions. The core logic itself, protected by clear contracts, did not need to.</div>
+    </div>
+
+    <h3>The final test suite, as proof</h3>
+    <p>A test suite maintained honestly across dozens of structural changes — package reorganizations, new data sources, extracted utilities — is not just a checkbox. Running it one final time, and having it pass, is the closest thing to objective proof that this entire architecture genuinely works, together, as one coherent system.</p>
+
+    <h3>The consistent teaching pattern, revisited</h3>
+    <p>Sessions 08, 16, and 23 each paused to build a mental model — why classes exist, what state actually means, why mock data matters — before the following session introduced concrete implementation. This deliberate pattern is why the concepts in this curriculum should feel understood, not memorized.</p>
+
+    <div class="alert alert-warning">
+      <strong>Capstone:</strong> This is the final session. The quiz below spans concepts from every layer of the curriculum — Layer 1 through Layer 7 — and the lab asks you to review, verify, and reflect on the entire project as a whole.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Run the complete final test suite, trace the full architecture end to end in writing, and add a final whole-project retrospective to ARCHITECTURE.md.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A final update to <code>ARCHITECTURE.md</code>, plus a verification pass across the whole project.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Run the complete test suite one final time</strong></p>
+        <p>Every test written since Session 28 should be discovered and pass together.</p>
+        <pre><code># pytest -v</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write a short, complete trace of the data flow, end to end</strong></p>
+        <p>In a new file or as a comment block, trace: where does data start (Layer 4), how does it become objects (Layer 2), how is it composed and searched (Layer 2/3/6), and how does it reach a printed summary (Layer 2)?</p>
+        <pre><code># capstone_trace.py — a written trace of the full pipeline, in your own words
+#
+# 1. CountryRepository fetches raw data (mock / file / real API — Session 23-25, 38)
+# 2. Repository validates and converts raw dicts into Country instances (Session 14, 26)
+# 3. CountryExplorer composes the working collection (Session 12)
+# 4. Computed properties (Session 22) and the shared search utility (Session 34)
+#    operate on that collection safely
+# 5. Country.summary() (Session 10, using formatting.py from Session 33) produces
+#    the final, human-readable output</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add a final whole-project retrospective to ARCHITECTURE.md</strong></p>
+        <p>Answer explicitly: what would you do differently starting over, and what part of the architecture are you most confident in?</p>
+        <pre><code>## Final Retrospective (Session 40)
+
+**Most confident in:** The repository pattern (ADR-001) — proven across three
+genuinely different data sources with zero changes to its own methods.
+
+**Would reconsider:** [your own honest answer — e.g. the prop drilling
+problem from ADR-003, or the size/granularity of formatting.py and search.py]
+
+**Biggest lesson:** [your own honest answer, in your own words]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Verify the complete pipeline runs end to end against the real API</strong></p>
+        <p>Using everything built since Session 38-39, load real data, search it, and print summaries — the actual, complete, working Country Explorer.</p>
+        <pre><code>from country_explorer import CountryRepository
+
+# reuse load_country_repository from Session 39
+repo = load_country_repository("https://restcountries.com/v3.1/all?fields=name,region,population")
+results = repo.search("ken")
+for c in results:
+    print(c.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Take the comprehensive capstone quiz below, covering all seven layers</strong></p>
+        <p>You need 4/5 to consider the curriculum complete.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>capstone_trace.py</code></td>
+            <td>Created</td>
+            <td>A written, end-to-end trace of the complete application architecture.</td>
+          </tr>
+          <tr>
+            <td><code>ARCHITECTURE.md</code></td>
+            <td>Modified</td>
+            <td>Final whole-project retrospective added.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-40/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — the capstone.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add capstone_trace.py ARCHITECTURE.md docs/sessions/session-40/index.html
+git commit -m "session-40: capstone review — full architecture trace, final retrospective, complete test verification"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Looking back across all 40 sessions, which single architectural decision are you most confident paid off, and why?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">The complete test suite (Sessions 27-39) is run one final time and passes entirely</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A written trace correctly describes the full data flow from raw source to displayed summary</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">ARCHITECTURE.md contains a final, honest whole-project retrospective</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The complete pipeline is verified running end to end against the real REST Countries API</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">The comprehensive capstone quiz is completed with a score of at least 4/5</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain, without notes, how each layer of this curriculum built on the layer before it</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Trace a request for data from the outside world to a displayed country summary. Which order is correct, given everything built across Layers 1, 2, and 4?</p>
+        <label class="quiz-option" data-val="a">Country.summary() runs first, then CountryRepository fetches data afterward</label>
+        <label class="quiz-option" data-val="b">CountryRepository fetches and validates raw data (Layer 4) -> converts it into Country instances via from_dict (Layer 2) -> CountryExplorer composes and operates on the collection (Layer 2/3) -> Country.summary() formats one instance for display (Layer 2)</label>
+        <label class="quiz-option" data-val="c">There is no meaningful order; all of these happen simultaneously with no dependency</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must exist before any data can be fetched</label>
+        <div class="explanation">This is the full data flow built up across the entire curriculum: raw data enters through the repository (fetched and validated), gets converted into proper objects, gets composed into a working collection, and finally gets formatted for display — each step depending on the layer before it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why does Country.grow_population() (Session 10/17) still work correctly even after the project was reorganized into a package (Session 32), extracted into shared utilities (Sessions 33-34), and pointed at three different data sources (Sessions 23, 25, 38)?</p>
+        <label class="quiz-option" data-val="a">It does not still work; it required rewriting at every one of those stages</label>
+        <label class="quiz-option" data-val="b">Because each of those changes respected the boundaries and contracts established earlier — the method's own logic never depended on package location, data source, or any other structural detail outside itself</label>
+        <label class="quiz-option" data-val="c">Python automatically fixes any breakage caused by refactoring</label>
+        <label class="quiz-option" data-val="d">grow_population happens to be a coincidentally trivial method with no real logic</label>
+        <div class="explanation">This is the deepest lesson of the whole curriculum: well-designed logic, properly encapsulated behind clear contracts (Session 11, 24, 26), remains stable even as everything AROUND it — file structure, data source, calling code — changes dramatically over time.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why does this capstone review explicitly re-run the full test suite one final time, given it has already been run after nearly every structural session since Layer 5?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary repetition with no additional value at this point</label>
+        <label class="quiz-option" data-val="b">It provides final, end-to-end confirmation that all seven layers of work — spanning very different kinds of changes (data sources, package structure, real network calls) — are still correctly integrated together as one working whole</label>
+        <label class="quiz-option" data-val="c">pytest results expire and must be re-verified at the end of every curriculum</label>
+        <label class="quiz-option" data-val="d">This step exists purely as a formality with no real technical purpose</label>
+        <div class="explanation">This is the ultimate proof-of-concept for the discipline built throughout Layer 5 and beyond: a test suite maintained consistently across dozens of structural changes provides genuine, verifiable confidence that the ENTIRE system still works correctly together — not just each part in isolation.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Looking back at Sessions 08, 16, and 23 (each a concept-only session establishing a new mental model before implementation) — why did the curriculum repeatedly use this same two-step pattern?</p>
+        <label class="quiz-option" data-val="a">It was accidental repetition with no deliberate design</label>
+        <label class="quiz-option" data-val="b">Understanding WHY a practice exists and what problem it solves produces more durable, transferable knowledge than memorizing HOW to use a tool without understanding its purpose — a pattern applied consistently to classes, state, and mock data alike</label>
+        <label class="quiz-option" data-val="c">Concept-only sessions were only used because there was not enough new syntax to teach otherwise</label>
+        <label class="quiz-option" data-val="d">This pattern has no relationship to how the sessions building on top of them turned out</label>
+        <div class="explanation">This consistent pedagogical choice — concept before implementation — is why, at the end of this curriculum, you should be able to explain WHY each major pattern (classes, state, mock data, testing) exists, not just recite its syntax, which is a direct measure of the durable, transferable understanding this course aimed for.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>The Layer 4 mock-data philosophy (Session 23) promised that application code would not need to change regardless of the data source. How many DIFFERENT data sources was CountryRepository actually pointed at across the curriculum, with zero changes to its own methods?</p>
+        <label class="quiz-option" data-val="a">One — only the original mock data</label>
+        <label class="quiz-option" data-val="b">Three — the in-memory mock list (Session 23), a real JSON file on disk (Session 25/37), and a real live network API (Session 38) — all with the exact same get_all()/find_by_region()/search() methods, unmodified</label>
+        <label class="quiz-option" data-val="c">This promise was never actually fulfilled anywhere in the curriculum</label>
+        <label class="quiz-option" data-val="d">Zero — CountryRepository was rewritten from scratch for each new source</label>
+        <div class="explanation">This is worth recognizing explicitly at the end of the curriculum: Session 24's repository design was validated not once, but three separate times, against three genuinely different kinds of data sources — direct, concrete proof that the architectural investment paid off.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Of the 40 sessions in this curriculum, which single session changed how you think about writing Python the most? Why that one specifically?</li>
+        <li>The curriculum used the same "concept session, then implementation session" pattern three times (Sessions 8/9, 16/17, 23/24). Now that you have completed it, was that pattern actually helpful, or would you have preferred combining concept and implementation together?</li>
+        <li>If you were to extend this project with an eighth layer, what real-world capability would you add, and which earlier layer's foundation would it depend on most?</li>
+        <li>Compare your understanding of Python now to your understanding after only Session 07 (the end of Layer 1). What is the single biggest difference?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Nothing — this is the capstone:</strong> There is no next session to set up. This final review exists to confirm the whole system holds together, and to consolidate 40 sessions of individually-learned concepts into one coherent understanding of how a real Python application is actually built, tested, and maintained.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> A complete, end-to-end understanding of the Country Explorer application — how all seven layers connect, and why the architectural decisions made along the way held up under real change.</p>
+      <p><strong>Unlocks:</strong> You have completed Python Fundamentals: from a single dictionary in Session 01 to a tested, documented, real-API-integrated application in Session 40.</p>
+      <p><strong>This is the capstone.</strong> The curriculum is complete.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

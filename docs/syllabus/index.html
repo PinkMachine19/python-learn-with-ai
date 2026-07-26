@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syllabus — Python Learning</title>
+  <link rel="stylesheet" href="../styles.css" />
+
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../syllabus/index.html" class="active">Syllabus</a>
+    <a href="../sessions/index.html">Sessions</a>
+    <a href="../quizzes/index.html">Quizzes</a>
+    <a href="../labs/index.html">Labs</a>
+    <a href="../architecture/index.html">Architecture</a>
+    <a href="../session-notes/index.html">Notes</a>
+    <a href="../commit-reviews/index.html">Commits</a>
+    <a href="../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <h1>40-Session Curriculum</h1>
+    <p class="subtitle">
+      Sessions must be completed in order. Each layer unlocks only after the previous layer's
+      final quiz scores ≥ 80%. A session is not complete until the commit is made and reviewed.
+      Every session builds the same running project: the Country Explorer.
+    </p>
+
+    <div class="alert alert-info">
+      <strong>All sessions are open.</strong> Browse any session from the
+      <a href="../sessions/index.html">Sessions</a> page. Layer gate quizzes remain
+      recommended self-checks before advancing the lab track.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Active</span>
+      <span class="layer-title">Layer 1 — Python Foundations</span>
+    </div>
+    <p class="layer-desc">Before we build anything, we must be fluent in the core data structures and control flow that every later session relies on: dictionaries, lists, functions, and error handling.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-01/index.html">01</a></td>
+            <td>Dictionaries</td>
+            <td>Python Dictionaries</td>
+            <td>A file called country.py that demonstrates every dictionary concept from this session. Nothing more.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-02/index.html">02</a></td>
+            <td>Lists and Iteration</td>
+            <td>Python Lists and Iteration</td>
+            <td>A file called countries.py that builds on Session 01's single dictionary.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-03/index.html">03</a></td>
+            <td>List Comprehensions</td>
+            <td>List Comprehensions</td>
+            <td>A file called filters.py operating on the country list from Session 02.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-04/index.html">04</a></td>
+            <td>Functions and Lambda</td>
+            <td>Functions and Lambda</td>
+            <td>A file called functions_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-05/index.html">05</a></td>
+            <td>Unpacking and *args/**kwargs</td>
+            <td>Unpacking and *args / **kwargs</td>
+            <td>A file called unpacking_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-06/index.html">06</a></td>
+            <td>Modules and Imports</td>
+            <td>Modules and Imports</td>
+            <td>Two files: country_data.py (the module) and explorer.py (imports and uses it).</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-07/index.html">07</a></td>
+            <td>Errors and Exceptions <em>(Layer gate)</em></td>
+            <td>Errors and Exceptions</td>
+            <td>A file called errors_lab.py.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 1 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 1 review quiz before starting Layer 2 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 2 — Object-Oriented Basics</span>
+    </div>
+    <p class="layer-desc">We start modelling real things as classes. Every concept here maps to something in Layer 1 — a class is just a structured way of grouping the dictionaries and functions you already know.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-08/index.html">08</a></td>
+            <td>What Classes Are and Why</td>
+            <td>Why Classes Exist</td>
+            <td>A file called country_class.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-09/index.html">09</a></td>
+            <td>Class Anatomy — __init__ and Attributes</td>
+            <td>__init__ and Instance Attributes</td>
+            <td>A file called country_init.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-10/index.html">10</a></td>
+            <td>Instance Methods</td>
+            <td>Instance Methods</td>
+            <td>A file called country_methods.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-11/index.html">11</a></td>
+            <td>Passing Data via the Constructor</td>
+            <td>Constructor Arguments as an Explicit Contract</td>
+            <td>A file called construction_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-12/index.html">12</a></td>
+            <td>Composition — Objects Containing Objects</td>
+            <td>Composition</td>
+            <td>A file called explorer_composed.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-13/index.html">13</a></td>
+            <td>Conditional Logic in Methods</td>
+            <td>Conditional Logic in Methods</td>
+            <td>A file called conditional_lab.py, building on Session 12's CountryExplorer.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-14/index.html">14</a></td>
+            <td>Building Lists of Objects</td>
+            <td>Building Object Lists from Raw Data</td>
+            <td>A file called build_list_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-15/index.html">15</a></td>
+            <td>Object Identity and Equality <em>(Layer gate)</em></td>
+            <td>Identity vs Equality</td>
+            <td>A file called identity_lab.py.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 2 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 2 review quiz before starting Layer 3 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 3 — State & Interactivity</span>
+    </div>
+    <p class="layer-desc">State is data that changes over time. We learn to track it safely on objects, take input from a user, and compute values instead of duplicating them.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-16/index.html">16</a></td>
+            <td>What Is State in a Program?</td>
+            <td>State</td>
+            <td>A file called state_concept.py — mostly comments and small demonstrations, not new functionality.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-17/index.html">17</a></td>
+            <td>Updating State via Methods</td>
+            <td>Controlled State Updates</td>
+            <td>A file called controlled_state.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-18/index.html">18</a></td>
+            <td>Handling User Input</td>
+            <td>Reading and Validating User Input</td>
+            <td>A file called input_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-19/index.html">19</a></td>
+            <td>Tracing State Changes</td>
+            <td>Tracing State Changes</td>
+            <td>A file called tracing_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-20/index.html">20</a></td>
+            <td>Validating Input</td>
+            <td>Thorough Input Validation</td>
+            <td>Two files: validators.py and an updated menu.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-21/index.html">21</a></td>
+            <td>Passing State Between Functions</td>
+            <td>State Ownership Between Functions</td>
+            <td>A file called state_passing_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-22/index.html">22</a></td>
+            <td>Computed Properties <em>(Layer gate)</em></td>
+            <td>Computed Properties</td>
+            <td>A file called computed_lab.py.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 3 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 3 review quiz before starting Layer 4 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 4 — Mock Data</span>
+    </div>
+    <p class="layer-desc">Real teams build against fake data before a real data source exists. We design data contracts and a data-access layer independent of where the data actually comes from.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-23/index.html">23</a></td>
+            <td>Why Mock Data Matters</td>
+            <td>Why Mock Data Matters</td>
+            <td>A file called mock_countries.py and a small script that uses it.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-24/index.html">24</a></td>
+            <td>Building a Data Access Layer</td>
+            <td>A Data Access Layer</td>
+            <td>A file called repository_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-25/index.html">25</a></td>
+            <td>Working with JSON Files</td>
+            <td>Reading and Writing JSON</td>
+            <td>A file called json_lab.py, plus a generated countries.json.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-26/index.html">26</a></td>
+            <td>Designing Data Contracts <em>(Layer gate)</em></td>
+            <td>Data Contracts with Type Hints and Dataclasses</td>
+            <td>A file called contracts_lab.py.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 4 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 4 review quiz before starting Layer 5 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 5 — Testing</span>
+    </div>
+    <p class="layer-desc">Testing is introduced gradually alongside the code it tests, using pytest. We test behavior — what a function or class does — not implementation details.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-27/index.html">27</a></td>
+            <td>Why We Test and What to Test</td>
+            <td>Why We Test</td>
+            <td>A file called manual_tests.py — using bare assert statements, the same tool pytest builds on.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-28/index.html">28</a></td>
+            <td>Setting Up pytest</td>
+            <td>pytest Fundamentals</td>
+            <td>A file called country.py (the real module) and tests/test_country.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-29/index.html">29</a></td>
+            <td>Testing Functions and Return Values</td>
+            <td>Testing Return Values Systematically</td>
+            <td>A file called tests/test_return_values.py, building on Session 28's country.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-30/index.html">30</a></td>
+            <td>Testing Classes and State Changes</td>
+            <td>Testing State Changes</td>
+            <td>Extends country.py and adds tests/test_state_changes.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-31/index.html">31</a></td>
+            <td>Testing the Data Layer with Mocks <em>(Layer gate)</em></td>
+            <td>Testing the Data Layer in Isolation</td>
+            <td>A file called tests/test_repository.py, extending country.py with CountryRepository and validate_country_record if not already present.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 5 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 5 review quiz before starting Layer 6 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 6 — Architecture</span>
+    </div>
+    <p class="layer-desc">With the foundations in place, we learn to structure a Python project for long-term maintainability: package layout, reusable modules, and recognizing tight coupling.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-32/index.html">32</a></td>
+            <td>Package and Folder Organization</td>
+            <td>Modules vs Packages</td>
+            <td>A new package directory country_explorer/ replacing the flat country.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-33/index.html">33</a></td>
+            <td>Reusable Functions and Modules</td>
+            <td>Extracting Reusable Logic</td>
+            <td>A new module country_explorer/formatting.py plus tests/test_formatting.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-34/index.html">34</a></td>
+            <td>Building Utility Modules</td>
+            <td>Utility Modules</td>
+            <td>A new module country_explorer/search.py plus tests/test_search.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-35/index.html">35</a></td>
+            <td>The Prop Drilling Problem</td>
+            <td>Experiencing the Prop Drilling Problem</td>
+            <td>A file called prop_drilling_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-36/index.html">36</a></td>
+            <td>Architecture Review <em>(Layer gate)</em></td>
+            <td>Conducting an Architecture Review</td>
+            <td>A file called ARCHITECTURE.md at the project root.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 6 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 6 review quiz before starting Layer 7 labs.
+    </div>
+
+    <div class="layer-header">
+      <span class="badge badge-current">Open</span>
+      <span class="layer-title">Layer 7 — Real World</span>
+    </div>
+    <p class="layer-desc">Only now do we touch the filesystem and a real network API. By this point we have the vocabulary to understand exactly what changed and why it matters.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Core Concept</th>
+            <th>Project Milestone</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-37/index.html">37</a></td>
+            <td>File I/O Deep Dive</td>
+            <td>Robust File Handling</td>
+            <td>A file called file_io_lab.py, extending the country_explorer package.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-38/index.html">38</a></td>
+            <td>Calling a Real API with requests</td>
+            <td>Calling a Real API</td>
+            <td>A file called real_api_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-39/index.html">39</a></td>
+            <td>Handling Errors and Edge Cases Gracefully</td>
+            <td>Robust Network Error Handling</td>
+            <td>A file called robust_loading_lab.py.</td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-40/index.html">40</a></td>
+            <td>Capstone Review <em>(Layer gate)</em></td>
+            <td>The Complete Country Explorer — End to End</td>
+            <td>A final update to ARCHITECTURE.md, plus a verification pass across the whole project.</td>
+            <td><span class="badge badge-gate">Gate</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <strong>Layer 7 Gate:</strong> Recommended self-check — score ≥ 80% on the Layer 7 review quiz before starting Layer the next labs.
+    </div>
+
+
+    <h2>Dependency Ordering</h2>
+    <p>Each row depends on everything above it. Nothing skips a level.</p>
+    <pre><code>Dictionaries → Lists → Comprehensions → Functions/Lambda → Unpacking/*args
+  → Modules/Imports → Errors/Exceptions
+                  ↓
+              Classes → Attributes → Methods → Constructors → Composition
+              → Conditionals → Object Lists → Identity/Equality
+                        ↓
+                    State → Controlled Updates → User Input → Tracing
+                    → Validation → State Passing → Computed Properties
+                                  ↓
+                              Mock Data → Data Layer → JSON Files → Data Contracts
+                                        ↓
+                                    Testing → pytest → Return Values → State Tests → Data Layer Tests
+                                              ↓
+                                         Packages → Reusable Modules → Utilities → Prop Drilling → Architecture Review
+                                                        ↓
+                                                   File I/O → Real API → Robust Errors → Capstone</code></pre>
+
+
+  </div>
+</main>
+
+</body>
+</html>

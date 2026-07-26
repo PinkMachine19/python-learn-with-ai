@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 10 — Instance Methods — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-current">Session 10</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+    </div>
+    <h1>Instance Methods</h1>
+    <p class="subtitle">A class with only attributes is still just a fancier dictionary. Methods are functions that live on the class and operate on an instance's own data through self.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Define an instance method that reads self attributes</li>
+        <li>Call a method on an instance using dot notation</li>
+        <li>Write a method that both reads and updates self attributes</li>
+        <li>Explain why a method does not need its data passed in as an argument, unlike the standalone functions from Layer 1</li>
+        <li>Compare a method call to the equivalent standalone-function call from Session 04</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
+        <label class="quiz-option" data-val="a">"Country: population"</label>
+        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
+        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
+        <label class="quiz-option" data-val="d">None, because summary only prints</label>
+        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
+        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
+        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
+        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
+        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
+        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 09 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
+        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
+        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
+        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
+        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
+        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Compare method calls to the Layer 1 approach: In Session 04 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
+        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
+        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
+        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
+        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
+        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
+        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
+        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
+        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
+        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
+        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Instance Methods</h2>
+
+    <h3>A method is a function defined inside a class</h3>
+    <p>Like __init__, every method takes self as its first parameter, giving it access to that instance's own attributes — no need to pass the data in as an argument, because the method already lives on the object that owns it.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+k = Country("Kenya", "Africa", 54000000)
+print(k.summary())  # "Kenya (Africa): pop. 54,000,000"</code></pre>
+
+    <h3>What the dot-call actually does</h3>
+    <p>When you write <code>k.summary()</code>, Python translates this into <code>Country.summary(k)</code> behind the scenes — <code>k</code> is automatically supplied as <code>self</code>. This is the exact same mechanism from Session 09's __init__, just used for a different method.</p>
+    <pre><code>print(k.summary())            # normal way
+print(Country.summary(k))     # exactly equivalent — proves it</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">you write</span>k.summary()</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">Python runs</span>Country.summary(k)</div>
+      <div class="diagram-caption">The dot-call is shorthand: k.summary() and Country.summary(k) are the same call.</div>
+    </div>
+
+    <h3>A method that mutates the instance</h3>
+    <p>Methods can update self's attributes just like the standalone functions from Layer 1 updated dict keys — except now the mutation logic lives with the data it protects.</p>
+    <pre><code>class Country:
+    def __init__(self, name, population):
+        self.name = name
+        self.population = population
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError("amount must be non-negative")
+        self.population += amount
+
+k = Country("Kenya", 54000000)
+k.grow_population(1000000)
+print(k.population)  # 55000000 — mutated in place, no reassignment needed</code></pre>
+
+    <h3>Standalone function (Layer 1) vs method (Layer 2) — side by side</h3>
+    <p>This is the entire conceptual leap of Layer 2: the data moved inside the object, so the function moved with it.</p>
+    <pre><code># Layer 1 style — Session 04
+def get_population(country_dict):
+    return country_dict["population"]
+
+print(get_population({"population": 54000000}))
+
+# Layer 2 style — this session
+class Country:
+    def __init__(self, population):
+        self.population = population
+    def get_population(self):
+        return self.population
+
+k = Country(54000000)
+print(k.get_population())  # no argument needed — self already has it</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Add a summary method and a mutating grow_population method to Country, then prove the dot-call is equivalent to calling through the class directly.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>country_methods.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with __init__ and a summary method</strong></p>
+
+        <pre><code># country_methods.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create an instance and call summary()</strong></p>
+
+        <pre><code>kenya = Country("Kenya", "Africa", 54000000)
+print(kenya.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Prove k.summary() and Country.summary(k) are the same call</strong></p>
+
+        <pre><code>print(kenya.summary() == Country.summary(kenya))  # True</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add a mutating grow_population method with validation</strong></p>
+        <p>Reuse the ValueError pattern from Session 07.</p>
+        <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
+
+kenya = Country("Kenya", "Africa", 54000000)
+kenya.grow_population(1000000)
+print(kenya.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Call grow_population with a negative amount inside try/except</strong></p>
+        <p>Reuse the try/except pattern from Session 07 — confirm the exception is raised and caught.</p>
+        <pre><code>try:
+    kenya.grow_population(-500)
+except ValueError as e:
+    print("Rejected:", e)</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_methods.py</code></td>
+            <td>Created</td>
+            <td>Adds summary() and grow_population() instance methods to Country.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-10/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_methods.py docs/sessions/session-10/index.html
+git commit -m "session-10: add summary and grow_population instance methods"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does grow_population not need the country passed in as an argument the way Session 04's functions did?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">summary() reads only self attributes and returns a formatted string</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">kenya.summary() is proven equal to Country.summary(kenya)</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">grow_population() mutates self.population in place</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">grow_population() raises ValueError on a negative amount, reusing Session 07's pattern</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">The raised exception is caught with try/except elsewhere in the file</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
+        <label class="quiz-option" data-val="a">"Country: population"</label>
+        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
+        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
+        <label class="quiz-option" data-val="d">None, because summary only prints</label>
+        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
+        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
+        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
+        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
+        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
+        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 09 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
+        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
+        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
+        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
+        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
+        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Compare method calls to the Layer 1 approach: In Session 04 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
+        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
+        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
+        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
+        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
+        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
+        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
+        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
+        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
+        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
+        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Rewrite grow_population as a Layer-1-style standalone function taking a dict. How many more characters does the caller have to type versus the method version?</li>
+        <li>Why does putting validation logic (the ValueError check) inside the method make it harder to accidentally bypass than a separate validation function would?</li>
+        <li>What would happen if you defined grow_population without self as the first parameter? Try it and read the error message carefully.</li>
+        <li>Can every standalone function from Layer 1 become a method? Can you think of one that could not?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Missing self bugs:</strong> Forgetting <code>self</code> as a method's first parameter produces a confusing TypeError about argument counts when the method is called normally — a very common early mistake that this session should immunize you against.</li>
+        <li><strong>Passing data (Session 11):</strong> Right now every instance is built by passing all fields directly to __init__. In the next session, we formalize this as "props" flowing into an object at construction time, drawing an explicit line back to the original React course's prop pattern.</li>
+        <li><strong>Testing methods (Layer 5):</strong> Every unit test you write from Session 29 onward calls methods on instances exactly the way this lab does. If method calls are not second nature, reading test code will be much harder.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Instance methods — self-bound functions that read and mutate an instance's own data without needing it passed in explicitly.</p>
+      <p><strong>Unlocks:</strong> Country is now a genuine object: data plus the behavior that belongs with it. This is the last piece needed before we start composing objects together.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 11 — Passing Data via the Constructor</a>. We formalize how data flows into an object at construction time, and start passing whole objects (not just primitive values) into other objects.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

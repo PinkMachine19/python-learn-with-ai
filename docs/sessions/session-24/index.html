@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 24 — Building a Data Access Layer — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-current">Session 24</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
+    </div>
+    <h1>Building a Data Access Layer</h1>
+    <p class="subtitle">Application logic should not know or care where its data comes from. We build a CountryRepository that hides that detail behind a clean, swappable interface.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Build a repository class that wraps a data source behind a small set of methods</li>
+        <li>Explain the separation of concerns between "fetching/storing data" and "using data"</li>
+        <li>Swap a repository's underlying data source without changing any code that calls it</li>
+        <li>Explain why this separation makes the application easier to test later (Layer 5 preview)</li>
+        <li>Distinguish a repository's methods from CountryExplorer's methods from Session 12</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A CountryRepository class wraps MOCK_COUNTRIES and exposes get_all() and find_by_region(region). Why not just let every part of the application import MOCK_COUNTRIES directly?</p>
+        <label class="quiz-option" data-val="a">There is no difference — direct import is equally good</label>
+        <label class="quiz-option" data-val="b">Wrapping it behind a repository means the rest of the application depends only on the repository's interface, not on where or how the data is actually stored — that detail can change freely later</label>
+        <label class="quiz-option" data-val="c">Python does not allow importing the same variable in two places</label>
+        <label class="quiz-option" data-val="d">MOCK_COUNTRIES cannot be imported more than once</label>
+        <div class="explanation">This is separation of concerns: the repository owns the detail of HOW data is fetched (a mock list today, a JSON file or real API tomorrow); everything else only needs to know WHAT methods the repository offers, not how they work internally.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If CountryRepository.get_all() currently reads from MOCK_COUNTRIES, and later you change it to read from a JSON file instead, what code outside the repository needs to change?</p>
+        <label class="quiz-option" data-val="a">Every place in the application that calls repository.get_all()</label>
+        <label class="quiz-option" data-val="b">Nothing outside CountryRepository itself — callers only depend on the method's existence and its return shape, not its internal implementation</label>
+        <label class="quiz-option" data-val="c">All the Country and CountryExplorer classes</label>
+        <label class="quiz-option" data-val="d">The whole application must be rewritten</label>
+        <div class="explanation">This is the entire point of the abstraction: as long as get_all() keeps returning the same shape of data, its INTERNAL implementation can change freely (mock list, JSON file, real API) without touching a single line of code anywhere else.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is the difference between CountryRepository (this session) and CountryExplorer (Session 12)?</p>
+        <label class="quiz-option" data-val="a">They are the same thing with different names</label>
+        <label class="quiz-option" data-val="b">CountryRepository's job is fetching/providing raw data; CountryExplorer's job is holding and operating on a working set of Country objects for the application to use — different responsibilities</label>
+        <label class="quiz-option" data-val="c">CountryRepository is only used for testing</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must always be built from a CountryRepository</label>
+        <div class="explanation">These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 12.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this separation make future testing (Layer 5) easier?</p>
+        <label class="quiz-option" data-val="a">It has no effect on testing</label>
+        <label class="quiz-option" data-val="b">A test can construct a repository around a small, controlled fake dataset instead of a real (or even the standard mock) data source, testing application logic in complete isolation</label>
+        <label class="quiz-option" data-val="c">Testing requires deleting the repository entirely</label>
+        <label class="quiz-option" data-val="d">Repositories automatically generate their own tests</label>
+        <div class="explanation">Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 31 (testing the data layer) will do.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Which method belongs on CountryRepository rather than CountryExplorer, given the separation of concerns described in this session?</p>
+        <label class="quiz-option" data-val="a">total_population — a computed property over a working set of countries</label>
+        <label class="quiz-option" data-val="b">get_all() — fetching the full raw list of country records from wherever they are stored</label>
+        <label class="quiz-option" data-val="c">add_country() — mutating a working, in-memory collection</label>
+        <label class="quiz-option" data-val="d">summaries() — formatting each country for display</label>
+        <div class="explanation">get_all() is about FETCHING data from its source — the repository's job. The others are about operating on an already-fetched, in-memory working set — the explorer's job, as established in Session 12 and 22.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — A Data Access Layer</h2>
+
+    <h3>Wrapping a data source behind an interface</h3>
+    <p>A repository is a small class whose only job is providing access to data — hiding exactly where and how that data is stored behind a clean set of methods.</p>
+    <pre><code>from mock_countries import MOCK_COUNTRIES
+
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]
+
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+all_countries = repo.get_all()
+print(len(all_countries))</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">application code</span>repo.get_all()</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">CountryRepository</span>hides the source</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">source (swappable)</span>mock, JSON,
+real API...</div>
+      <div class="diagram-caption">Application code depends only on the repository's methods — never directly on where the data actually lives.</div>
+    </div>
+
+    <h3>Swapping the source without touching callers</h3>
+    <p>As long as get_all() keeps returning the same shape (a list of Country instances), the repository's internals can change completely, and nothing that calls repo.get_all() needs to know or care.</p>
+    <pre><code>class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+# Today: built around mock data
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+
+# Later (Session 25/38): built around a completely different source —
+# but repo.get_all() everywhere else in the app doesn't change at all
+# repo = CountryRepository(raw_data=load_from_json_file("countries.json"))
+# repo = CountryRepository(raw_data=fetch_from_real_api())</code></pre>
+
+    <h3>Repository vs Explorer — two different responsibilities</h3>
+    <p>CountryRepository fetches raw data and hands back Country instances. CountryExplorer (Session 12) takes an already-fetched working set and offers operations over it. Keeping these responsibilities separate mirrors Session 12's "small, focused classes" principle.</p>
+    <pre><code>repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+explorer = CountryExplorer(countries=repo.get_all())  # repository FETCHES, explorer OPERATES
+
+print(explorer.total_population)         # explorer's job
+print(repo.find_by_region("Africa"))     # repository's job — a different kind of query</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a CountryRepository wrapping the mock data from Session 23, and connect it to a CountryExplorer built entirely through the repository's interface.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>repository_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country and the mock import</strong></p>
+
+        <pre><code># repository_lab.py
+from mock_countries import MOCK_COUNTRIES
+
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Build CountryRepository with get_all() and find_by_region()</strong></p>
+
+        <pre><code>class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]
+
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+print(len(repo.get_all()))
+print([c.name for c in repo.find_by_region("Africa")])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Build CountryExplorer and construct it FROM the repository</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+explorer = CountryExplorer(countries=repo.get_all())
+print(explorer.total_population)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Prove the repository can be swapped without touching CountryExplorer</strong></p>
+        <p>Build a second, smaller repository from a hand-typed list and construct a second explorer from it — CountryExplorer's code never changes.</p>
+        <pre><code>tiny_data = [{"name": "Fiji", "region": "Oceania", "population": 900000}]
+tiny_repo = CountryRepository(raw_data=tiny_data)
+tiny_explorer = CountryExplorer(countries=tiny_repo.get_all())
+print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, different source</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a comment identifying which methods belong to the repository vs the explorer, and why</strong></p>
+
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>repository_lab.py</code></td>
+            <td>Created</td>
+            <td>A CountryRepository wrapping mock data, connected to a CountryExplorer.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-24/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add repository_lab.py docs/sessions/session-24/index.html
+git commit -m "session-24: build a CountryRepository data-access layer around the mock data"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did CountryExplorer not need any changes when I swapped in a completely different repository?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">CountryRepository exposes get_all() and find_by_region(), both returning Country instances</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">CountryExplorer is constructed by calling repo.get_all(), never by importing MOCK_COUNTRIES directly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A second, differently-sourced repository is built and shown to work with the same, unmodified CountryExplorer class</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A written comment correctly separates repository responsibilities from explorer responsibilities</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No code outside CountryRepository reads self._raw_data directly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A CountryRepository class wraps MOCK_COUNTRIES and exposes get_all() and find_by_region(region). Why not just let every part of the application import MOCK_COUNTRIES directly?</p>
+        <label class="quiz-option" data-val="a">There is no difference — direct import is equally good</label>
+        <label class="quiz-option" data-val="b">Wrapping it behind a repository means the rest of the application depends only on the repository's interface, not on where or how the data is actually stored — that detail can change freely later</label>
+        <label class="quiz-option" data-val="c">Python does not allow importing the same variable in two places</label>
+        <label class="quiz-option" data-val="d">MOCK_COUNTRIES cannot be imported more than once</label>
+        <div class="explanation">This is separation of concerns: the repository owns the detail of HOW data is fetched (a mock list today, a JSON file or real API tomorrow); everything else only needs to know WHAT methods the repository offers, not how they work internally.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If CountryRepository.get_all() currently reads from MOCK_COUNTRIES, and later you change it to read from a JSON file instead, what code outside the repository needs to change?</p>
+        <label class="quiz-option" data-val="a">Every place in the application that calls repository.get_all()</label>
+        <label class="quiz-option" data-val="b">Nothing outside CountryRepository itself — callers only depend on the method's existence and its return shape, not its internal implementation</label>
+        <label class="quiz-option" data-val="c">All the Country and CountryExplorer classes</label>
+        <label class="quiz-option" data-val="d">The whole application must be rewritten</label>
+        <div class="explanation">This is the entire point of the abstraction: as long as get_all() keeps returning the same shape of data, its INTERNAL implementation can change freely (mock list, JSON file, real API) without touching a single line of code anywhere else.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is the difference between CountryRepository (this session) and CountryExplorer (Session 12)?</p>
+        <label class="quiz-option" data-val="a">They are the same thing with different names</label>
+        <label class="quiz-option" data-val="b">CountryRepository's job is fetching/providing raw data; CountryExplorer's job is holding and operating on a working set of Country objects for the application to use — different responsibilities</label>
+        <label class="quiz-option" data-val="c">CountryRepository is only used for testing</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must always be built from a CountryRepository</label>
+        <div class="explanation">These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 12.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this separation make future testing (Layer 5) easier?</p>
+        <label class="quiz-option" data-val="a">It has no effect on testing</label>
+        <label class="quiz-option" data-val="b">A test can construct a repository around a small, controlled fake dataset instead of a real (or even the standard mock) data source, testing application logic in complete isolation</label>
+        <label class="quiz-option" data-val="c">Testing requires deleting the repository entirely</label>
+        <label class="quiz-option" data-val="d">Repositories automatically generate their own tests</label>
+        <div class="explanation">Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 31 (testing the data layer) will do.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Which method belongs on CountryRepository rather than CountryExplorer, given the separation of concerns described in this session?</p>
+        <label class="quiz-option" data-val="a">total_population — a computed property over a working set of countries</label>
+        <label class="quiz-option" data-val="b">get_all() — fetching the full raw list of country records from wherever they are stored</label>
+        <label class="quiz-option" data-val="c">add_country() — mutating a working, in-memory collection</label>
+        <label class="quiz-option" data-val="d">summaries() — formatting each country for display</label>
+        <div class="explanation">get_all() is about FETCHING data from its source — the repository's job. The others are about operating on an already-fetched, in-memory working set — the explorer's job, as established in Session 12 and 22.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does CountryExplorer never import mock_countries directly? What would be lost if it did?</li>
+        <li>What would you need to change in CountryRepository (and ONLY in CountryRepository) to eventually read from a real file on disk instead of an in-memory list?</li>
+        <li>How does this repository pattern relate to the "contract" concept introduced in Session 23?</li>
+        <li>Can you think of a method that seems ambiguous — could reasonably belong to either the repository or the explorer? How would you decide?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Data-source lock-in:</strong> Without this separation, every part of the application that needs country data would import MOCK_COUNTRIES directly — meaning switching to a real API later would require hunting down and rewriting every single one of those import sites instead of changing one class.</li>
+        <li><strong>Working with real files (Session 25):</strong> The next session teaches reading actual JSON files from disk — that new data source slots directly into CountryRepository's constructor, exactly because of the separation built this session.</li>
+        <li><strong>Testing in isolation (Layer 5):</strong> Session 31 tests the data layer by building a CountryRepository around a small, controlled fake dataset — only possible because the repository's constructor accepts any data source, a direct consequence of this session's design.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> A data-access layer (repository) that hides the true source of data behind a stable interface, cleanly separated from the application logic that uses it.</p>
+      <p><strong>Unlocks:</strong> The application's data source can now change completely — mock, file, real API — without touching any of the code that consumes it.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 25 — Working with JSON Files</a>. We give the repository a genuinely different, real source to read from: an actual JSON file on disk.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

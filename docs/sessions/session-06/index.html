@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 06 — Modules and Imports — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-current">Session 06</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+    </div>
+    <h1>Modules and Imports</h1>
+    <p class="subtitle">Our country data and our logic have been living in one file. Real projects split code into modules — this session is about how Python finds, loads, and shares code across files.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Split code across multiple .py files and import between them</li>
+        <li>Use import module and from module import name, and explain the difference</li>
+        <li>Alias an import with as</li>
+        <li>Explain what if __name__ == "__main__": guards and why it matters</li>
+        <li>Understand why a module is only executed once, no matter how many times it is imported</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
+        <label class="quiz-option" data-val="a"><code>import data</code></label>
+        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
+        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
+        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
+        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
+        <label class="quiz-option" data-val="a"><code>countries</code></label>
+        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
+        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
+        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
+        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does <code>import numpy as np</code> do?</p>
+        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
+        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
+        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
+        <label class="quiz-option" data-val="d">Is invalid syntax</label>
+        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
+        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
+        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
+        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
+        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
+        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="c">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
+        <label class="quiz-option" data-val="a">Twice — once per import</label>
+        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
+        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
+        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
+        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Modules and Imports</h2>
+
+    <h3>A module is just a .py file</h3>
+    <p>Any Python file can be imported by another. The filename (without .py) becomes the module name.</p>
+    <pre><code># data.py
+countries = [
+    {"name": "Kenya", "region": "Africa"},
+    {"name": "Ghana", "region": "Africa"},
+]
+
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]</code></pre>
+
+    <h3>import module vs from module import name</h3>
+    <p>Both forms load the same file. They differ in what name(s) end up available in the importing file.</p>
+    <pre><code># main.py — Option 1: import the whole module
+import data
+print(data.countries)
+print(data.find_by_region("Africa"))
+
+# main.py — Option 2: import specific names directly
+from data import countries, find_by_region
+print(countries)
+print(find_by_region("Africa"))</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">import data</span>data.countries
+data.find_by_region</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">from data import</span>countries
+find_by_region</div>
+      <div class="diagram-caption">import module gives you one namespaced object; from module import name gives you the names directly, unprefixed.</div>
+    </div>
+
+    <h3>Aliasing with as</h3>
+    <p>You can rename what you import, either to shorten a long name or to avoid a clash with something already defined.</p>
+    <pre><code>import data as d
+print(d.countries)
+
+from data import find_by_region as search
+print(search("Africa"))</code></pre>
+
+    <h3>The if __name__ == "__main__": guard</h3>
+    <p>Every Python file has a built-in variable <code>__name__</code>. When the file is run directly, it equals <code>"__main__"</code>. When the file is imported by another file, it equals the module's own name instead. This guard lets a file define reusable functions AND include a demo that only runs when the file is executed directly.</p>
+    <pre><code># data.py
+countries = [{"name": "Kenya", "region": "Africa"}]
+
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]
+
+if __name__ == "__main__":
+    # This block only runs when you execute: python data.py
+    # It does NOT run when another file does: import data
+    print(find_by_region("Africa"))</code></pre>
+
+    <h3>A module's top-level code runs once, and only once</h3>
+    <p>Python caches every module after its first import. If ten different files import the same module, its top-level code still only executes a single time — every importer shares the same already-built module object.</p>
+    <pre><code># counter.py
+print("data.py is loading...")
+value = 0
+
+# app.py
+import counter          # prints "data.py is loading..." — first time
+import counter as c2     # does NOT print again — already cached
+print(counter is c2)     # True — same object</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Split your country data into its own module, import it two different ways, and add a __main__ guard.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>Two files: <code>country_data.py</code> (the module) and <code>explorer.py</code> (imports and uses it).</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create country_data.py with the list and one function</strong></p>
+
+        <pre><code># country_data.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+]
+
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]
+
+if __name__ == "__main__":
+    print("Running country_data.py directly")
+    print(find_by_region("Africa"))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Run country_data.py directly and observe the guard firing</strong></p>
+        <p>Confirm the __main__ block runs when you execute the file itself.</p>
+
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Create explorer.py using import module style</strong></p>
+
+        <pre><code># explorer.py
+import country_data
+
+print(country_data.countries)
+print(country_data.find_by_region("Africa"))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Run explorer.py and confirm the __main__ block did NOT run</strong></p>
+        <p>You should NOT see "Running country_data.py directly" — only the two lines you explicitly printed.</p>
+
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Change explorer.py to use from...import with an alias</strong></p>
+
+        <pre><code># explorer.py
+from country_data import find_by_region as search
+
+print(search("Africa"))</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_data.py</code></td>
+            <td>Created</td>
+            <td>The reusable module — data and functions, with a __main__ guard.</td>
+          </tr>
+          <tr>
+            <td><code>explorer.py</code></td>
+            <td>Created</td>
+            <td>Imports and uses country_data two different ways.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-06/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_data.py explorer.py docs/sessions/session-06/index.html
+git commit -m "session-06: split data into a module, import it two ways, add a __main__ guard"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did the __main__ block run when I executed country_data.py directly, but not when explorer.py imported it?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">country_data.py contains the list, at least one function, and a __main__ guard</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">explorer.py demonstrates import module style (module.name access)</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">explorer.py also demonstrates from module import name style, with an alias</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Running country_data.py directly shows the guarded print statement</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">Running explorer.py does NOT show the guarded print statement</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
+        <label class="quiz-option" data-val="a"><code>import data</code></label>
+        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
+        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
+        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
+        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
+        <label class="quiz-option" data-val="a"><code>countries</code></label>
+        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
+        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
+        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
+        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does <code>import numpy as np</code> do?</p>
+        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
+        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
+        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
+        <label class="quiz-option" data-val="d">Is invalid syntax</label>
+        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
+        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
+        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
+        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
+        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
+        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="c">
+        <div class="question-num">Question 5 of 5</div>
+        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
+        <label class="quiz-option" data-val="a">Twice — once per import</label>
+        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
+        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
+        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
+        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why would putting a "demo" print statement at the top level of country_data.py (outside the guard) have caused a problem in explorer.py?</li>
+        <li>When would you prefer <code>import module</code> over <code>from module import name</code>, given that the second saves typing?</li>
+        <li>What real-world project structure benefit comes from every module only executing once, even if imported from many places?</li>
+        <li>How does a Python module's import caching remind you of anything else you've learned about references and shared state (Session 01)?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Demo code leaking into imports:</strong> Without the <code>__main__</code> guard, any print statements, test calls, or demo code at the top level of a module will fire every single time that module is imported anywhere — cluttering output and sometimes causing real side effects in production code.</li>
+        <li><strong>Circular imports:</strong> Once code is split across files, it becomes possible for module A to import module B while B tries to import A — a circular import error. Understanding how imports execute (once, top to bottom) is the first step to debugging this later.</li>
+        <li><strong>Project architecture (Layer 6):</strong> Sessions 32–36 are entirely about organizing a growing codebase into modules and packages. Everything there assumes you are comfortable splitting files and importing between them.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Modules and the import system — import vs from-import, aliasing, and the __main__ guard.</p>
+      <p><strong>Unlocks:</strong> You can now split growing code across multiple files instead of one giant script — the basis for any real Python project structure.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 07 — Errors and Exceptions</a>. We will learn to handle things going wrong — try/except and raising exceptions — before we build anything more complex.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 14 — Building Lists of Objects — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-current">Session 14</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+    </div>
+    <h1>Building Lists of Objects</h1>
+    <p class="subtitle">Real data rarely arrives as neatly hand-typed Country(...) calls. This session formalizes converting a list of raw dicts into a list of proper Country instances, at any scale.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Convert a list of raw dictionaries into a list of class instances using a comprehension</li>
+        <li>Write a classmethod that constructs an instance from a dictionary</li>
+        <li>Explain what @classmethod does and how cls differs from self</li>
+        <li>Handle a malformed record in the raw data without crashing the whole batch</li>
+        <li>Combine everything from Layer 1 (comprehensions) and Layer 2 (classes) into one operation</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given raw = [{"name": "Kenya", "region": "Africa", "population": 54000000}, ...], which builds a list of Country instances from it?</p>
+        <label class="quiz-option" data-val="a"><code>[Country(r) for r in raw]</code></label>
+        <label class="quiz-option" data-val="b"><code>[Country(**r) for r in raw]</code></label>
+        <label class="quiz-option" data-val="c"><code>Country(raw)</code></label>
+        <label class="quiz-option" data-val="d"><code>[Country[r] for r in raw]</code></label>
+        <div class="explanation">Recall Session 05: <code>**r</code> spreads each dictionary's key-value pairs as keyword arguments into the Country constructor — exactly matching __init__'s parameter names.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>@classmethod</code> do to a method like <code>from_dict</code>?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely documentation</label>
+        <label class="quiz-option" data-val="b">It makes the method receive the class itself (conventionally named cls) as its first argument instead of an instance (self)</label>
+        <label class="quiz-option" data-val="c">It makes the method run automatically at import time</label>
+        <label class="quiz-option" data-val="d">It prevents the method from being called on an instance</label>
+        <div class="explanation">A classmethod is bound to the class, not a specific instance. Its first parameter, <code>cls</code>, refers to the class itself — useful for alternate constructors, since you don't have an instance yet at the point you're trying to build one.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>@classmethod\ndef from_dict(cls, data):\n    return cls(**data)</code>, what does Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000}) return?</p>
+        <label class="quiz-option" data-val="a">A TypeError — cls cannot be called like a function</label>
+        <label class="quiz-option" data-val="b">A new Country instance built from the dict's values</label>
+        <label class="quiz-option" data-val="c">The dict itself, unchanged</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Inside a classmethod, <code>cls</code> IS the class (Country), so <code>cls(**data)</code> is equivalent to calling <code>Country(**data)</code> — constructing a new instance from the dictionary's keys and values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why prefer a from_dict classmethod over just calling Country(**d) directly everywhere you need to convert a dict?</p>
+        <label class="quiz-option" data-val="a">There is no real benefit — they behave identically in every case</label>
+        <label class="quiz-option" data-val="b">from_dict gives you one central place to add validation or handle missing/renamed keys later, without changing every call site</label>
+        <label class="quiz-option" data-val="c">Country(**d) does not actually work for this purpose</label>
+        <label class="quiz-option" data-val="d">classmethods run faster than regular constructor calls</label>
+        <div class="explanation">If the raw data's shape changes later (a renamed key, a new required default), you only need to update <code>from_dict</code> once, instead of hunting down every place <code>Country(**d)</code> was called directly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>One raw record is missing the "population" key entirely. Using [Country.from_dict(r) for r in raw] with no error handling, what happens when that record is processed, assuming population has no default in __init__?</p>
+        <label class="quiz-option" data-val="a">It silently skips that record and continues</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised (missing required argument) and the whole comprehension stops, unless you catch it</label>
+        <label class="quiz-option" data-val="c">population is automatically set to 0</label>
+        <label class="quiz-option" data-val="d">It is set to the string "population"</label>
+        <div class="explanation">Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 07 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Building Object Lists from Raw Data</h2>
+
+    <h3>From raw dicts to instances, using what you already know</h3>
+    <p>This session combines Session 03's comprehensions with Session 05's ** spreading and Session 09's constructors — nothing new syntactically, just a new combination.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+raw = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+]
+
+countries = [Country(**r) for r in raw]
+print(countries[0].summary())  # "Kenya (Africa): pop. 54,000,000"</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">raw dicts</span>{...}, {...}</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">Country(**r)</span>per item</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">instances</span>Country, Country</div>
+      <div class="diagram-caption">Each raw dict is spread with ** into a fresh Country() call, one per item — the comprehension pattern from Session 03, now building instances instead of values.</div>
+    </div>
+
+    <h3>A classmethod as an alternate constructor</h3>
+    <p>Repeating <code>Country(**r)</code> everywhere you convert a dict works, but centralizing that logic in one place on the class itself is more maintainable. A classmethod is a method bound to the class rather than an instance — useful precisely because you don't have an instance yet.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)  # cls IS the Country class here
+
+kenya = Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})
+print(kenya.name)  # "Kenya"</code></pre>
+
+    <h3>cls vs self</h3>
+    <p>self (regular methods) refers to a specific instance. cls (classmethods) refers to the class itself — the blueprint, not a built thing. This mirrors the class-vs-instance distinction from Session 08.</p>
+    <pre><code>class Country:
+    @classmethod
+    def from_dict(cls, data):
+        print("cls is:", cls)          # &lt;class '__main__.Country'&gt; — the class itself
+        return cls(**data)
+
+    def summary(self):
+        print("self is:", self)        # a specific Country instance</code></pre>
+
+    <h3>Handling a bad record without losing the whole batch</h3>
+    <p>Session 07's try/except lets us skip malformed records individually instead of letting one bad record crash the entire conversion.</p>
+    <pre><code>raw = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghost Nation"},  # missing region and population!
+]
+
+countries = []
+for r in raw:
+    try:
+        countries.append(Country.from_dict(r))
+    except TypeError as e:
+        print(f"Skipping malformed record {r!r}: {e}")
+
+print(len(countries))  # 1 — only the valid record made it in</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a from_dict classmethod on Country, convert a batch of raw records with a comprehension, and gracefully skip a malformed one.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>build_list_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country and a from_dict classmethod</strong></p>
+
+        <pre><code># build_list_lab.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Build 4 valid raw records and convert them with a comprehension</strong></p>
+
+        <pre><code>raw = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+    {"name": "Japan", "region": "Asia", "population": 125000000},
+]
+
+countries = [Country.from_dict(r) for r in raw]
+for c in countries:
+    print(c.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add one malformed record (missing a required key)</strong></p>
+
+        <pre><code>raw_with_bad_record = raw + [{"name": "Ghost Nation"}]  # missing region, population</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Convert with a for-loop and try/except, skipping the bad one</strong></p>
+
+        <pre><code>good_countries = []
+for r in raw_with_bad_record:
+    try:
+        good_countries.append(Country.from_dict(r))
+    except TypeError as e:
+        print(f"Skipping malformed record {r!r}: {e}")
+
+print("Converted successfully:", len(good_countries))
+print("Total attempted:", len(raw_with_bad_record))</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Print cls inside from_dict temporarily to see it is the class, not an instance</strong></p>
+
+        <pre><code>class CountryDebug(Country):
+    @classmethod
+    def from_dict(cls, data):
+        print("cls is:", cls)
+        return cls(**data)
+
+CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>build_list_lab.py</code></td>
+            <td>Created</td>
+            <td>Converts raw dicts into Country instances at scale using a classmethod and comprehension.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-14/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add build_list_lab.py docs/sessions/session-14/index.html
+git commit -m "session-14: build Country instances in bulk with a from_dict classmethod"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does from_dict use cls(**data) instead of Country(**data) directly?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">from_dict is decorated with @classmethod and takes cls as its first parameter</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A list comprehension converts multiple raw dicts into Country instances</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A malformed record is included and handled with try/except without crashing the batch</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The count of successfully converted records is printed and is less than the total attempted</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">cls is printed at least once to confirm it refers to the class, not an instance</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given raw = [{"name": "Kenya", "region": "Africa", "population": 54000000}, ...], which builds a list of Country instances from it?</p>
+        <label class="quiz-option" data-val="a"><code>[Country(r) for r in raw]</code></label>
+        <label class="quiz-option" data-val="b"><code>[Country(**r) for r in raw]</code></label>
+        <label class="quiz-option" data-val="c"><code>Country(raw)</code></label>
+        <label class="quiz-option" data-val="d"><code>[Country[r] for r in raw]</code></label>
+        <div class="explanation">Recall Session 05: <code>**r</code> spreads each dictionary's key-value pairs as keyword arguments into the Country constructor — exactly matching __init__'s parameter names.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>@classmethod</code> do to a method like <code>from_dict</code>?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely documentation</label>
+        <label class="quiz-option" data-val="b">It makes the method receive the class itself (conventionally named cls) as its first argument instead of an instance (self)</label>
+        <label class="quiz-option" data-val="c">It makes the method run automatically at import time</label>
+        <label class="quiz-option" data-val="d">It prevents the method from being called on an instance</label>
+        <div class="explanation">A classmethod is bound to the class, not a specific instance. Its first parameter, <code>cls</code>, refers to the class itself — useful for alternate constructors, since you don't have an instance yet at the point you're trying to build one.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given <code>@classmethod\ndef from_dict(cls, data):\n    return cls(**data)</code>, what does Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000}) return?</p>
+        <label class="quiz-option" data-val="a">A TypeError — cls cannot be called like a function</label>
+        <label class="quiz-option" data-val="b">A new Country instance built from the dict's values</label>
+        <label class="quiz-option" data-val="c">The dict itself, unchanged</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Inside a classmethod, <code>cls</code> IS the class (Country), so <code>cls(**data)</code> is equivalent to calling <code>Country(**data)</code> — constructing a new instance from the dictionary's keys and values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why prefer a from_dict classmethod over just calling Country(**d) directly everywhere you need to convert a dict?</p>
+        <label class="quiz-option" data-val="a">There is no real benefit — they behave identically in every case</label>
+        <label class="quiz-option" data-val="b">from_dict gives you one central place to add validation or handle missing/renamed keys later, without changing every call site</label>
+        <label class="quiz-option" data-val="c">Country(**d) does not actually work for this purpose</label>
+        <label class="quiz-option" data-val="d">classmethods run faster than regular constructor calls</label>
+        <div class="explanation">If the raw data's shape changes later (a renamed key, a new required default), you only need to update <code>from_dict</code> once, instead of hunting down every place <code>Country(**d)</code> was called directly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>One raw record is missing the "population" key entirely. Using [Country.from_dict(r) for r in raw] with no error handling, what happens when that record is processed, assuming population has no default in __init__?</p>
+        <label class="quiz-option" data-val="a">It silently skips that record and continues</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised (missing required argument) and the whole comprehension stops, unless you catch it</label>
+        <label class="quiz-option" data-val="c">population is automatically set to 0</label>
+        <label class="quiz-option" data-val="d">It is set to the string "population"</label>
+        <div class="explanation">Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 07 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does cls(**data) still work correctly even if this classmethod were inherited by a subclass of Country (which we have not covered, but can you reason about it)?</li>
+        <li>What would have happened if you used Country(**data) directly inside from_dict instead of cls(**data)? In this specific case, is there a difference?</li>
+        <li>How does skipping one bad record instead of crashing the whole batch compare to the all-or-nothing behavior you might expect from a stricter language?</li>
+        <li>Where in a real application would silently skipping bad records be dangerous instead of helpful? What would you do differently there?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>One bad record, whole batch lost:</strong> Without the try/except pattern from this session, a single malformed record anywhere in a large dataset would crash the entire conversion — unacceptable for any real data source, which is never perfectly clean.</li>
+        <li><strong>Object identity confusion (Session 15):</strong> The next session (the Layer 2 gate) asks whether two Country instances built from identical data are "the same" — a question you can only reason about clearly once you are comfortable constructing many instances from data, as this session taught.</li>
+        <li><strong>The mock data layer (Layer 4):</strong> Session 24's data-access layer is built almost entirely from the from_dict pattern in this session, applied to a whole file of mock JSON records.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Bulk-converting raw dicts into class instances with a from_dict classmethod, and skipping malformed records individually with try/except.</p>
+      <p><strong>Unlocks:</strong> You can now turn any batch of raw dict-shaped data into a real list of working objects — the exact operation every future data source will require.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 15 — Object Identity and Equality</a>. Layer 2 gate. We ask a subtle question: what does it mean for two objects to be "the same" — identity vs equality.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 18 — Handling User Input — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-current">Session 18</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+    </div>
+    <h1>Handling User Input</h1>
+    <p class="subtitle">State changes need a trigger. In a real program, that trigger is often a user typing something. We connect input() to the controlled methods from Session 17.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Read a line of text from the user with input()</li>
+        <li>Explain why input() always returns a string, and why that matters for numeric fields</li>
+        <li>Convert and validate user input before passing it into a controlled state method</li>
+        <li>Build a small text-based menu loop that dispatches to different actions</li>
+        <li>Handle invalid user input (non-numeric text) without crashing the program</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What is the type of the value returned by <code>input("Enter population: ")</code>, regardless of what the user types?</p>
+        <label class="quiz-option" data-val="a">It matches whatever the user typed — int if they typed digits, str otherwise</label>
+        <label class="quiz-option" data-val="b">Always str — input() never returns anything else</label>
+        <label class="quiz-option" data-val="c">Always int</label>
+        <label class="quiz-option" data-val="d">None, until you press Enter twice</label>
+        <div class="explanation"><code>input()</code> always returns a string, no matter what characters the user typed. If you need a number, you must convert it yourself, typically with <code>int()</code> or <code>float()</code>, and handle the case where the conversion fails.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A user types "fifty" when asked for a population. What happens if you call <code>int(user_input)</code> directly with no error handling?</p>
+        <label class="quiz-option" data-val="a">It returns 0</label>
+        <label class="quiz-option" data-val="b">It raises a ValueError, since "fifty" cannot be parsed as an integer</label>
+        <label class="quiz-option" data-val="c">It silently rounds to the nearest number</label>
+        <label class="quiz-option" data-val="d">It returns the string unchanged</label>
+        <div class="explanation"><code>int()</code> raises <code>ValueError</code> on text that is not a valid integer literal. Per Session 07, this needs a try/except around it, or the program crashes on the very first bad keystroke.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should raw user input be validated and converted BEFORE being passed to a method like set_population, rather than passing the raw string directly?</p>
+        <label class="quiz-option" data-val="a">set_population can accept strings just fine, so it does not matter</label>
+        <label class="quiz-option" data-val="b">set_population expects a number for its comparison (value < 0); passing a string would raise a TypeError inside the method instead of failing clearly at the input boundary</label>
+        <label class="quiz-option" data-val="c">Python automatically converts strings to numbers when needed</label>
+        <label class="quiz-option" data-val="d">There is no real reason, it is just convention</label>
+        <div class="explanation">Comparing a string to an int with <code>value < 0</code> raises a <code>TypeError</code> in Python. Converting and validating at the input boundary produces a clearer, more specific error message right where the bad data entered the program.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>In a text menu loop like <code>while True: choice = input("> ")\n    if choice == "quit": break</code>, what happens if the user just presses Enter with no text?</p>
+        <label class="quiz-option" data-val="a">The loop crashes immediately</label>
+        <label class="quiz-option" data-val="b">choice becomes an empty string "", which does not match "quit", so the loop continues asking again</label>
+        <label class="quiz-option" data-val="c">The program exits automatically</label>
+        <label class="quiz-option" data-val="d">input() blocks forever</label>
+        <div class="explanation">An empty line from the user is still a valid (empty) string. It simply fails the <code>== "quit"</code> check like any other non-matching input, so the loop naturally continues and prompts again.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is the safest pattern for reading a required number from a user who might type invalid text?</p>
+        <label class="quiz-option" data-val="a">Assume the user always types correctly and skip validation</label>
+        <label class="quiz-option" data-val="b">Wrap int(input(...)) in a loop with try/except, re-prompting on ValueError until valid input is given</label>
+        <label class="quiz-option" data-val="c">Use float() instead of int(), which never raises errors</label>
+        <label class="quiz-option" data-val="d">Read the input as a list instead of a string</label>
+        <div class="explanation">Looping with try/except around the conversion lets you catch bad input, tell the user what went wrong, and re-prompt — rather than crashing on the first typo, which is unacceptable for anything meant to be used interactively.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Reading and Validating User Input</h2>
+
+    <h3>input() always returns a string</h3>
+    <p>The built-in input() function pauses the program, waits for the user to type a line and press Enter, and returns exactly what they typed — always as a string, never automatically converted.</p>
+    <pre><code>name = input("Enter a country name: ")
+print(type(name))  # &lt;class 'str'&gt; — always, even if they typed "54000000"</code></pre>
+
+    <h3>Converting and validating before using the value</h3>
+    <p>A numeric field like population needs explicit conversion, and that conversion can fail on bad input — exactly the kind of case Session 07's try/except exists for.</p>
+    <pre><code>raw = input("Enter population: ")
+
+try:
+    population = int(raw)
+except ValueError:
+    print(f"'{raw}' is not a valid number.")
+    population = None
+
+if population is not None:
+    print("Parsed population:", population)</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">input()</span>"fifty" (str)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">int()</span>ValueError
+caught</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">set_population</span>never called
+with bad data</div>
+      <div class="diagram-caption">Raw text is validated and converted at the boundary, before it ever reaches a method expecting a number.</div>
+    </div>
+
+    <h3>Connecting validated input to a controlled method</h3>
+    <p>Once input is converted and confirmed valid, it can safely flow into the Session 17 methods, which add their own domain-specific validation (like rejecting negative numbers) on top.</p>
+    <pre><code>def prompt_population(country):
+    raw = input(f"New population for {country.name}: ")
+    try:
+        value = int(raw)
+    except ValueError:
+        print(f"'{raw}' is not a valid number. No change made.")
+        return
+    try:
+        country.set_population(value)
+        print("Updated.")
+    except ValueError as e:
+        print("Rejected:", e)</code></pre>
+
+    <h3>A simple menu loop</h3>
+    <p>Combining a loop, input(), and conditional branching gives us an interactive text menu — a small but real interactive program.</p>
+    <pre><code>def run_menu(country):
+    while True:
+        choice = input("(g)row population, (s)how summary, (q)uit: ").strip().lower()
+        if choice == "q":
+            print("Goodbye.")
+            break
+        elif choice == "g":
+            prompt_population(country)
+        elif choice == "s":
+            print(country.summary())
+        else:
+            print("Unrecognised option, try again.")</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build an interactive text menu that reads and validates user input, then applies it through the controlled state methods from Session 17.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>input_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country including set_population and grow_population</strong></p>
+
+        <pre><code># input_lab.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write a function that reads and validates a number from the user</strong></p>
+
+        <pre><code>def read_int(prompt):
+    raw = input(prompt)
+    try:
+        return int(raw)
+    except ValueError:
+        print(f"'{raw}' is not a valid number.")
+        return None</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write prompt_set_population using read_int and the controlled method</strong></p>
+
+        <pre><code>def prompt_set_population(country):
+    value = read_int(f"New population for {country.name}: ")
+    if value is None:
+        return
+    try:
+        country.set_population(value)
+        print("Updated:", country.summary())
+    except ValueError as e:
+        print("Rejected:", e)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write the menu loop and run it</strong></p>
+        <p>When you run this file directly, try typing an invalid number, then a negative number, then a valid one — confirm all three cases behave correctly.</p>
+        <pre><code>def run_menu(country):
+    while True:
+        choice = input("(g)row, (s)et, (v)iew, (q)uit: ").strip().lower()
+        if choice == "q":
+            print("Goodbye.")
+            break
+        elif choice == "s":
+            prompt_set_population(country)
+        elif choice == "g":
+            amount = read_int("Amount to grow by: ")
+            if amount is not None:
+                try:
+                    country.grow_population(amount)
+                    print("Updated:", country.summary())
+                except ValueError as e:
+                    print("Rejected:", e)
+        elif choice == "v":
+            print(country.summary())
+        else:
+            print("Unrecognised option.")
+
+if __name__ == "__main__":
+    kenya = Country(name="Kenya", region="Africa", population=54000000)
+    run_menu(kenya)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Confirm the __main__ guard from Session 06 is used correctly</strong></p>
+        <p>The menu should only run when this file is executed directly, not if it were imported elsewhere.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>input_lab.py</code></td>
+            <td>Created</td>
+            <td>An interactive menu reading validated user input into controlled state methods.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-18/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add input_lab.py docs/sessions/session-18/index.html
+git commit -m "session-18: read and validate user input, connect it to controlled state methods"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does read_int need its own try/except, separate from set_population's own validation?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">read_int() converts user input to int and returns None on invalid text, without crashing</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">prompt_set_population() handles both a bad conversion (None) and a rejected value (ValueError) separately</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">The menu loop correctly dispatches on user choice with if/elif</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The __main__ guard is used so the menu only runs when the file is executed directly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">Typing invalid text, a negative number, and a valid number were all manually tested</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What is the type of the value returned by <code>input("Enter population: ")</code>, regardless of what the user types?</p>
+        <label class="quiz-option" data-val="a">It matches whatever the user typed — int if they typed digits, str otherwise</label>
+        <label class="quiz-option" data-val="b">Always str — input() never returns anything else</label>
+        <label class="quiz-option" data-val="c">Always int</label>
+        <label class="quiz-option" data-val="d">None, until you press Enter twice</label>
+        <div class="explanation"><code>input()</code> always returns a string, no matter what characters the user typed. If you need a number, you must convert it yourself, typically with <code>int()</code> or <code>float()</code>, and handle the case where the conversion fails.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A user types "fifty" when asked for a population. What happens if you call <code>int(user_input)</code> directly with no error handling?</p>
+        <label class="quiz-option" data-val="a">It returns 0</label>
+        <label class="quiz-option" data-val="b">It raises a ValueError, since "fifty" cannot be parsed as an integer</label>
+        <label class="quiz-option" data-val="c">It silently rounds to the nearest number</label>
+        <label class="quiz-option" data-val="d">It returns the string unchanged</label>
+        <div class="explanation"><code>int()</code> raises <code>ValueError</code> on text that is not a valid integer literal. Per Session 07, this needs a try/except around it, or the program crashes on the very first bad keystroke.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should raw user input be validated and converted BEFORE being passed to a method like set_population, rather than passing the raw string directly?</p>
+        <label class="quiz-option" data-val="a">set_population can accept strings just fine, so it does not matter</label>
+        <label class="quiz-option" data-val="b">set_population expects a number for its comparison (value < 0); passing a string would raise a TypeError inside the method instead of failing clearly at the input boundary</label>
+        <label class="quiz-option" data-val="c">Python automatically converts strings to numbers when needed</label>
+        <label class="quiz-option" data-val="d">There is no real reason, it is just convention</label>
+        <div class="explanation">Comparing a string to an int with <code>value < 0</code> raises a <code>TypeError</code> in Python. Converting and validating at the input boundary produces a clearer, more specific error message right where the bad data entered the program.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>In a text menu loop like <code>while True: choice = input("> ")\n    if choice == "quit": break</code>, what happens if the user just presses Enter with no text?</p>
+        <label class="quiz-option" data-val="a">The loop crashes immediately</label>
+        <label class="quiz-option" data-val="b">choice becomes an empty string "", which does not match "quit", so the loop continues asking again</label>
+        <label class="quiz-option" data-val="c">The program exits automatically</label>
+        <label class="quiz-option" data-val="d">input() blocks forever</label>
+        <div class="explanation">An empty line from the user is still a valid (empty) string. It simply fails the <code>== "quit"</code> check like any other non-matching input, so the loop naturally continues and prompts again.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is the safest pattern for reading a required number from a user who might type invalid text?</p>
+        <label class="quiz-option" data-val="a">Assume the user always types correctly and skip validation</label>
+        <label class="quiz-option" data-val="b">Wrap int(input(...)) in a loop with try/except, re-prompting on ValueError until valid input is given</label>
+        <label class="quiz-option" data-val="c">Use float() instead of int(), which never raises errors</label>
+        <label class="quiz-option" data-val="d">Read the input as a list instead of a string</label>
+        <div class="explanation">Looping with try/except around the conversion lets you catch bad input, tell the user what went wrong, and re-prompt — rather than crashing on the first typo, which is unacceptable for anything meant to be used interactively.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why are there two separate layers of validation here — read_int's conversion check and set_population's value check? Could you combine them into one? Should you?</li>
+        <li>What would happen if you skipped read_int entirely and called int(input(...)) directly inside prompt_set_population? Trace through what happens on bad input.</li>
+        <li>How does this session's "validate at the boundary, then trust the value" pattern relate to what you learned about function contracts in Session 04 and 11?</li>
+        <li>Where else in a real application (not just population) would you need this same read-validate-apply pattern for user input?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Crash on first typo:</strong> Without read_int's try/except, the very first time a user makes a typo, the entire program crashes instead of gracefully asking again — completely unacceptable for anything meant to be used by another person.</li>
+        <li><strong>Tracing state changes (Session 19):</strong> The next session adds logging/debugging so you can trace exactly when and why state changed. Without a controlled input path like this session's, there would be too many uncontrolled entry points to trace meaningfully.</li>
+        <li><strong>Real API responses (Layer 7):</strong> Session 38's real API data needs exactly this same "validate untrusted external input before trusting it" discipline — user keyboard input and network responses are both untrusted data from outside your program's control.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Reading user input with input(), converting and validating it safely, and connecting it to controlled state-change methods via a menu loop.</p>
+      <p><strong>Unlocks:</strong> You have built your first genuinely interactive program — one that reacts safely to unpredictable human input instead of only running pre-written code.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 19 — Tracing State Changes</a>. We add visibility into exactly when and why state changes, using logging and print-based tracing.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

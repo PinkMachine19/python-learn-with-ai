@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 34 — Building Utility Modules — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-current">Session 34</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+    </div>
+    <h1>Building Utility Modules</h1>
+    <p class="subtitle">Beyond small extracted functions, some logic is genuinely cross-cutting — useful to many different parts of the application without belonging to any single class.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Design a utility module containing several related, standalone functions</li>
+        <li>Explain the difference between a utility function and a method that belongs on a class</li>
+        <li>Build a search-relevance utility used by both the repository and the explorer</li>
+        <li>Keep a utility module free of dependencies on any one specific class, keeping it broadly reusable</li>
+        <li>Test a utility module thoroughly, since it will be relied upon from multiple places</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A function that checks whether a search term appears in a country's name, case-insensitively, is useful both inside CountryExplorer and potentially inside CountryRepository. Where should it live?</p>
+        <label class="quiz-option" data-val="a">Duplicated inside both classes separately</label>
+        <label class="quiz-option" data-val="b">As a standalone function in a utility module (e.g. search.py), imported by whichever class needs it, rather than tied to one specific class</label>
+        <label class="quiz-option" data-val="c">It must be a method on Country specifically, and nowhere else</label>
+        <label class="quiz-option" data-val="d">It cannot be reused across two different classes</label>
+        <div class="explanation">Logic that is genuinely useful to more than one class, and does not conceptually "belong" to any single one of them, is exactly what a utility module is for — a shared, standalone piece of logic multiple classes can import and use.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the key difference between a utility function like matches_search_term(name, term) and an instance method like Country.summary(self)?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two</label>
+        <label class="quiz-option" data-val="b">A method operates on a specific instance's own data via self; a utility function takes everything it needs as explicit arguments and does not belong to, or depend on, any particular class's internal structure</label>
+        <label class="quiz-option" data-val="c">Utility functions cannot take any arguments</label>
+        <label class="quiz-option" data-val="d">Methods are always faster than utility functions</label>
+        <div class="explanation">This connects back to Session 10's method-vs-function distinction: a method is bound to an instance's own data; a utility function is a plain, standalone function (Session 04) that takes its inputs explicitly, with no ties to any specific class.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should a utility module avoid importing or depending on a specific class like Country, if it can be avoided?</p>
+        <label class="quiz-option" data-val="a">It does not matter either way</label>
+        <label class="quiz-option" data-val="b">Keeping a utility function's inputs generic (e.g. taking a plain string, not a Country instance) makes it usable in more contexts and easier to test in complete isolation, without needing to construct unrelated objects</label>
+        <label class="quiz-option" data-val="c">Python forbids utility modules from importing other modules</label>
+        <label class="quiz-option" data-val="d">This would cause a circular import in every case</label>
+        <div class="explanation">A function like <code>matches_search_term(name: str, term: str)</code> is more broadly reusable and simpler to test than one that requires a full Country instance just to check a string match — genericity is a design choice that increases reusability.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does a utility module deserve especially thorough test coverage, more so perhaps than a one-off helper used in only one place?</p>
+        <label class="quiz-option" data-val="a">It does not need any additional testing rigor</label>
+        <label class="quiz-option" data-val="b">Because it will be relied upon from multiple different parts of the codebase, a bug in a utility function has a wider blast radius — breaking every caller simultaneously, not just one</label>
+        <label class="quiz-option" data-val="c">Utility modules are exempt from testing by convention</label>
+        <label class="quiz-option" data-val="d">Only classes need tests, never standalone utility functions</label>
+        <div class="explanation">This connects to Session 27's testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Where does this new search.py utility module fit into the package structure established in Session 32?</p>
+        <label class="quiz-option" data-val="a">It should replace models.py entirely</label>
+        <label class="quiz-option" data-val="b">As a new, additional focused module inside country_explorer/, following the same by-responsibility organization already established</label>
+        <label class="quiz-option" data-val="c">Utility modules cannot exist inside a package</label>
+        <label class="quiz-option" data-val="d">It must be placed outside the country_explorer package entirely</label>
+        <div class="explanation">This is a natural extension of Session 32's package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 33.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Utility Modules</h2>
+
+    <h3>Logic that belongs to no single class</h3>
+    <p>Some logic is genuinely cross-cutting — useful in more than one place, but not naturally "owned" by any one class's data. This is exactly what a utility module is for.</p>
+    <pre><code># country_explorer/search.py
+def matches_search_term(name, term):
+    """Check whether a search term appears in a name, case-insensitively.
+
+    Args:
+        name: the string to search within.
+        term: the search term.
+    Returns:
+        True if term appears anywhere in name, ignoring case.
+    """
+    return term.lower() in name.lower()</code></pre>
+
+    <h3>Method vs standalone utility function</h3>
+    <p>A method (Session 10) is bound to a specific instance's data via self. A utility function takes everything it needs as plain, explicit arguments, with no ties to any one class — this makes it broadly reusable.</p>
+    <pre><code># Method — bound to a specific Country instance
+class Country:
+    def name_matches(self, term):
+        return term.lower() in self.name.lower()
+
+# Utility function — takes explicit arguments, usable anywhere a string is available
+def matches_search_term(name, term):
+    return term.lower() in name.lower()
+
+# The utility version works even without a Country instance at all:
+print(matches_search_term("Kenya", "ken"))   # True — no Country object needed</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">method</span>needs self
+(an instance)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">utility function</span>needs only
+its arguments</div>
+      <div class="diagram-caption">A method needs an instance (self) to run. A utility function only needs its explicit arguments — usable anywhere, by anything.</div>
+    </div>
+
+    <h3>Using the utility from multiple places</h3>
+    <p>Both CountryExplorer and CountryRepository can use the same search utility without either one owning it or duplicating the logic.</p>
+    <pre><code># models.py
+from .search import matches_search_term
+
+class CountryExplorer:
+    def search(self, term):
+        return [c for c in self.countries if matches_search_term(c.name, term)]
+
+# repository.py
+from .search import matches_search_term
+
+class CountryRepository:
+    def search(self, term):
+        return [c for c in self.get_all() if matches_search_term(c.name, term)]</code></pre>
+
+    <h3>Thorough testing for widely-used utilities</h3>
+    <p>Because this function will be relied upon from multiple places, it deserves especially thorough test coverage — a bug here has a wide blast radius.</p>
+    <pre><code># tests/test_search.py
+from country_explorer.search import matches_search_term
+
+def test_matches_exact():
+    assert matches_search_term("Kenya", "Kenya") is True
+
+def test_matches_partial():
+    assert matches_search_term("Kenya", "ken") is True
+
+def test_matches_case_insensitive():
+    assert matches_search_term("KENYA", "kenya") is True
+
+def test_no_match():
+    assert matches_search_term("Kenya", "xyz") is False
+
+def test_empty_term_matches_everything():
+    assert matches_search_term("Kenya", "") is True  # an empty string is "in" every string</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a thoroughly tested search.py utility module, and use it from both CountryExplorer and CountryRepository.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A new module <code>country_explorer/search.py</code> plus <code>tests/test_search.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create search.py with matches_search_term and a clear docstring</strong></p>
+
+        <pre><code># country_explorer/search.py
+def matches_search_term(name, term):
+    """Check whether a search term appears in a name, case-insensitively.
+
+    Args:
+        name: the string to search within.
+        term: the search term.
+    Returns:
+        True if term appears anywhere in name, ignoring case.
+    """
+    return term.lower() in name.lower()</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add a search() method to CountryExplorer using the utility</strong></p>
+
+        <pre><code># country_explorer/models.py
+from .search import matches_search_term
+
+class CountryExplorer:
+    # ... existing code ...
+    def search(self, term):
+        return [c for c in self.countries if matches_search_term(c.name, term)]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add a search() method to CountryRepository using the same utility</strong></p>
+
+        <pre><code># country_explorer/repository.py
+from .search import matches_search_term
+
+class CountryRepository:
+    # ... existing code ...
+    def search(self, term):
+        return [c for c in self.get_all() if matches_search_term(c.name, term)]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write thorough tests for matches_search_term covering multiple cases</strong></p>
+
+        <pre><code># tests/test_search.py
+from country_explorer.search import matches_search_term
+
+def test_matches_exact():
+    assert matches_search_term("Kenya", "Kenya") is True
+
+def test_matches_partial():
+    assert matches_search_term("Kenya", "ken") is True
+
+def test_matches_case_insensitive():
+    assert matches_search_term("KENYA", "kenya") is True
+
+def test_no_match():
+    assert matches_search_term("Kenya", "xyz") is False</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Add tests confirming CountryExplorer.search() and CountryRepository.search() both use it correctly</strong></p>
+
+        <pre><code># tests/test_search_integration.py
+from country_explorer import Country, CountryExplorer, CountryRepository
+
+def test_explorer_search_uses_matches_search_term():
+    explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=1)])
+    assert [c.name for c in explorer.search("ken")] == ["Kenya"]
+
+def test_repository_search_uses_matches_search_term():
+    repo = CountryRepository(raw_data=[{"name": "Kenya", "region": "Africa", "population": 1}])
+    assert [c.name for c in repo.search("ken")] == ["Kenya"]</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_explorer/search.py</code></td>
+            <td>Created</td>
+            <td>A generic, class-independent search-matching utility.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Modified</td>
+            <td>CountryExplorer.search() uses the shared utility.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/repository.py</code></td>
+            <td>Modified</td>
+            <td>CountryRepository.search() uses the same shared utility.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_search.py</code></td>
+            <td>Created</td>
+            <td>Thorough, direct tests for the utility function itself.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_search_integration.py</code></td>
+            <td>Created</td>
+            <td>Confirms both classes correctly use the shared utility.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-34/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 6 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_explorer/search.py country_explorer/models.py country_explorer/repository.py tests/test_search.py tests/test_search_integration.py docs/sessions/session-34/index.html
+git commit -m "session-34: build a shared search utility used by both CountryExplorer and CountryRepository"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does matches_search_term take plain strings as arguments instead of a Country instance?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">matches_search_term takes plain string arguments, with no dependency on Country or any other class</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">Both CountryExplorer.search() and CountryRepository.search() import and use the same utility function</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">matches_search_term has direct, thorough tests covering exact match, partial match, case-insensitivity, and no-match</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Both classes' search() methods have integration tests confirming they correctly use the shared logic</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No search-matching logic is duplicated between the two classes</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A function that checks whether a search term appears in a country's name, case-insensitively, is useful both inside CountryExplorer and potentially inside CountryRepository. Where should it live?</p>
+        <label class="quiz-option" data-val="a">Duplicated inside both classes separately</label>
+        <label class="quiz-option" data-val="b">As a standalone function in a utility module (e.g. search.py), imported by whichever class needs it, rather than tied to one specific class</label>
+        <label class="quiz-option" data-val="c">It must be a method on Country specifically, and nowhere else</label>
+        <label class="quiz-option" data-val="d">It cannot be reused across two different classes</label>
+        <div class="explanation">Logic that is genuinely useful to more than one class, and does not conceptually "belong" to any single one of them, is exactly what a utility module is for — a shared, standalone piece of logic multiple classes can import and use.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the key difference between a utility function like matches_search_term(name, term) and an instance method like Country.summary(self)?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two</label>
+        <label class="quiz-option" data-val="b">A method operates on a specific instance's own data via self; a utility function takes everything it needs as explicit arguments and does not belong to, or depend on, any particular class's internal structure</label>
+        <label class="quiz-option" data-val="c">Utility functions cannot take any arguments</label>
+        <label class="quiz-option" data-val="d">Methods are always faster than utility functions</label>
+        <div class="explanation">This connects back to Session 10's method-vs-function distinction: a method is bound to an instance's own data; a utility function is a plain, standalone function (Session 04) that takes its inputs explicitly, with no ties to any specific class.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why should a utility module avoid importing or depending on a specific class like Country, if it can be avoided?</p>
+        <label class="quiz-option" data-val="a">It does not matter either way</label>
+        <label class="quiz-option" data-val="b">Keeping a utility function's inputs generic (e.g. taking a plain string, not a Country instance) makes it usable in more contexts and easier to test in complete isolation, without needing to construct unrelated objects</label>
+        <label class="quiz-option" data-val="c">Python forbids utility modules from importing other modules</label>
+        <label class="quiz-option" data-val="d">This would cause a circular import in every case</label>
+        <div class="explanation">A function like <code>matches_search_term(name: str, term: str)</code> is more broadly reusable and simpler to test than one that requires a full Country instance just to check a string match — genericity is a design choice that increases reusability.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does a utility module deserve especially thorough test coverage, more so perhaps than a one-off helper used in only one place?</p>
+        <label class="quiz-option" data-val="a">It does not need any additional testing rigor</label>
+        <label class="quiz-option" data-val="b">Because it will be relied upon from multiple different parts of the codebase, a bug in a utility function has a wider blast radius — breaking every caller simultaneously, not just one</label>
+        <label class="quiz-option" data-val="c">Utility modules are exempt from testing by convention</label>
+        <label class="quiz-option" data-val="d">Only classes need tests, never standalone utility functions</label>
+        <div class="explanation">This connects to Session 27's testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Where does this new search.py utility module fit into the package structure established in Session 32?</p>
+        <label class="quiz-option" data-val="a">It should replace models.py entirely</label>
+        <label class="quiz-option" data-val="b">As a new, additional focused module inside country_explorer/, following the same by-responsibility organization already established</label>
+        <label class="quiz-option" data-val="c">Utility modules cannot exist inside a package</label>
+        <label class="quiz-option" data-val="d">It must be placed outside the country_explorer package entirely</label>
+        <div class="explanation">This is a natural extension of Session 32's package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 33.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does making matches_search_term take plain strings (rather than a Country instance) make it more broadly reusable than it would otherwise be?</li>
+        <li>If matches_search_term had a bug, how many parts of the application would be affected? How does that compare to a bug in a method used by only one class?</li>
+        <li>Why do you think this session tested the utility function directly AND wrote separate integration tests for each class that uses it — rather than only testing one or the other?</li>
+        <li>Can you think of another piece of logic in the project that might deserve its own class-independent utility module, following this same pattern?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Duplicated search logic drifting apart:</strong> Without a shared utility, CountryExplorer and CountryRepository would each implement their own version of "does this term match this name" — and a future improvement (like trimming whitespace before comparing) could easily be applied to one and forgotten in the other.</li>
+        <li><strong>The prop drilling problem (Session 35):</strong> The next session examines what happens when data needs to be threaded through many layers just to reach where it is needed — a related but distinct architecture problem from the code-duplication issue this session solved.</li>
+        <li><strong>Architecture review (Session 36):</strong> This session's search.py is a concrete example of the "focused, well-tested, broadly reusable module" pattern that Session 36's architecture review will assess the whole project against.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Designing and thoroughly testing a standalone, class-independent utility module, and understanding when logic belongs to a class versus a shared utility.</p>
+      <p><strong>Unlocks:</strong> The application now has a genuinely shared, well-tested search capability used consistently across multiple parts of the codebase, with zero duplication.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 35 — The Prop Drilling Problem</a>. We deliberately design ourselves into an architecture problem — data that needs to be threaded through several layers just to reach where it is actually used.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

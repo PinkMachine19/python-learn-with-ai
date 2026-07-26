@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 22 — Computed Properties — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-gate">Session 22 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+    </div>
+    <h1>Computed Properties</h1>
+    <p class="subtitle">This is the Layer 3 gate. Some values should never be stored as their own piece of state — they should be computed fresh, every time, from state that already exists.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Identify a value that is redundant because it can always be derived from existing state</li>
+        <li>Implement a computed value as a regular method</li>
+        <li>Use the @property decorator to expose a computed value with attribute-style access</li>
+        <li>Explain the bug risk of storing a derived value separately instead of computing it</li>
+        <li>Decide, for a given value, whether it belongs as real state or as a computed property</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A CountryExplorer stores both self.countries and a separately maintained self.country_count, updated by hand every time countries changes. What is the risk?</p>
+        <label class="quiz-option" data-val="a">There is no risk — this is a common and recommended pattern</label>
+        <label class="quiz-option" data-val="b">country_count can drift out of sync with the real length of countries if any code path adds/removes an item without also remembering to update the count</label>
+        <label class="quiz-option" data-val="c">Python automatically keeps the two in sync</label>
+        <label class="quiz-option" data-val="d">This pattern is faster than computing len(countries) on demand</label>
+        <div class="explanation">Any derived value stored separately from its source is a duplication risk — the moment one code path updates <code>countries</code> but forgets to also update <code>country_count</code>, the two disagree, and nothing warns you.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the fix for the country_count problem above, using what we already know about methods?</p>
+        <label class="quiz-option" data-val="a">Add more code paths that carefully update country_count everywhere</label>
+        <label class="quiz-option" data-val="b">Delete country_count entirely and compute it on demand with a method, e.g. def country_count(self): return len(self.countries)</label>
+        <label class="quiz-option" data-val="c">Make country_count a global variable instead</label>
+        <label class="quiz-option" data-val="d">There is no fix — this tradeoff is unavoidable</label>
+        <div class="explanation">A computed method has no way to drift out of sync, because it recalculates the true answer from the actual source of truth (self.countries) every single time it is called — there is nothing to forget to update.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does the @property decorator change about calling a method like def total_population(self): return sum(c.population for c in self.countries)?</p>
+        <label class="quiz-option" data-val="a">Nothing observable — it is purely cosmetic</label>
+        <label class="quiz-option" data-val="b">It lets callers access it as explorer.total_population (no parentheses), like an attribute, instead of explorer.total_population()</label>
+        <label class="quiz-option" data-val="c">It makes the value cacheable permanently</label>
+        <label class="quiz-option" data-val="d">It turns the method into a classmethod</label>
+        <div class="explanation"><code>@property</code> lets a method be READ using attribute syntax, without parentheses — useful when a computed value conceptually feels like a property of the object (like .total_population) rather than an action being performed.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Should country_count be given a setter, e.g. explorer.country_count = 5, allowing it to be assigned directly?</p>
+        <label class="quiz-option" data-val="a">Yes, this should always be allowed for flexibility</label>
+        <label class="quiz-option" data-val="b">No — since it is derived entirely from self.countries, allowing a direct assignment would create exactly the drift risk this session is trying to eliminate</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Python requires every property to have a setter</label>
+        <div class="explanation">A computed property's entire value is deriving safety from ALWAYS being recalculated from the real source of truth. Allowing it to be set directly would reintroduce the same "stored copy that can drift" problem this session solves.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Which value is a better candidate to be stored as real state versus computed on demand: self.population (set by construction, changed by grow_population) or self.country_count (always equal to len(self.countries))?</p>
+        <label class="quiz-option" data-val="a">Both should be stored state</label>
+        <label class="quiz-option" data-val="b">population is legitimate stored state (it is the actual source of truth, not derived from anything else); country_count should be computed, since it is entirely derivable from countries</label>
+        <label class="quiz-option" data-val="c">Both should be computed properties</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction between the two</label>
+        <div class="explanation">The test is: can this value be recalculated purely from other state that already exists? population cannot — it IS the source of truth. country_count can — it is 100% derivable from len(self.countries), making it a computed property, not independent state.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Computed Properties</h2>
+
+    <h3>The redundant-state problem</h3>
+    <p>Storing a value that can always be recalculated from other state creates a duplication risk: the two copies can drift out of sync the moment one is updated without the other.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.country_count = len(countries)  # RISKY — a separate, stored copy
+
+    def add_country(self, country):
+        self.countries.append(country)
+        # Forgot to update self.country_count here!
+        # Now it silently disagrees with the real length.
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(explorer.country_count)      # 0 — WRONG, still the stale initial value
+print(len(explorer.countries))     # 1 — the actual truth</code></pre>
+
+    <h3>The fix — compute it, don't store it</h3>
+    <p>A method that recalculates the value from the real source of truth every time it is called has nothing to forget to update — it is always correct by construction.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries  # the ONLY source of truth
+
+    def country_count(self):
+        return len(self.countries)  # always recalculated fresh, cannot drift
+
+    def add_country(self, country):
+        self.countries.append(country)
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(explorer.country_count())  # 1 — always correct, nothing to forget</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">stored copy</span>can drift out
+of sync</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">computed</span>always correct,
+recalculated fresh</div>
+      <div class="diagram-caption">Stored derived state can silently go stale. A computed method always re-derives the true answer from the real source.</div>
+    </div>
+
+    <h3>@property — attribute-style access for a computed value</h3>
+    <p>When a computed value conceptually feels like a property of the object rather than an action, @property lets callers read it without parentheses, exactly like a stored attribute — while still guaranteeing it is always freshly derived.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(explorer.country_count)      # 2 — no parentheses, reads like an attribute
+print(explorer.total_population)   # 87000000 — freshly computed every access</code></pre>
+
+    <h3>When NOT to use a computed property</h3>
+    <p>A value that is genuinely independent — not derivable from other state — belongs as real, stored state. population itself cannot be computed from anything else; it IS the source of truth, changed only through the controlled methods from Session 17.</p>
+
+    <div class="alert alert-warning">
+      <strong>Layer 3 gate:</strong> This is the last Layer 3 session. Deciding what is real state versus what should be computed on demand is a judgment call every remaining session assumes you can make correctly.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Identify and eliminate redundant stored state in CountryExplorer by converting it to @property-based computed values.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>computed_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with the RISKY version that has stored, driftable derived state</strong></p>
+
+        <pre><code># computed_lab.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+
+class RiskyExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.country_count = len(countries)   # stored, can drift
+        self.total_population = sum(c.population for c in countries)  # stored, can drift
+
+    def add_country(self, country):
+        self.countries.append(country)
+        # deliberately NOT updating country_count or total_population</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Prove the drift bug happens</strong></p>
+
+        <pre><code>risky = RiskyExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+risky.add_country(Country(name="Peru", region="Americas", population=33000000))
+print("Stored count (WRONG):", risky.country_count)          # still 1
+print("Real count:", len(risky.countries))                    # 2
+print("Stored population (WRONG):", risky.total_population)   # still 54000000</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Build the fixed version using @property</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        self.countries.append(country)
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Prove the fixed version can never drift</strong></p>
+
+        <pre><code>explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+explorer.add_country(Country(name="Peru", region="Americas", population=33000000))
+print("Computed count:", explorer.country_count)          # 2 — correct
+print("Computed population:", explorer.total_population)  # 87000000 — correct</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a one-sentence comment for each attribute in CountryExplorer classifying it as STATE or COMPUTED</strong></p>
+        <p>Connect this back to Session 16's STATE/FIXED annotation exercise.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>computed_lab.py</code></td>
+            <td>Created</td>
+            <td>Contrasts stored, driftable derived state with correct @property-based computed values.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-22/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 3 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add computed_lab.py docs/sessions/session-22/index.html
+git commit -m "session-22: replace stored derived state with @property computed values"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why can country_count as a @property never drift out of sync, while the stored version could?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">RiskyExplorer demonstrates the drift bug concretely, with printed WRONG values</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">CountryExplorer replaces both derived values with @property methods</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">The fixed version is proven correct after add_country() is called, with printed correct values</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Every attribute is annotated as STATE (genuine, independent) or COMPUTED (derivable) with reasoning</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No computed property has a corresponding setter that would allow it to be assigned directly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>A CountryExplorer stores both self.countries and a separately maintained self.country_count, updated by hand every time countries changes. What is the risk?</p>
+        <label class="quiz-option" data-val="a">There is no risk — this is a common and recommended pattern</label>
+        <label class="quiz-option" data-val="b">country_count can drift out of sync with the real length of countries if any code path adds/removes an item without also remembering to update the count</label>
+        <label class="quiz-option" data-val="c">Python automatically keeps the two in sync</label>
+        <label class="quiz-option" data-val="d">This pattern is faster than computing len(countries) on demand</label>
+        <div class="explanation">Any derived value stored separately from its source is a duplication risk — the moment one code path updates <code>countries</code> but forgets to also update <code>country_count</code>, the two disagree, and nothing warns you.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the fix for the country_count problem above, using what we already know about methods?</p>
+        <label class="quiz-option" data-val="a">Add more code paths that carefully update country_count everywhere</label>
+        <label class="quiz-option" data-val="b">Delete country_count entirely and compute it on demand with a method, e.g. def country_count(self): return len(self.countries)</label>
+        <label class="quiz-option" data-val="c">Make country_count a global variable instead</label>
+        <label class="quiz-option" data-val="d">There is no fix — this tradeoff is unavoidable</label>
+        <div class="explanation">A computed method has no way to drift out of sync, because it recalculates the true answer from the actual source of truth (self.countries) every single time it is called — there is nothing to forget to update.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does the @property decorator change about calling a method like def total_population(self): return sum(c.population for c in self.countries)?</p>
+        <label class="quiz-option" data-val="a">Nothing observable — it is purely cosmetic</label>
+        <label class="quiz-option" data-val="b">It lets callers access it as explorer.total_population (no parentheses), like an attribute, instead of explorer.total_population()</label>
+        <label class="quiz-option" data-val="c">It makes the value cacheable permanently</label>
+        <label class="quiz-option" data-val="d">It turns the method into a classmethod</label>
+        <div class="explanation"><code>@property</code> lets a method be READ using attribute syntax, without parentheses — useful when a computed value conceptually feels like a property of the object (like .total_population) rather than an action being performed.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Should country_count be given a setter, e.g. explorer.country_count = 5, allowing it to be assigned directly?</p>
+        <label class="quiz-option" data-val="a">Yes, this should always be allowed for flexibility</label>
+        <label class="quiz-option" data-val="b">No — since it is derived entirely from self.countries, allowing a direct assignment would create exactly the drift risk this session is trying to eliminate</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Python requires every property to have a setter</label>
+        <div class="explanation">A computed property's entire value is deriving safety from ALWAYS being recalculated from the real source of truth. Allowing it to be set directly would reintroduce the same "stored copy that can drift" problem this session solves.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Which value is a better candidate to be stored as real state versus computed on demand: self.population (set by construction, changed by grow_population) or self.country_count (always equal to len(self.countries))?</p>
+        <label class="quiz-option" data-val="a">Both should be stored state</label>
+        <label class="quiz-option" data-val="b">population is legitimate stored state (it is the actual source of truth, not derived from anything else); country_count should be computed, since it is entirely derivable from countries</label>
+        <label class="quiz-option" data-val="c">Both should be computed properties</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction between the two</label>
+        <div class="explanation">The test is: can this value be recalculated purely from other state that already exists? population cannot — it IS the source of truth. country_count can — it is 100% derivable from len(self.countries), making it a computed property, not independent state.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Can you think of a value from an earlier session (Sessions 1–21) that was accidentally stored as separate state when it could have been computed instead?</li>
+        <li>Why does @property choose to hide the fact that a value is being recalculated every single access, rather than making that obvious with parentheses?</li>
+        <li>Is population itself ever a good candidate to become a computed property? Why or why not, given what you know about its source of truth?</li>
+        <li>What is the performance tradeoff of computing a value fresh every access instead of caching it — when might that tradeoff actually matter?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>The classic "shows the wrong total" bug:</strong> Nearly every "the displayed total doesn't match the actual list" bug in real software comes from exactly this pattern: a stored derived value that one code path forgot to update. This session directly immunizes you against it.</li>
+        <li><strong>The mock data layer (Layer 4):</strong> Session 24's CountryRepository will expose several computed values (counts, filtered subsets) — built entirely on the @property pattern from this session.</li>
+        <li><strong>Testing derived values (Layer 5):</strong> Tests that assert on a count or a total (Session 29) are far simpler to write correctly against a computed property, since there is no separate "did you remember to update the stored copy" step to also test.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Computed properties — eliminating redundant stored state by deriving values on demand with @property, guaranteeing they can never drift out of sync.</p>
+      <p><strong>Unlocks:</strong> You can now correctly judge whether a value is genuine state or a derived computation — the last Layer 3 skill before we start working with real (mock) data sources.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 23 — Why Mock Data Matters</a>. Layer 4 begins. We build against fake data before any real data source exists — exactly like real engineering teams do.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

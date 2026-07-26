@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 36 — Architecture Review — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-gate">Session 36 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+    </div>
+    <h1>Architecture Review</h1>
+    <p class="subtitle">This is the Layer 6 gate. We step back and review every major structural decision made across the whole project, documenting the reasoning the way a real engineering team would.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Write an Architecture Decision Record (ADR) documenting a real decision made earlier in the project</li>
+        <li>Review the current package structure end to end and assess whether it still makes sense</li>
+        <li>Identify one thing you would do differently if starting the project over, and explain why</li>
+        <li>Confirm the full test suite still passes as a final Layer 6 checkpoint</li>
+        <li>Explicitly connect the prop drilling problem from Session 35 to a documented architectural tradeoff</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What are the essential components of a good Architecture Decision Record (ADR), based on this session's format?</p>
+        <label class="quiz-option" data-val="a">Only the final decision, with no explanation</label>
+        <label class="quiz-option" data-val="b">The decision itself, the context/session it was made in, the reasoning behind it, alternatives that were considered, and the consequences going forward</label>
+        <label class="quiz-option" data-val="c">A complete line-by-line diff of every file changed</label>
+        <label class="quiz-option" data-val="d">A screenshot of the code</label>
+        <div class="explanation">A useful ADR captures not just WHAT was decided, but WHY — including what else was considered and rejected, and what the decision commits the project to going forward. This is what makes it useful to someone (including future-you) revisiting the decision later.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why is it valuable to document that Session 24's repository pattern was chosen SPECIFICALLY to support later testing (Session 31) and later real-API integration (Session 38), rather than just noting "we added a repository class"?</p>
+        <label class="quiz-option" data-val="a">It is not valuable; the code speaks for itself</label>
+        <label class="quiz-option" data-val="b">Recording the REASONING behind a decision preserves context that the code alone cannot show — a future reader (or future you) can understand not just what exists, but why it was built that way, and whether that reasoning still holds</label>
+        <label class="quiz-option" data-val="c">This information is automatically embedded in Python bytecode</label>
+        <label class="quiz-option" data-val="d">ADRs are only useful for decisions made by teams larger than one person</label>
+        <div class="explanation">This is precisely why Session 24's WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Reviewing the prop drilling problem from Session 35, what should an honest architecture review document about it?</p>
+        <label class="quiz-option" data-val="a">Nothing — it was fully solved and no longer matters</label>
+        <label class="quiz-option" data-val="b">That it is a real, currently-unresolved tradeoff of the current composition structure, worth noting explicitly as a known limitation rather than pretending the project has no rough edges</label>
+        <label class="quiz-option" data-val="c">That composed objects should never be used again anywhere</label>
+        <label class="quiz-option" data-val="d">That the problem does not actually exist in Python</label>
+        <div class="explanation">A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 35's deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 32 already ran it after the package reorganization?</p>
+        <label class="quiz-option" data-val="a">It is redundant and unnecessary busywork</label>
+        <label class="quiz-option" data-val="b">Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 33-35) also preserved correct behavior, not just the reorganization itself</label>
+        <label class="quiz-option" data-val="c">pytest results expire after one session and must be re-verified</label>
+        <label class="quiz-option" data-val="d">This is only for show; the actual result does not matter</label>
+        <div class="explanation">This is Layer 5's safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 33, 34, 35, and now 36) gives ongoing confidence that Layer 6's reorganization work has been behavior-preserving throughout, not just at one checkpoint.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is the value of explicitly asking "what would I do differently if starting over" as part of this review, rather than only documenting decisions as unquestionably correct?</p>
+        <label class="quiz-option" data-val="a">There is no value; decisions made should never be questioned</label>
+        <label class="quiz-option" data-val="b">Honest retrospection identifies real limitations and learning, which is valuable input for future projects (or a future iteration of this one) — treating every past decision as beyond question would prevent genuine improvement</label>
+        <label class="quiz-option" data-val="c">This step is purely ceremonial and has no practical use</label>
+        <label class="quiz-option" data-val="d">It is only useful for very large teams, never for solo work</label>
+        <div class="explanation">This is genuine engineering reflection: acknowledging that a decision — even a reasonable one at the time — might not be the best choice in hindsight is how real understanding (and real improvement in future projects) develops, rather than treating early choices as permanently beyond question.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Conducting an Architecture Review</h2>
+
+    <h3>The ADR format</h3>
+    <p>An Architecture Decision Record captures a real decision, its context, its reasoning, the alternatives considered, and its ongoing consequences — turning tacit reasoning into a durable, readable record.</p>
+    <pre><code># ADR-001 — Repository Pattern for Data Access
+#
+# Decision: Wrap all data access behind a CountryRepository class with a
+# stable get_all()/find_by_region() interface.
+#
+# Session: 24 (Building a Data Access Layer)
+#
+# Why: Application logic should not need to know or care whether data comes
+# from an in-memory mock list, a JSON file, or eventually a real API. This
+# separation lets each of those be swapped in independently, and lets tests
+# (Session 31) inject small, controlled fake datasets without touching real
+# files or the network.
+#
+# Alternatives considered: Letting every part of the app import mock data
+# directly. Rejected — this would tightly couple application logic to one
+# specific data source, and make testing much harder.
+#
+# Consequence: Any future data source (Session 38's real API) must be
+# adapted to return data in the same raw shape the repository expects.</code></pre>
+
+    <h3>Reviewing the current package structure</h3>
+    <p>Session 32 split the project into country_explorer/models.py, repository.py, validators.py, formatting.py, and search.py. A genuine review asks: does this grouping still make sense, now that the project has grown further?</p>
+    <pre><code># country_explorer/
+#   __init__.py     — re-exports the package's public interface
+#   models.py        — Country, CountryExplorer (data + core behavior)
+#   repository.py    — CountryRepository (data access)
+#   validators.py     — validate_country_record (data contract enforcement)
+#   formatting.py     — format_population (shared display logic)
+#   search.py          — matches_search_term (shared search logic)
+#
+# Does this still make sense? formatting.py and search.py are both small,
+# single-function modules — reasonable for now, but worth reconsidering if
+# either grows substantially.</code></pre>
+
+    <h3>Documenting a known, unresolved limitation</h3>
+    <p>A genuine review does not pretend the project is flawless — Session 35's prop drilling problem is a real, currently open architectural tradeoff worth recording explicitly.</p>
+    <pre><code># ADR-002 — Prop Drilling in the Composed UI-Layer Classes (UNRESOLVED)
+#
+# Decision: (none yet — documenting a known problem, not a fix)
+#
+# Session: 35 (The Prop Drilling Problem)
+#
+# Why this is a problem: App -&gt; NavigationPanel -&gt; MenuSection -&gt;
+# CountryExplorer requires every intermediate layer to forward a reference
+# it does not otherwise use, coupling unrelated classes together.
+#
+# Status: Deliberately left unresolved in this curriculum. A future
+# iteration might explore a shared context/state object or dependency
+# injection to address this, but understanding the problem clearly (as
+# Session 35 did) is prioritized over reaching for a fix prematurely.</code></pre>
+
+    <h3>The final Layer 6 checkpoint: does everything still work?</h3>
+    <p>Before considering Layer 6 complete, confirm the full test suite still passes — proving all the structural work across Sessions 32-36 was behavior-preserving throughout, not just at one point in time.</p>
+
+    <div class="alert alert-warning">
+      <strong>Layer 6 gate:</strong> This is the last Layer 6 session. Every remaining session assumes you can document and reason about architecture decisions the way a real engineering team does — including honestly naming unresolved tradeoffs.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write a real architecture review document covering at least two decisions (one resolved, one open), and confirm the full test suite still passes.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>ARCHITECTURE.md</code> at the project root.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create ARCHITECTURE.md with the repository pattern ADR</strong></p>
+
+        <pre><code># Architecture Decisions
+
+## ADR-001 — Repository Pattern for Data Access
+
+**Decision:** Wrap all data access behind a CountryRepository class with a
+stable get_all()/find_by_region()/search() interface.
+
+**Session:** 24 (Building a Data Access Layer)
+
+**Why:** Application logic should not need to know or care whether data
+comes from an in-memory mock list, a JSON file, or eventually a real API.
+
+**Alternatives considered:** Letting every part of the app import mock
+data directly. Rejected — this would tightly couple application logic to
+one specific data source.
+
+**Consequence:** Any future data source must be adapted to return data in
+the same raw shape the repository expects.</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add an ADR for the package reorganization from Session 32</strong></p>
+
+        <pre><code>## ADR-002 — Package Structure (models / repository / validators / formatting / search)
+
+**Decision:** Split the growing country.py into a country_explorer package
+with focused submodules by responsibility.
+
+**Session:** 32 (Package and Folder Organization)
+
+**Why:** A single growing file mixed unrelated responsibilities. Splitting
+by responsibility (data modeling, data access, validation, formatting,
+search) keeps each module focused and easier to navigate.
+
+**Alternatives considered:** Splitting by "layer" of the curriculum
+instead of by responsibility. Rejected — responsibility-based grouping
+stays meaningful even as the curriculum's own structure changes.
+
+**Consequence:** Every new piece of cross-cutting logic must be evaluated
+for which existing module (or a new one) it belongs in.</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add an ADR documenting the unresolved prop drilling problem</strong></p>
+
+        <pre><code>## ADR-003 — Prop Drilling in Composed UI-Layer Classes (UNRESOLVED)
+
+**Decision:** None yet — this documents a known problem, not a fix.
+
+**Session:** 35 (The Prop Drilling Problem)
+
+**Why this is a problem:** A layered App -&gt; NavigationPanel -&gt; MenuSection
+-&gt; CountryExplorer structure requires every intermediate layer to forward
+a reference it does not otherwise use.
+
+**Status:** Deliberately left unresolved. Future work might explore a
+shared context object or dependency injection, but understanding the
+problem clearly is prioritized over a premature fix.</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Review the current package structure and write a short assessment</strong></p>
+        <p>Answer explicitly: does the current models/repository/validators/formatting/search split still make sense? What, if anything, would you change?</p>
+        <pre><code>## Package Structure Review
+
+country_explorer/models.py, repository.py, validators.py, formatting.py,
+and search.py currently reflect distinct responsibilities established in
+Sessions 24, 26, 33, and 34. formatting.py and search.py are each small
+single-function modules — reasonable for the project's current size, but
+worth reconsidering if either grows to contain several unrelated helpers.</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Run the full test suite as the final Layer 6 checkpoint</strong></p>
+        <p>Confirm every test from Sessions 27-34 still passes, proving all of Layer 6's structural changes were behavior-preserving.</p>
+        <pre><code># pytest -v</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>ARCHITECTURE.md</code></td>
+            <td>Created</td>
+            <td>A real architecture decision record documenting resolved and unresolved decisions.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-36/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — Layer 6 gate.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add ARCHITECTURE.md docs/sessions/session-36/index.html
+git commit -m "session-36: conduct a full architecture review and document key decisions"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did ADR-003 document a problem without proposing a fix, unlike ADR-001 and ADR-002?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">ARCHITECTURE.md contains at least one fully resolved decision (ADR-001 or ADR-002) with reasoning and alternatives</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">ARCHITECTURE.md contains the deliberately unresolved prop drilling ADR, documented honestly</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">The current package structure is explicitly assessed for whether it still makes sense</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The full test suite is run and confirmed passing as the final Layer 6 checkpoint</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">Every ADR references the specific session where the decision was actually made</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What are the essential components of a good Architecture Decision Record (ADR), based on this session's format?</p>
+        <label class="quiz-option" data-val="a">Only the final decision, with no explanation</label>
+        <label class="quiz-option" data-val="b">The decision itself, the context/session it was made in, the reasoning behind it, alternatives that were considered, and the consequences going forward</label>
+        <label class="quiz-option" data-val="c">A complete line-by-line diff of every file changed</label>
+        <label class="quiz-option" data-val="d">A screenshot of the code</label>
+        <div class="explanation">A useful ADR captures not just WHAT was decided, but WHY — including what else was considered and rejected, and what the decision commits the project to going forward. This is what makes it useful to someone (including future-you) revisiting the decision later.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>Why is it valuable to document that Session 24's repository pattern was chosen SPECIFICALLY to support later testing (Session 31) and later real-API integration (Session 38), rather than just noting "we added a repository class"?</p>
+        <label class="quiz-option" data-val="a">It is not valuable; the code speaks for itself</label>
+        <label class="quiz-option" data-val="b">Recording the REASONING behind a decision preserves context that the code alone cannot show — a future reader (or future you) can understand not just what exists, but why it was built that way, and whether that reasoning still holds</label>
+        <label class="quiz-option" data-val="c">This information is automatically embedded in Python bytecode</label>
+        <label class="quiz-option" data-val="d">ADRs are only useful for decisions made by teams larger than one person</label>
+        <div class="explanation">This is precisely why Session 24's WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Reviewing the prop drilling problem from Session 35, what should an honest architecture review document about it?</p>
+        <label class="quiz-option" data-val="a">Nothing — it was fully solved and no longer matters</label>
+        <label class="quiz-option" data-val="b">That it is a real, currently-unresolved tradeoff of the current composition structure, worth noting explicitly as a known limitation rather than pretending the project has no rough edges</label>
+        <label class="quiz-option" data-val="c">That composed objects should never be used again anywhere</label>
+        <label class="quiz-option" data-val="d">That the problem does not actually exist in Python</label>
+        <div class="explanation">A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 35's deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 32 already ran it after the package reorganization?</p>
+        <label class="quiz-option" data-val="a">It is redundant and unnecessary busywork</label>
+        <label class="quiz-option" data-val="b">Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 33-35) also preserved correct behavior, not just the reorganization itself</label>
+        <label class="quiz-option" data-val="c">pytest results expire after one session and must be re-verified</label>
+        <label class="quiz-option" data-val="d">This is only for show; the actual result does not matter</label>
+        <div class="explanation">This is Layer 5's safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 33, 34, 35, and now 36) gives ongoing confidence that Layer 6's reorganization work has been behavior-preserving throughout, not just at one checkpoint.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is the value of explicitly asking "what would I do differently if starting over" as part of this review, rather than only documenting decisions as unquestionably correct?</p>
+        <label class="quiz-option" data-val="a">There is no value; decisions made should never be questioned</label>
+        <label class="quiz-option" data-val="b">Honest retrospection identifies real limitations and learning, which is valuable input for future projects (or a future iteration of this one) — treating every past decision as beyond question would prevent genuine improvement</label>
+        <label class="quiz-option" data-val="c">This step is purely ceremonial and has no practical use</label>
+        <label class="quiz-option" data-val="d">It is only useful for very large teams, never for solo work</label>
+        <div class="explanation">This is genuine engineering reflection: acknowledging that a decision — even a reasonable one at the time — might not be the best choice in hindsight is how real understanding (and real improvement in future projects) develops, rather than treating early choices as permanently beyond question.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>If you were handing this project to a new developer, which single ADR would be most valuable for them to read first, and why?</li>
+        <li>What is one decision made earlier in this curriculum (Sessions 1-35) that you now, in hindsight, might have made differently? Why?</li>
+        <li>Why does documenting a KNOWN limitation (ADR-003) honestly build more trust in a project's documentation than only ever documenting successes?</li>
+        <li>How does the discipline of writing an ADR relate to the "What We Learned" section that has closed every single session in this curriculum?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Lost institutional knowledge:</strong> Without documented reasoning, future decisions about whether to change the repository pattern, the package structure, or address prop drilling would have to be re-derived from scratch, or worse, made without understanding the original tradeoffs at all.</li>
+        <li><strong>Real-world file and network work (Layer 7):</strong> The next layer adds real files and a real API — genuinely new external dependencies. Reviewing the architecture now, before adding more complexity, ensures the foundation is well-understood before building further on top of it.</li>
+        <li><strong>The capstone review (Session 40):</strong> This session's ARCHITECTURE.md becomes a key artifact referenced in the final capstone review, which walks through the entire project end to end.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Writing Architecture Decision Records that document not just what was built, but why — including honestly documenting known, unresolved limitations.</p>
+      <p><strong>Unlocks:</strong> The project now has a durable record of its own reasoning, and Layer 6's structural work is confirmed complete and behavior-preserving via a full passing test suite.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 37 — File I/O Deep Dive</a>. Layer 7 begins. We finally touch the real world — real files and, soon, a real network API — building on a now well-understood, well-tested foundation.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

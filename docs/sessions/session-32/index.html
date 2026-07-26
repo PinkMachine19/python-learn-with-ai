@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 32 — Package and Folder Organization — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-current">Session 32</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+    </div>
+    <h1>Package and Folder Organization</h1>
+    <p class="subtitle">Layer 6 begins. Our project has grown past what flat files can comfortably hold. We reorganize into a proper Python package structure.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain the difference between a module (Session 06) and a package</li>
+        <li>Create a package using an __init__.py file</li>
+        <li>Reorganize country.py's growing classes into a package with focused submodules</li>
+        <li>Update import statements across the project to match the new structure</li>
+        <li>Run the existing test suite after reorganizing, to confirm nothing broke</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What is the difference between a module (Session 06) and a package?</p>
+        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
+        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
+        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
+        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
+        <div class="explanation">A module (Session 06) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
+        <label class="quiz-option" data-val="a">A file named package.json</label>
+        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
+        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
+        <label class="quiz-option" data-val="d">A README.md file</label>
+        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
+        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
+        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
+        <label class="quiz-option" data-val="c">Country must be renamed</label>
+        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
+        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
+        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
+        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
+        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
+        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
+        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 24's separation of concerns?</p>
+        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
+        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
+        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
+        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
+        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 24's repository vs explorer distinction, Session 20's separate validators module) — grouping by responsibility, not arbitrarily.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Modules vs Packages</h2>
+
+    <h3>From one growing file to a package</h3>
+    <p>country.py has grown to contain Country, CountryExplorer, CountryRepository, and validate_country_record — several distinct responsibilities crammed into one file. A package lets us split these while keeping them organized under one importable unit.</p>
+    <pre><code># Before — everything in one growing file
+# country.py
+class Country: ...
+class CountryExplorer: ...
+class CountryRepository: ...
+def validate_country_record(data): ...</code></pre>
+
+    <h3>Creating a package with __init__.py</h3>
+    <p>A directory becomes a package once it contains an __init__.py file. The file can be empty, or it can re-export names to make imports more convenient for users of the package.</p>
+    <pre><code># country_explorer/__init__.py
+from .models import Country, CountryExplorer
+from .repository import CountryRepository
+from .validators import validate_country_record
+
+# This lets other code do: from country_explorer import Country
+# instead of the more verbose: from country_explorer.models import Country</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">country.py</span>one growing
+file</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">country_explorer/</span>models.py
+repository.py
+validators.py</div>
+      <div class="diagram-caption">country.py splits into a package: focused submodules, with __init__.py re-exporting the names external code actually needs.</div>
+    </div>
+
+    <h3>Splitting by responsibility</h3>
+    <p>Following the conceptual boundaries already established in the project — Session 24's repository/explorer split, Session 20's separate validators — gives a natural, sensible package layout.</p>
+    <pre><code># country_explorer/models.py
+class Country:
+    ...
+
+class CountryExplorer:
+    ...
+
+# country_explorer/repository.py
+from .models import Country
+
+class CountryRepository:
+    ...
+
+# country_explorer/validators.py
+def validate_country_record(data):
+    ...</code></pre>
+
+    <h3>Updating imports and re-running the test suite</h3>
+    <p>Every file that imported from country now needs to import from country_explorer (or a specific submodule). Running the full test suite immediately afterward confirms the reorganization did not silently break anything — the payoff of Layer 5's investment.</p>
+    <pre><code># tests/test_country.py — before
+# from country import Country
+
+# tests/test_country.py — after
+from country_explorer import Country
+
+# Then: pytest -v
+# If every test still passes, the reorganization was behavior-preserving, as intended</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Reorganize country.py into a country_explorer/ package with focused submodules, update all imports, and confirm the full test suite still passes.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A new package directory <code>country_explorer/</code> replacing the flat <code>country.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the country_explorer/ directory with __init__.py</strong></p>
+
+        <pre><code># country_explorer/__init__.py
+from .models import Country, CountryExplorer
+from .repository import CountryRepository
+from .validators import validate_country_record</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Move Country and CountryExplorer into models.py</strong></p>
+
+        <pre><code># country_explorer/models.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
+
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Move CountryRepository into repository.py, importing Country from models</strong></p>
+
+        <pre><code># country_explorer/repository.py
+from .models import Country
+
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Move validate_country_record into validators.py</strong></p>
+
+        <pre><code># country_explorer/validators.py
+def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Update every test file's imports and run the full suite</strong></p>
+        <p>Change every from country import ... to from country_explorer import ..., delete the old country.py, and run pytest -v.</p>
+        <pre><code># tests/test_country.py, test_return_values.py, test_state_changes.py, test_repository.py
+# change: from country import Country, CountryExplorer, CountryRepository, validate_country_record
+# to:     from country_explorer import Country, CountryExplorer, CountryRepository, validate_country_record
+
+# pytest -v</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_explorer/__init__.py</code></td>
+            <td>Created</td>
+            <td>Marks the directory as a package and re-exports the key names.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Created</td>
+            <td>Country and CountryExplorer, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/repository.py</code></td>
+            <td>Created</td>
+            <td>CountryRepository, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/validators.py</code></td>
+            <td>Created</td>
+            <td>validate_country_record, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country.py</code></td>
+            <td>Deleted</td>
+            <td>Replaced by the new country_explorer package.</td>
+          </tr>
+          <tr>
+            <td><code>tests/*.py</code></td>
+            <td>Modified</td>
+            <td>Import paths updated to the new package structure.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-32/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 7 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_explorer/ tests/ docs/sessions/session-32/index.html
+git rm country.py
+git commit -m "session-32: reorganize into a country_explorer package with focused submodules"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did running the full test suite right after this reorganization matter more than after almost any previous session?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">country_explorer/ is a real package with __init__.py re-exporting the key names</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">models.py, repository.py, and validators.py each contain only their own responsibility</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">repository.py imports Country from .models rather than duplicating it</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Every test file's imports are updated to the new package path</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">The full test suite passes with zero failures after the reorganization</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What is the difference between a module (Session 06) and a package?</p>
+        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
+        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
+        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
+        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
+        <div class="explanation">A module (Session 06) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
+        <label class="quiz-option" data-val="a">A file named package.json</label>
+        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
+        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
+        <label class="quiz-option" data-val="d">A README.md file</label>
+        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
+        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
+        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
+        <label class="quiz-option" data-val="c">Country must be renamed</label>
+        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
+        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
+        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
+        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
+        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
+        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
+        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 24's separation of concerns?</p>
+        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
+        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
+        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
+        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
+        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 24's repository vs explorer distinction, Session 20's separate validators module) — grouping by responsibility, not arbitrarily.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Did any test fail immediately after the reorganization? If so, what did that reveal about a missed import? If not, what does that tell you about how thorough Layer 5's coverage really was?</li>
+        <li>Why does __init__.py re-export names instead of requiring every caller to know the exact submodule (models, repository, validators) a given class lives in?</li>
+        <li>How does this package split reflect the conceptual boundaries you've been building since Session 24 (repository) and Session 20 (validators), rather than an arbitrary split?</li>
+        <li>What would you do differently if you needed to add a FOURTH responsibility to this package later — how would you decide whether it deserves its own submodule?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Import errors from a rushed reorganization:</strong> Reorganizing files without updating every import reference (and without a test suite to catch the ones you miss) is one of the most common sources of "it worked yesterday" bugs in real projects.</li>
+        <li><strong>Reusable modules (Session 33):</strong> The next session builds genuinely reusable utility functions — having a clean package structure in place first makes it obvious where new shared code should live.</li>
+        <li><strong>God objects and tight coupling (Session 35):</strong> A clean package split makes it much easier to SEE when one module starts doing too much or reaching too deeply into another's internals — the problem Session 35 addresses directly.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Packages vs modules, creating a package with __init__.py, and safely reorganizing a growing codebase with a test suite as a safety net.</p>
+      <p><strong>Unlocks:</strong> The project now has a real, scalable package structure instead of one growing flat file — and you have proven, with tests, that the reorganization changed nothing about behavior.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 33 — Reusable Functions and Modules</a>. We extract genuinely reusable functions and utility modules, building on the clean structure we just established.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

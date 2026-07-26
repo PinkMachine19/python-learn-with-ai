@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 03 — List Comprehensions — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-current">Session 03</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+    </div>
+    <h1>List Comprehensions</h1>
+    <p class="subtitle">Manually writing a for-loop to build a new list every time is repetitive. List comprehensions are Python's built-in shorthand for exactly that pattern.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Rewrite a transforming for-loop as a list comprehension</li>
+        <li>Rewrite a filtering for-loop (with an if) as a list comprehension</li>
+        <li>Combine transform and filter in a single comprehension</li>
+        <li>Recognise when a comprehension improves readability and when a plain loop is clearer</li>
+        <li>Explain that a comprehension always produces a brand-new list</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>names = [c["name"] for c in countries]</code>, what does this produce?</p>
+        <label class="quiz-option" data-val="a">It mutates <code>countries</code> to only contain names</label>
+        <label class="quiz-option" data-val="b">A new list containing just the "name" value from each dict in countries</label>
+        <label class="quiz-option" data-val="c">A single string of all names joined together</label>
+        <label class="quiz-option" data-val="d">A dictionary mapping names to countries</label>
+        <div class="explanation">A list comprehension always builds a brand-new list. <code>[c["name"] for c in countries]</code> is shorthand for looping over <code>countries</code> and collecting <code>c["name"]</code> from each item into a new list. <code>countries</code> itself is untouched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>[c for c in countries if c["region"] == "Africa"]</code> produce?</p>
+        <label class="quiz-option" data-val="a">A list of only the region strings that equal "Africa"</label>
+        <label class="quiz-option" data-val="b">A new list containing only the country dicts whose region is "Africa"</label>
+        <label class="quiz-option" data-val="c">True or False for each country</label>
+        <label class="quiz-option" data-val="d">A KeyError if any country lacks a region key</label>
+        <div class="explanation">The <code>if</code> clause at the end filters which items get included. Since the expression before <code>for</code> is just <code>c</code> (the whole dict), the result keeps entire country dicts, filtered down to African ones.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="a">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Which for-loop is exactly equivalent to <code>squares = [n * n for n in [1, 2, 3]]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>squares = []\nfor n in [1, 2, 3]:\n    squares.append(n * n)</code></label>
+        <label class="quiz-option" data-val="b"><code>squares = [1, 2, 3]\nfor n in squares:\n    n = n * n</code></label>
+        <label class="quiz-option" data-val="c"><code>squares = {}\nfor n in [1, 2, 3]:\n    squares[n] = n * n</code></label>
+        <label class="quiz-option" data-val="d">None of these are equivalent</label>
+        <div class="explanation">A comprehension is shorthand for: start with an empty list, loop, and append the transformed value each time. Option a is that exact loop written out longhand.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You want the names of only the African countries in one line. Which comprehension does that?</p>
+        <label class="quiz-option" data-val="a"><code>[c["name"] for c in countries if c["region"] == "Africa"]</code></label>
+        <label class="quiz-option" data-val="b"><code>[c["name"] if c["region"] == "Africa" for c in countries]</code></label>
+        <label class="quiz-option" data-val="c"><code>[c for c["name"] in countries if region == "Africa"]</code></label>
+        <label class="quiz-option" data-val="d"><code>filter(c["name"] for c in countries)</code></label>
+        <div class="explanation">The syntax order is always <code>[expression for item in iterable if condition]</code>. Option a transforms to <code>c["name"]</code> and filters with <code>if c["region"] == "Africa"</code> in the correct positions.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>True or false: after running <code>names = [c["name"] for c in countries]</code>, the original <code>countries</code> list has been changed.</p>
+        <label class="quiz-option" data-val="a">True — comprehensions always mutate the source</label>
+        <label class="quiz-option" data-val="b">False — a comprehension never modifies the iterable it reads from</label>
+        <label class="quiz-option" data-val="c">True, but only if the list contains dictionaries</label>
+        <label class="quiz-option" data-val="d">It depends on whether <code>if</code> is used</label>
+        <div class="explanation">A comprehension only ever reads from the source iterable and builds a separate new list. <code>countries</code> is exactly as it was before, regardless of what the comprehension does.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — List Comprehensions</h2>
+
+    <h3>From for-loop to comprehension — the transform case</h3>
+    <p>Recall from Session 02: building a new list from an old one always follows the same shape — start empty, loop, append the transformed value.</p>
+    <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa"},
+    {"name": "Ghana", "region": "Africa"},
+    {"name": "Peru", "region": "Americas"},
+]
+
+# The longhand for-loop version
+names = []
+for c in countries:
+    names.append(c["name"])
+
+# The exact same result as a list comprehension
+names = [c["name"] for c in countries]
+print(names)  # ['Kenya', 'Ghana', 'Peru']</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">4 lines</span>names = []
+for c in countries:
+  names.append(c["name"])</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">1 line</span>[c["name"] for c in countries]</div>
+      <div class="diagram-caption">Both approaches read every item and collect a transformed value — the comprehension is the loop, compressed onto one line.</div>
+    </div>
+
+    <h3>Adding a filter with if</h3>
+    <p>A trailing <code>if</code> clause keeps only the items matching a condition — equivalent to a for-loop with an if-check before the append.</p>
+    <pre><code># Longhand
+african = []
+for c in countries:
+    if c["region"] == "Africa":
+        african.append(c)
+
+# Comprehension
+african = [c for c in countries if c["region"] == "Africa"]
+print(african)
+# [{'name': 'Kenya', ...}, {'name': 'Ghana', ...}]</code></pre>
+
+    <h3>Combining transform and filter</h3>
+    <p>You can transform and filter in the same expression — the transform goes first, the filter goes last.</p>
+    <pre><code>african_names = [c["name"] for c in countries if c["region"] == "Africa"]
+print(african_names)  # ['Kenya', 'Ghana']</code></pre>
+
+    <h3>When NOT to use a comprehension</h3>
+    <p>Comprehensions are for building a list. If your loop body does something else — printing, multiple statements, side effects — a plain for-loop is clearer. Forcing everything into a comprehension hurts readability instead of helping it.</p>
+    <pre><code># Fine as a comprehension — building a list
+names = [c["name"] for c in countries]
+
+# NOT a good fit — this is printing, not building a list.
+# Keep this as a normal for-loop:
+for c in countries:
+    print(f"{c['name']} is in {c['region']}")</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Rewrite loop-based transforms and filters from Session 02 as list comprehensions, and combine both in one line.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>filters.py</code> operating on the country list from Session 02.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and re-declare the country list</strong></p>
+
+        <pre><code># filters.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+    {"name": "Japan", "region": "Asia", "population": 125000000},
+]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write the longhand for-loop version of extracting names</strong></p>
+        <p>Do this first, on purpose, before the comprehension — you need to see the shape being compressed.</p>
+        <pre><code>names_longhand = []
+for c in countries:
+    names_longhand.append(c["name"])
+print(names_longhand)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Rewrite it as a comprehension and confirm identical output</strong></p>
+
+        <pre><code>names = [c["name"] for c in countries]
+print(names)
+print(names == names_longhand)  # True</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Filter countries with population over 50 million</strong></p>
+
+        <pre><code>large = [c for c in countries if c["population"] &gt; 50_000_000]
+print([c["name"] for c in large])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Combine transform and filter in one comprehension</strong></p>
+        <p>Get just the names of Asian countries in a single line.</p>
+        <pre><code>asian_names = [c["name"] for c in countries if c["region"] == "Asia"]
+print(asian_names)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <p><strong>Prove the original list is untouched</strong></p>
+
+        <pre><code>print("Original length still 4:", len(countries) == 4)</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>filters.py</code></td>
+            <td>Created</td>
+            <td>Demonstrates transform, filter, and combined comprehensions.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-03/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add filters.py docs/sessions/session-03/index.html
+git commit -m "session-03: transform and filter countries with list comprehensions"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "What is the general shape [expression for item in iterable if condition], and can I read any comprehension back into a for-loop out loud?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">The longhand for-loop version is written first and kept in the file for comparison</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A pure-transform comprehension is present ([expr for item in iterable])</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A pure-filter comprehension is present ([item for item in iterable if cond])</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A combined transform+filter comprehension is present</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">The original list is proven unchanged after all comprehensions run</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>names = [c["name"] for c in countries]</code>, what does this produce?</p>
+        <label class="quiz-option" data-val="a">It mutates <code>countries</code> to only contain names</label>
+        <label class="quiz-option" data-val="b">A new list containing just the "name" value from each dict in countries</label>
+        <label class="quiz-option" data-val="c">A single string of all names joined together</label>
+        <label class="quiz-option" data-val="d">A dictionary mapping names to countries</label>
+        <div class="explanation">A list comprehension always builds a brand-new list. <code>[c["name"] for c in countries]</code> is shorthand for looping over <code>countries</code> and collecting <code>c["name"]</code> from each item into a new list. <code>countries</code> itself is untouched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>[c for c in countries if c["region"] == "Africa"]</code> produce?</p>
+        <label class="quiz-option" data-val="a">A list of only the region strings that equal "Africa"</label>
+        <label class="quiz-option" data-val="b">A new list containing only the country dicts whose region is "Africa"</label>
+        <label class="quiz-option" data-val="c">True or False for each country</label>
+        <label class="quiz-option" data-val="d">A KeyError if any country lacks a region key</label>
+        <div class="explanation">The <code>if</code> clause at the end filters which items get included. Since the expression before <code>for</code> is just <code>c</code> (the whole dict), the result keeps entire country dicts, filtered down to African ones.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="a">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Which for-loop is exactly equivalent to <code>squares = [n * n for n in [1, 2, 3]]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>squares = []\nfor n in [1, 2, 3]:\n    squares.append(n * n)</code></label>
+        <label class="quiz-option" data-val="b"><code>squares = [1, 2, 3]\nfor n in squares:\n    n = n * n</code></label>
+        <label class="quiz-option" data-val="c"><code>squares = {}\nfor n in [1, 2, 3]:\n    squares[n] = n * n</code></label>
+        <label class="quiz-option" data-val="d">None of these are equivalent</label>
+        <div class="explanation">A comprehension is shorthand for: start with an empty list, loop, and append the transformed value each time. Option a is that exact loop written out longhand.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You want the names of only the African countries in one line. Which comprehension does that?</p>
+        <label class="quiz-option" data-val="a"><code>[c["name"] for c in countries if c["region"] == "Africa"]</code></label>
+        <label class="quiz-option" data-val="b"><code>[c["name"] if c["region"] == "Africa" for c in countries]</code></label>
+        <label class="quiz-option" data-val="c"><code>[c for c["name"] in countries if region == "Africa"]</code></label>
+        <label class="quiz-option" data-val="d"><code>filter(c["name"] for c in countries)</code></label>
+        <div class="explanation">The syntax order is always <code>[expression for item in iterable if condition]</code>. Option a transforms to <code>c["name"]</code> and filters with <code>if c["region"] == "Africa"</code> in the correct positions.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>True or false: after running <code>names = [c["name"] for c in countries]</code>, the original <code>countries</code> list has been changed.</p>
+        <label class="quiz-option" data-val="a">True — comprehensions always mutate the source</label>
+        <label class="quiz-option" data-val="b">False — a comprehension never modifies the iterable it reads from</label>
+        <label class="quiz-option" data-val="c">True, but only if the list contains dictionaries</label>
+        <label class="quiz-option" data-val="d">It depends on whether <code>if</code> is used</label>
+        <div class="explanation">A comprehension only ever reads from the source iterable and builds a separate new list. <code>countries</code> is exactly as it was before, regardless of what the comprehension does.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Rewrite <code>[c["name"] for c in countries if c["region"] == "Africa"]</code> back into a longhand for-loop from memory. Does it match what you wrote in the lab?</li>
+        <li>Can you think of a loop body from Session 02 that would NOT translate well into a comprehension? Why not?</li>
+        <li>Why might a reviewer reject a deeply nested comprehension even though it "works"?</li>
+        <li>How is a list comprehension similar to the object destructuring pattern used in other languages you might know?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Unreadable one-liners:</strong> Overusing comprehensions for anything with side effects (printing, mutating something else, multiple conditions) produces code that is technically correct but very hard to read. Knowing when NOT to use one is as important as knowing the syntax.</li>
+        <li><strong>Data-layer filtering (Layer 4):</strong> In Session 24 you will build a data-access layer that filters and searches a country list. That entire layer is built from the comprehension patterns in this session.</li>
+        <li><strong>Testing assertions (Layer 5):</strong> Tests frequently assert on filtered results, e.g. "the returned list contains only African countries." If you cannot read a comprehension, you cannot verify what the test is actually checking.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> List comprehensions — transform, filter, and combined forms, and when a plain loop is the better choice.</p>
+      <p><strong>Unlocks:</strong> You can now express "give me a new list built from this one" in a single readable line — the core operation of the whole project.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 04 — Functions and Lambda</a>. We will look at functions properly — defining reusable logic instead of repeating it, including the compact lambda syntax.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

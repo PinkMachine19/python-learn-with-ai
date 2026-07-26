@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 08 — What Classes Are and Why — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-current">Session 08</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+    </div>
+    <h1>What Classes Are and Why</h1>
+    <p class="subtitle">Layer 2 begins. A dictionary describes data. A class describes a kind of thing — data plus the behavior that belongs with it. This is why we are switching.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain the difference between a dictionary and a class conceptually</li>
+        <li>Define an empty class and create an instance of it</li>
+        <li>Explain what an instance is, versus the class itself</li>
+        <li>Explain why grouping data with the behavior that operates on it reduces bugs</li>
+        <li>Recognise that this session is concept-only — no meaningful code is written yet</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
+        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
+        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
+        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
+        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
+        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>class Country: pass</code> define?</p>
+        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
+        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
+        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
+        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
+        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="c">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is c in <code>c = Country()</code>?</p>
+        <label class="quiz-option" data-val="a">The class itself</label>
+        <label class="quiz-option" data-val="b">A function call that returns None</label>
+        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
+        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
+        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
+        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
+        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
+        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
+        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
+        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
+        <label class="quiz-option" data-val="a">It is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
+        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
+        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
+        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Why Classes Exist</h2>
+
+    <h3>What we have been doing so far</h3>
+    <p>For seven sessions, a country has been a dictionary, and every operation on it — formatting, filtering, validating — has been a separate, standalone function that takes the dictionary as an argument. This works, but nothing stops any function anywhere from reading or writing the wrong key, or writing an invalid value.</p>
+    <pre><code>country = {"name": "Kenya", "population": 54000000}
+
+def set_population(country, value):
+    if value &lt; 0:
+        raise ValueError("population must be positive")
+    country["population"] = value
+
+# Nothing stops this — the dict has no memory of the rule above
+country["population"] = -100</code></pre>
+
+    <h3>A class bundles data and behavior together</h3>
+    <p>A class is a blueprint for a kind of thing. It groups the data that thing needs (its attributes) with the operations that belong to it (its methods) into a single definition. We will build this up piece by piece over the next several sessions — today, just the shell.</p>
+    <pre><code>class Country:
+    pass  # placeholder — a class body cannot be empty
+
+c = Country()
+print(type(c))     # &lt;class '__main__.Country'&gt;
+print(isinstance(c, Country))  # True</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">class</span>Country
+(the blueprint)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">instance</span>c = Country()</div>
+      <div class="diagram-caption">Country is the blueprint. c is one specific instance built from that blueprint — a second call would build a separate one.</div>
+    </div>
+
+    <h3>Class vs instance — a critical distinction</h3>
+    <p>The class is the definition, written once. An instance is a specific object built from that definition — you can build as many as you need, and each one is independent, just like each call to a function produces an independent result.</p>
+    <pre><code>c1 = Country()
+c2 = Country()
+print(c1 is c2)  # False — two separate instances, even though both are Country</code></pre>
+
+    <h3>What this unlocks</h3>
+    <p>Right now <code>Country</code> is an empty shell — it does nothing a dictionary couldn't already do. Over the next several sessions we will give it attributes (Session 09), methods (Session 10), a proper constructor (Session 11), and eventually a whole tree of related classes (Session 12) — building toward a real Country Explorer application.</p>
+
+    <div class="alert alert-warning">
+      <strong>Concept-only session:</strong> There is intentionally very little code today. The goal is to genuinely understand WHY we are switching from dictionaries to classes before writing the class itself in the next session.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Define an empty Country class, create two separate instances, and prove they are independent objects — no meaningful behavior yet.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>country_class.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and define an empty class</strong></p>
+
+        <pre><code># country_class.py
+class Country:
+    pass</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create two separate instances</strong></p>
+
+        <pre><code>c1 = Country()
+c2 = Country()
+
+print(c1)
+print(c2)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Confirm both are instances of Country</strong></p>
+
+        <pre><code>print(isinstance(c1, Country))  # True
+print(isinstance(c2, Country))  # True</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Prove they are two distinct objects, not the same one</strong></p>
+        <p>Before running: predict what c1 is c2 will print, and why.</p>
+        <pre><code>print(c1 is c2)  # False — separate objects in memory</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a short comment explaining what problem this will eventually solve</strong></p>
+        <p>No code required here — write a plain-English comment in the file summarising, in your own words, why a class beats a loose dict + loose functions. This is the most important step in the lab.</p>
+        <pre><code># TODO: In your own words — why will bundling country data and
+# country behavior into one class reduce bugs compared to
+# passing a dict to a bunch of separate functions?</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country_class.py</code></td>
+            <td>Created</td>
+            <td>An empty Country class and proof that instances are independent.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-08/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country_class.py docs/sessions/session-08/index.html
+git commit -m "session-08: define an empty Country class and confirm instances are independent"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "In my own words, what is the difference between the Country class and a Country instance?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">The class is defined with class Country: pass</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">Two separate instances are created</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">isinstance() is used to confirm both belong to the Country class</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">c1 is c2 is checked and correctly explained as False</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">A written comment explains, in plain English, why a class beats a loose dict</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
+        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
+        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
+        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
+        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
+        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does <code>class Country: pass</code> define?</p>
+        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
+        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
+        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
+        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
+        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="c">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What is c in <code>c = Country()</code>?</p>
+        <label class="quiz-option" data-val="a">The class itself</label>
+        <label class="quiz-option" data-val="b">A function call that returns None</label>
+        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
+        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
+        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
+        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
+        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
+        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
+        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
+        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
+        <label class="quiz-option" data-val="a">It is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
+        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
+        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
+        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Before this session, every "operation" on a country was a standalone function taking a dict. Can you think of a bug you might have written in the labs so far that a class could have prevented?</li>
+        <li>Why do you think Python requires <code>pass</code> for an empty class body instead of allowing nothing at all?</li>
+        <li>What is the relationship between a class and the <code>type()</code> of an instance built from it?</li>
+        <li>If two instances of the same class can hold completely different data, what does that tell you about what a class actually "is" versus what an instance "is"?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Confusing the class with an instance:</strong> If you don't internalize the class/instance distinction now, later sessions (attributes, methods, inheritance) will feel like memorized syntax instead of a coherent mental model — and debugging "why does every instance share this value" bugs becomes very hard.</li>
+        <li><strong>Attribute sessions ahead:</strong> Session 09 immediately builds on this by giving Country actual data via __init__. Without today's "class = blueprint, instance = built thing" model, __init__ will look like arbitrary magic syntax instead of a logical next step.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> The class vs instance distinction, and the motivation for bundling data with behavior instead of using loose dicts and functions.</p>
+      <p><strong>Unlocks:</strong> You have a mental model for what a class is FOR. Every remaining Layer 2 session builds directly on top of this.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 09 — Class Anatomy — __init__ and Attributes</a>. We give Country real data — an __init__ method and instance attributes, so every instance can hold its own name, region, and population.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

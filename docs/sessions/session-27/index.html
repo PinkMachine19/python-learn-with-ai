@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 27 — Why We Test and What to Test — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-current">Session 27</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+    </div>
+    <h1>Why We Test and What to Test</h1>
+    <p class="subtitle">Layer 5 begins. Every session so far has been manually verified by reading printed output. Automated tests replace that manual check with something repeatable and reliable.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain what an automated test verifies that manual print-checking does not</li>
+        <li>Distinguish testing behavior (what a function/method does) from testing implementation (how it does it)</li>
+        <li>Identify which parts of the Country Explorer project are worth testing first</li>
+        <li>Explain what NOT to test, and why over-testing has real costs</li>
+        <li>Recognise this as a concept-only session, mirroring Sessions 08, 16, and 23</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have manually run print(kenya.summary()) and visually confirmed it looks right, many times across many sessions. What does an automated test add that this process lacks?</p>
+        <label class="quiz-option" data-val="a">Nothing — manual verification is exactly as good</label>
+        <label class="quiz-option" data-val="b">A test runs the same check automatically, every time, without you needing to remember to do it or manually re-read the output — and it fails LOUDLY if the behavior ever changes unexpectedly</label>
+        <label class="quiz-option" data-val="c">Tests are only useful for very large companies</label>
+        <label class="quiz-option" data-val="d">Manual testing is always more thorough than automated testing</label>
+        <div class="explanation">Manual verification depends on you remembering to do it, correctly, every single time you change anything, anywhere in the project. A test encodes the check permanently and runs it consistently — catching regressions you would not think to manually re-check.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A good test for grow_population(amount) checks that self.population increases by amount. Should it also check that self.population is stored as a specific type of internal Python integer object?</p>
+        <label class="quiz-option" data-val="a">Yes — testing every implementation detail is always better</label>
+        <label class="quiz-option" data-val="b">No — this tests behavior (does the number end up correct?), not implementation detail (exactly how Python represents that number internally), which is not something the test should care about</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Only advanced tests should check behavior; basic tests should check implementation</label>
+        <div class="explanation">Testing behavior means testing WHAT a piece of code does, observable from the outside — the resulting value. Testing implementation means testing HOW it does it internally, which is fragile and tends to break tests unnecessarily when you refactor without changing actual behavior.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given everything built in Layers 1–4, which is the best FIRST thing to write tests for?</p>
+        <label class="quiz-option" data-val="a">The exact wording of every print() statement across every lab file</label>
+        <label class="quiz-option" data-val="b">Core, reusable logic like Country's methods and CountryRepository's validation — code that many other things depend on and that would cause the most damage if it silently broke</label>
+        <label class="quiz-option" data-val="c">Nothing needs testing if the code already ran once successfully</label>
+        <label class="quiz-option" data-val="d">Only the very last session's code needs tests</label>
+        <div class="explanation">Testing priority should follow risk and reuse: code that many other parts of the application depend on (Country's methods, validation logic, the repository) is the highest-value place to start, since a bug there has the widest blast radius.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is testing literally everything, including trivial one-line getters with zero logic, often not worth it?</p>
+        <label class="quiz-option" data-val="a">It is always worth it, there is no such thing as over-testing</label>
+        <label class="quiz-option" data-val="b">Tests have a maintenance cost too — trivial tests that just restate obvious code add little protection while still needing to be kept up to date every time that code changes</label>
+        <label class="quiz-option" data-val="c">Python does not allow testing simple methods</label>
+        <label class="quiz-option" data-val="d">Over-testing is a myth; more tests are unconditionally better</label>
+        <div class="explanation">Every test is code you have to maintain. A test for a trivial getter with no logic (like a plain @property returning self._x) rarely catches a real bug and just adds upkeep cost — testing effort is best spent where logic (and therefore risk of a bug) actually exists.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why does this session, like Sessions 08/16/23 before it, contain very little new syntax?</p>
+        <label class="quiz-option" data-val="a">Because testing does not require any special tools</label>
+        <label class="quiz-option" data-val="b">Because — following the established pattern of this curriculum — understanding WHY and WHAT to test is a judgment call that must be built before the concrete tool (pytest, Session 28) is introduced</label>
+        <label class="quiz-option" data-val="c">Because this topic will never require code</label>
+        <label class="quiz-option" data-val="d">Because testing is not actually important enough to cover</label>
+        <div class="explanation">This is the fourth time the curriculum uses this structure: concept first (why does this practice exist, what should it apply to), then the concrete implementation next session — building genuine understanding rather than memorized tool usage.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Why We Test</h2>
+
+    <h3>Manual verification does not scale</h3>
+    <p>Every lab so far ended the same way: run the file, read the printed output, and eyeball whether it looks right. This works for a single session, but it does not scale — nothing stops a later change from silently breaking Session 10's summary() while you are focused on Session 24's repository.</p>
+
+    <h3>What an automated test actually gives you</h3>
+    <p>A test is code that runs other code and checks the result automatically, every time, without a human needing to remember to look. If a change anywhere breaks an existing behavior, the test fails loudly and immediately — instead of the bug silently shipping unnoticed.</p>
+    <pre><code># Conceptually — this is what a test does, without any special tooling yet
+def test_summary_format():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    result = k.summary()
+    assert result == "Kenya (Africa): pop. 54,000,000"
+
+test_summary_format()  # runs silently if it passes; raises AssertionError if not</code></pre>
+
+    <h3>Behavior vs implementation</h3>
+    <p>A good test checks WHAT code does (its observable result), not HOW it does it internally. Testing implementation details makes tests fragile — they break during harmless refactors that did not actually change any real behavior.</p>
+    <pre><code># Good — tests behavior (the observable result)
+def test_grow_population_increases_value():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    k.grow_population(1000000)
+    assert k.population == 55000000
+
+# Bad — tests an implementation detail that could change for unrelated reasons
+# def test_grow_population_uses_plus_equals_operator():
+#     ... inspecting the actual bytecode or source of grow_population ...</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">behavior</span>observable result
+(test this)</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">implementation</span>internal how
+(usually skip)</div>
+      <div class="diagram-caption">Behavior is the observable result — what a test should check. Implementation is the internal how — fragile and usually not worth testing directly.</div>
+    </div>
+
+    <h3>What to prioritize testing in this project</h3>
+    <p>High value: Country's validated methods (set_population, grow_population), CountryRepository's data-fetching and validation logic, and CountryExplorer's computed properties. Lower value: one-line trivial getters with no logic, and anything that is purely cosmetic printing.</p>
+
+    <div class="alert alert-warning">
+      <strong>Concept session:</strong> Like Sessions 08, 16, and 23 before it, the goal today is a correct mental model of testing before Session 28 introduces the concrete pytest tool.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write plain assert-based checks (no pytest yet) for the highest-value, most logic-bearing parts of the project, and consciously identify what NOT to test.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>manual_tests.py</code> — using bare assert statements, the same tool pytest builds on.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with Country and CountryRepository from earlier sessions</strong></p>
+
+        <pre><code># manual_tests.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write a plain assert-based check for summary()</strong></p>
+
+        <pre><code>def test_summary_format():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    assert k.summary() == "Kenya (Africa): pop. 54,000,000"
+
+test_summary_format()
+print("test_summary_format passed")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write checks for grow_population, including the rejection case</strong></p>
+
+        <pre><code>def test_grow_population_increases_value():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    k.grow_population(1000000)
+    assert k.population == 55000000
+
+def test_grow_population_rejects_negative():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    try:
+        k.grow_population(-5)
+        assert False, "expected a ValueError but none was raised"
+    except ValueError:
+        pass  # expected
+
+test_grow_population_increases_value()
+test_grow_population_rejects_negative()
+print("grow_population tests passed")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Write a check for set_population preserving previous valid state on rejection</strong></p>
+        <p>This directly verifies the guarantee established in Session 17.</p>
+        <pre><code>def test_set_population_rejects_and_preserves_state():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    try:
+        k.set_population(-1)
+        assert False, "expected a ValueError but none was raised"
+    except ValueError:
+        pass
+    assert k.population == 54000000, "population should be unchanged after a rejected update"
+
+test_set_population_rejects_and_preserves_state()
+print("set_population rejection test passed")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a short comment list of things you deliberately did NOT test, and why</strong></p>
+        <p>E.g. the exact wording of a print() statement, or a trivial getter with no logic.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>manual_tests.py</code></td>
+            <td>Created</td>
+            <td>Plain assert-based behavior checks for the highest-value logic in the project.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-27/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add manual_tests.py docs/sessions/session-27/index.html
+git commit -m "session-27: write manual assert-based tests for the highest-value logic first"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why did I choose to test grow_population's rejection case, but decide NOT to test the exact wording of a print() statement?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">Every test function uses assert to check a specific, observable behavior</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">At least one test verifies a validated method correctly rejects bad input</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">At least one test verifies rejected input leaves previous valid state unchanged</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">A comment explicitly lists something deliberately left untested, with reasoning</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">Every test function is actually called and its pass is printed/confirmed</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You have manually run print(kenya.summary()) and visually confirmed it looks right, many times across many sessions. What does an automated test add that this process lacks?</p>
+        <label class="quiz-option" data-val="a">Nothing — manual verification is exactly as good</label>
+        <label class="quiz-option" data-val="b">A test runs the same check automatically, every time, without you needing to remember to do it or manually re-read the output — and it fails LOUDLY if the behavior ever changes unexpectedly</label>
+        <label class="quiz-option" data-val="c">Tests are only useful for very large companies</label>
+        <label class="quiz-option" data-val="d">Manual testing is always more thorough than automated testing</label>
+        <div class="explanation">Manual verification depends on you remembering to do it, correctly, every single time you change anything, anywhere in the project. A test encodes the check permanently and runs it consistently — catching regressions you would not think to manually re-check.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>A good test for grow_population(amount) checks that self.population increases by amount. Should it also check that self.population is stored as a specific type of internal Python integer object?</p>
+        <label class="quiz-option" data-val="a">Yes — testing every implementation detail is always better</label>
+        <label class="quiz-option" data-val="b">No — this tests behavior (does the number end up correct?), not implementation detail (exactly how Python represents that number internally), which is not something the test should care about</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Only advanced tests should check behavior; basic tests should check implementation</label>
+        <div class="explanation">Testing behavior means testing WHAT a piece of code does, observable from the outside — the resulting value. Testing implementation means testing HOW it does it internally, which is fragile and tends to break tests unnecessarily when you refactor without changing actual behavior.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Given everything built in Layers 1–4, which is the best FIRST thing to write tests for?</p>
+        <label class="quiz-option" data-val="a">The exact wording of every print() statement across every lab file</label>
+        <label class="quiz-option" data-val="b">Core, reusable logic like Country's methods and CountryRepository's validation — code that many other things depend on and that would cause the most damage if it silently broke</label>
+        <label class="quiz-option" data-val="c">Nothing needs testing if the code already ran once successfully</label>
+        <label class="quiz-option" data-val="d">Only the very last session's code needs tests</label>
+        <div class="explanation">Testing priority should follow risk and reuse: code that many other parts of the application depend on (Country's methods, validation logic, the repository) is the highest-value place to start, since a bug there has the widest blast radius.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is testing literally everything, including trivial one-line getters with zero logic, often not worth it?</p>
+        <label class="quiz-option" data-val="a">It is always worth it, there is no such thing as over-testing</label>
+        <label class="quiz-option" data-val="b">Tests have a maintenance cost too — trivial tests that just restate obvious code add little protection while still needing to be kept up to date every time that code changes</label>
+        <label class="quiz-option" data-val="c">Python does not allow testing simple methods</label>
+        <label class="quiz-option" data-val="d">Over-testing is a myth; more tests are unconditionally better</label>
+        <div class="explanation">Every test is code you have to maintain. A test for a trivial getter with no logic (like a plain @property returning self._x) rarely catches a real bug and just adds upkeep cost — testing effort is best spent where logic (and therefore risk of a bug) actually exists.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why does this session, like Sessions 08/16/23 before it, contain very little new syntax?</p>
+        <label class="quiz-option" data-val="a">Because testing does not require any special tools</label>
+        <label class="quiz-option" data-val="b">Because — following the established pattern of this curriculum — understanding WHY and WHAT to test is a judgment call that must be built before the concrete tool (pytest, Session 28) is introduced</label>
+        <label class="quiz-option" data-val="c">Because this topic will never require code</label>
+        <label class="quiz-option" data-val="d">Because testing is not actually important enough to cover</label>
+        <div class="explanation">This is the fourth time the curriculum uses this structure: concept first (why does this practice exist, what should it apply to), then the concrete implementation next session — building genuine understanding rather than memorized tool usage.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>What would you have to remember to do manually, every single time you changed Country, to catch the same bugs these tests now catch automatically?</li>
+        <li>Why does test_grow_population_rejects_negative() check for a ValueError instead of checking that population became a specific wrong value?</li>
+        <li>Can you think of a bug from an EARLIER session in this curriculum that one of today's tests would have caught immediately?</li>
+        <li>What is the risk of writing too many trivial tests, in terms of your own time and the codebase's long-term maintainability?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Silent regressions:</strong> Without any automated tests, a change made while working on Session 30 could silently break something built in Session 10, and nothing would tell you until a human happened to notice much later — if ever.</li>
+        <li><strong>A proper testing tool (Session 28):</strong> The bare assert statements from this session work, but they lack useful failure messages, test discovery, and a clean way to organize many tests. Session 28 introduces pytest to solve exactly these gaps.</li>
+        <li><strong>Confident refactoring (Layer 6):</strong> Session 32-36's architecture refactoring only becomes safe to do confidently once a real test suite exists to catch anything the refactor accidentally breaks — this session is the philosophical foundation for that safety net.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Why automated tests matter, the distinction between testing behavior and testing implementation, and prioritizing what is actually worth testing.</p>
+      <p><strong>Unlocks:</strong> You can now write and reason about basic automated checks, and — just as importantly — deliberately choose what NOT to test.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 28 — Setting Up pytest</a>. We replace bare assert statements with pytest — a real testing tool with better failure messages, discovery, and organization.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

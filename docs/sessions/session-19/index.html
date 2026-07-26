@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 19 — Tracing State Changes — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-current">Session 19</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+    </div>
+    <h1>Tracing State Changes</h1>
+    <p class="subtitle">Now that state can only change through controlled methods, we can add visibility into every change — turning "why is this value wrong" from a mystery into a readable trace.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Add a print-based trace to a controlled state-change method</li>
+        <li>Use Python's logging module for a more structured trace than print()</li>
+        <li>Explain the difference between a debug-level and a warning-level log message</li>
+        <li>Track how many times a state-change method has been called, as a simple instrumentation pattern</li>
+        <li>Explain why this is only possible because state changes are funneled through methods (Session 17)</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
+        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
+        <label class="quiz-option" data-val="b">Because Session 17 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
+        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
+        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
+        <div class="explanation">This is the payoff of Session 17's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
+        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
+        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
+        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
+        <label class="quiz-option" data-val="d">warning always stops the program</label>
+        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
+        <label class="quiz-option" data-val="a">The current population value</label>
+        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
+        <label class="quiz-option" data-val="c">The total population across all countries</label>
+        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
+        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 16's uncontrolled-mutation version?</p>
+        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
+        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
+        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
+        <label class="quiz-option" data-val="d">print() did not exist before Session 17</label>
+        <div class="explanation">This is the direct payoff connecting Session 16 (the risk), Session 17 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
+        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
+        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
+        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
+        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
+        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Tracing State Changes</h2>
+
+    <h3>Why a controlled entry point makes tracing trivial</h3>
+    <p>Because Session 17 forced every population change through set_population and grow_population, adding a trace to those two methods gives complete visibility into every change, anywhere in the program, with no missed call sites.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        print(f"[trace] {self.name}.population: {old} -&gt; {value}")</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">many callers</span>menu, tests,
+other code</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">one method</span>set_population
+[trace]</div>
+      <div class="diagram-caption">Every change funnels through one checkpoint — one trace line there sees every single change made anywhere in the program.</div>
+    </div>
+
+    <h3>A more structured trace with logging</h3>
+    <p>print() works, but Python's built-in logging module gives you severity levels and a consistent format, letting you turn tracing verbosity up or down without touching the code that produces it.</p>
+    <pre><code>import logging
+
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def set_population(self, value):
+        if value &lt; 0:
+            logging.warning(f"rejected population {value} for {self.name}")
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        logging.debug(f"{self.name}.population: {old} -&gt; {value}")</code></pre>
+
+    <h3>debug vs warning severity</h3>
+    <p>debug is for fine-grained detail you usually don't want cluttering normal output. warning flags something worth noticing — like a rejected change — without stopping the program the way an unhandled exception would.</p>
+    <pre><code>logging.basicConfig(level=logging.WARNING)  # debug messages now silenced
+
+# This debug call produces no visible output at WARNING level:
+logging.debug("population changed")
+
+# This warning still shows, because it meets the configured threshold:
+logging.warning("rejected an invalid population value")</code></pre>
+
+    <h3>Counting calls as lightweight instrumentation</h3>
+    <p>A simple counter attribute, incremented inside the controlled method, tells you how often a state change has actually occurred — useful for spotting unexpectedly frequent (or absent) updates while debugging.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+        self._update_count = 0
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+        self._update_count += 1
+
+k = Country(name="Kenya", region="Africa", population=54000000)
+k.set_population(55000000)
+k.set_population(56000000)
+print(k._update_count)  # 2</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Add print-based and logging-based traces to set_population, plus an update counter, and observe both in action.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>tracing_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with logging configured</strong></p>
+
+        <pre><code># tracing_lab.py
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+        self._update_count = 0</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add set_population with both a print trace and a logging.debug trace</strong></p>
+
+        <pre><code>    def set_population(self, value):
+        if value &lt; 0:
+            logging.warning(f"rejected population {value} for {self.name}")
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        self._update_count += 1
+        print(f"[trace] {self.name}.population: {old} -&gt; {value}")
+        logging.debug(f"{self.name} update #{self._update_count}")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Make several valid changes and observe both trace channels</strong></p>
+
+        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
+k.set_population(55000000)
+k.set_population(56000000)
+k.set_population(57000000)
+print("Total updates:", k._update_count)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Trigger the warning trace with an invalid change</strong></p>
+
+        <pre><code>try:
+    k.set_population(-1)
+except ValueError as e:
+    print("Caught:", e)
+print("Total updates still:", k._update_count)  # unchanged — rejected update did not count</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Raise the logging level to WARNING and confirm debug traces go silent</strong></p>
+        <p>Change the level and re-run a valid update — the print trace still shows, but the debug log line does not.</p>
+        <pre><code>logging.getLogger().setLevel(logging.WARNING)
+k.set_population(58000000)  # print trace still visible; debug log line is now silenced</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>tracing_lab.py</code></td>
+            <td>Created</td>
+            <td>Adds print and logging traces plus an update counter to the controlled set_population method.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-19/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add tracing_lab.py docs/sessions/session-19/index.html
+git commit -m "session-19: trace state changes with print, logging, and a call counter"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does one trace statement inside set_population see every population change in the whole program?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">set_population prints a before/after trace and logs a debug message on every valid change</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">A rejected (invalid) update logs a warning instead, and does not increment _update_count</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">_update_count correctly reflects only successful updates</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Raising the logging level to WARNING is shown to silence debug messages while print statements remain unaffected</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">No tracing code changes the actual return values or control flow of the program</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
+        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
+        <label class="quiz-option" data-val="b">Because Session 17 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
+        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
+        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
+        <div class="explanation">This is the payoff of Session 17's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
+        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
+        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
+        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
+        <label class="quiz-option" data-val="d">warning always stops the program</label>
+        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
+        <label class="quiz-option" data-val="a">The current population value</label>
+        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
+        <label class="quiz-option" data-val="c">The total population across all countries</label>
+        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
+        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 16's uncontrolled-mutation version?</p>
+        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
+        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
+        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
+        <label class="quiz-option" data-val="d">print() did not exist before Session 17</label>
+        <div class="explanation">This is the direct payoff connecting Session 16 (the risk), Session 17 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
+        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
+        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
+        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
+        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
+        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does raising the logging level silence debug() calls but not your plain print() calls? What does that tell you about how the two mechanisms are separate?</li>
+        <li>If you needed to trace every state change across the WHOLE program (not just Country), what would you need to be true about how ALL your classes handle state, based on Session 17?</li>
+        <li>What is the tradeoff of leaving debug-level tracing permanently in the code (as opposed to removing it after debugging is done)?</li>
+        <li>How would you use _update_count to detect a bug where population is being changed far more often than expected?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Debugging without visibility:</strong> Without any tracing, tracking down "why did this value change unexpectedly" requires manually stepping through code with a debugger every single time — tracing built into the controlled entry point gives you a permanent, always-available record instead.</li>
+        <li><strong>Validated input (Session 20):</strong> The next session tightens validation on the input side. Having tracing already in place means you will be able to directly observe the effect of stricter validation instead of guessing.</li>
+        <li><strong>Testing failures (Layer 5):</strong> When a test fails in Session 30 because state didn't update as expected, the debugging techniques from this session — trace prints, logging, counters — are exactly what you'll reach for to understand why.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Tracing state changes with print and the logging module's severity levels, plus lightweight call-counting instrumentation.</p>
+      <p><strong>Unlocks:</strong> You can now observe exactly when, how often, and why any piece of controlled state changes — turning invisible bugs into readable traces.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 20 — Validating Input</a>. We tighten validation further, handling edge cases in user-supplied input more thoroughly than Session 18 did.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

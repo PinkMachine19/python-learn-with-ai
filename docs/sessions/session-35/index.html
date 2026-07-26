@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 35 — The Prop Drilling Problem — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-current">Session 35</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+    </div>
+    <h1>The Prop Drilling Problem</h1>
+    <p class="subtitle">We add a small "favorites" feature and deliberately experience the pain of threading a value through several layers of objects just to reach where it is actually needed.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Add a feature that requires passing a value down through multiple layers of composed objects</li>
+        <li>Experience firsthand how threading a value through unrelated intermediate layers adds friction</li>
+        <li>Explain why every intermediate layer having to know about a value it doesn't use is a code smell</li>
+        <li>Recognise this problem without necessarily solving it fully — awareness is this session's explicit goal</li>
+        <li>Connect this pattern to the same-named problem in the original React course this Python course is modeled on</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You want a "favorites" feature: CountryExplorer needs to track which countries a user has favorited. A new outer class, App, needs to trigger toggling a favorite, but the actual state lives on CountryExplorer, two layers down. What is the direct, "just make it work" approach?</p>
+        <label class="quiz-option" data-val="a">Store favorites state directly on Country instances only</label>
+        <label class="quiz-option" data-val="b">Pass a reference to CountryExplorer down through every intermediate layer so App can eventually call explorer.toggle_favorite(country), even through layers that have nothing to do with favorites</label>
+        <label class="quiz-option" data-val="c">This scenario cannot occur in a composed object structure</label>
+        <label class="quiz-option" data-val="d">Skip the feature entirely</label>
+        <div class="explanation">This is the direct but painful approach: threading a reference (or a value) through layers that do not themselves use it, purely so it can reach a deeper layer that does — exactly the friction this session is designed to have you feel firsthand.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If a new intermediate class, MenuSection, is added between App and CountryExplorer, and it must accept and forward an explorer reference purely so App can eventually reach it, what problem does this illustrate?</p>
+        <label class="quiz-option" data-val="a">There is no problem here; this is normal and has no downside</label>
+        <label class="quiz-option" data-val="b">MenuSection now depends on and must forward something it has no actual use for itself — every layer in between two collaborating objects becomes coupled to a value that conceptually has nothing to do with it</label>
+        <label class="quiz-option" data-val="c">MenuSection cannot be created if this occurs</label>
+        <label class="quiz-option" data-val="d">This only happens with the specific example of "favorites"</label>
+        <div class="explanation">This is the essence of the "prop drilling" problem: an unrelated intermediate layer is forced to know about and forward something purely for the benefit of a much deeper layer — adding coupling and noise to a class that otherwise has nothing to do with favorites.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is a growing chain of "pass this reference down another level, just in case something deeper needs it" considered a code smell, even if it technically works?</p>
+        <label class="quiz-option" data-val="a">It is not a real problem — this is the correct and only way to structure any Python program</label>
+        <label class="quiz-option" data-val="b">As more layers are added, every intermediate layer accumulates parameters and forwarding logic unrelated to its own actual responsibility, making the codebase harder to understand and change — the connection between where a value originates and where it is used becomes obscured</label>
+        <label class="quiz-option" data-val="c">It always causes a runtime error in Python</label>
+        <label class="quiz-option" data-val="d">This pattern is specific to only the "favorites" feature and cannot generalize</label>
+        <div class="explanation">This directly threatens the "focused, single-responsibility classes" principle from Sessions 12, 24, and 32 — intermediate classes end up cluttered with forwarding logic for values they conceptually have nothing to do with, purely as plumbing.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this session deliberately NOT fully solve the prop drilling problem, only make you experience and name it?</p>
+        <label class="quiz-option" data-val="a">Because the problem has no solution in Python at all</label>
+        <label class="quiz-option" data-val="b">Because — following the same "concept before implementation" pattern used throughout this curriculum — genuinely understanding the pain and its cause is the prerequisite for correctly evaluating any solution (e.g. a shared/global-ish state object) in a future project, rather than reaching for a fix without understanding what problem it solves</label>
+        <label class="quiz-option" data-val="c">Because this is not actually a real problem worth understanding</label>
+        <label class="quiz-option" data-val="d">Because it was already fully solved in Session 34</label>
+        <div class="explanation">This mirrors the source React course's Session 35 exactly — deliberately experiencing the pain of a real architecture problem, by name, is what makes any future solution (whether a shared context object, dependency injection, or something else) make genuine sense later, instead of being memorized syntax for a problem never truly felt.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does this Python session's "prop drilling" problem relate to the concept of the same name in the original React course this curriculum is modeled on?</p>
+        <label class="quiz-option" data-val="a">It is completely unrelated; the term is coincidentally reused</label>
+        <label class="quiz-option" data-val="b">It is the exact same underlying architecture problem — data or a reference having to be threaded through layers that do not themselves use it — just expressed here through composed Python classes instead of nested React components</label>
+        <label class="quiz-option" data-val="c">Python cannot have this problem because it does not use JSX</label>
+        <label class="quiz-option" data-val="d">This problem only exists in JavaScript, never in Python</label>
+        <div class="explanation">This is a deliberate, direct parallel: the original React course's Session 35 covers "prop drilling" through nested components; this session recreates the identical underlying architecture problem using composed Python classes, since the root cause (a value needed deep in a structure, threaded through uninvolved intermediate layers) is language-independent.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Experiencing the Prop Drilling Problem</h2>
+
+    <h3>Adding a feature that needs a deep reference</h3>
+    <p>We want to toggle a country as a "favorite." The natural place for that state is on CountryExplorer (Session 12), but the trigger — a user action — originates from an outer App class, two composition layers up.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.favorites = set()
+
+    def toggle_favorite(self, country_name):
+        if country_name in self.favorites:
+            self.favorites.discard(country_name)
+        else:
+            self.favorites.add(country_name)
+
+
+class MenuSection:
+    def __init__(self, explorer):
+        self.explorer = explorer   # MenuSection doesn't otherwise care about explorer at all
+
+
+class App:
+    def __init__(self, menu_section):
+        self.menu_section = menu_section
+
+    def handle_favorite_click(self, country_name):
+        # App must reach two layers DOWN just to trigger this one action
+        self.menu_section.explorer.toggle_favorite(country_name)</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">App</span>needs explorer</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">MenuSection</span>forwards it,
+unused itself</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box"><span class="diagram-label">CountryExplorer</span>actually uses it</div>
+      <div class="diagram-caption">The explorer reference must be threaded through MenuSection, which has no actual use for it itself, purely so App can reach two layers deeper.</div>
+    </div>
+
+    <h3>The pain gets worse as more layers are added</h3>
+    <p>Add one more layer, and the forwarding chain grows — every intermediate class picks up a parameter and a line of code purely for something it does not itself use.</p>
+    <pre><code>class NavigationPanel:
+    def __init__(self, menu_section):
+        self.menu_section = menu_section  # also forwarding, also unrelated to its own job
+
+
+class App:
+    def __init__(self, navigation_panel):
+        self.navigation_panel = navigation_panel
+
+    def handle_favorite_click(self, country_name):
+        # now THREE layers deep, through TWO classes that have nothing to do with favorites
+        self.navigation_panel.menu_section.explorer.toggle_favorite(country_name)</code></pre>
+
+    <h3>Naming the problem</h3>
+    <p>This is "prop drilling" — a value or reference has to be threaded through several layers of a composed structure purely so it can reach a much deeper layer that actually needs it, coupling every intermediate layer to something conceptually unrelated to its own job. This exact problem, and exact name, appears in the original React course this curriculum is modeled on, because the underlying issue is not specific to any one language or framework.</p>
+
+    <h3>This session deliberately does not fully solve it</h3>
+    <p>Recognising the problem clearly — feeling the friction of App.navigation_panel.menu_section.explorer.toggle_favorite(...) firsthand — is the point. A future project might solve this with a shared state object, dependency injection, or another pattern, but reaching for a fix before understanding the actual problem tends to produce cargo-culted, poorly-understood code.</p>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build the layered App / MenuSection / CountryExplorer structure, deliberately experience the deep-reference threading problem, and document it clearly.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>prop_drilling_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with CountryExplorer including a favorites feature</strong></p>
+
+        <pre><code># prop_drilling_lab.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.favorites = set()
+
+    def toggle_favorite(self, country_name):
+        if country_name in self.favorites:
+            self.favorites.discard(country_name)
+        else:
+            self.favorites.add(country_name)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add MenuSection and NavigationPanel, each forwarding a reference they do not otherwise use</strong></p>
+
+        <pre><code>class MenuSection:
+    def __init__(self, explorer):
+        self.explorer = explorer  # only exists to forward this reference downstream
+
+
+class NavigationPanel:
+    def __init__(self, menu_section):
+        self.menu_section = menu_section  # same problem, one layer higher</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add App and trigger a favorite toggle through the whole chain</strong></p>
+
+        <pre><code>class App:
+    def __init__(self, navigation_panel):
+        self.navigation_panel = navigation_panel
+
+    def handle_favorite_click(self, country_name):
+        self.navigation_panel.menu_section.explorer.toggle_favorite(country_name)
+
+
+explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+menu = MenuSection(explorer)
+nav = NavigationPanel(menu)
+app = App(nav)
+
+app.handle_favorite_click("Kenya")
+print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it took to get there</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Count and print how many layers had to know about explorer just to forward it</strong></p>
+
+        <pre><code>print("Layers forced to hold an explorer-related reference:", 3)
+# App -&gt; NavigationPanel -&gt; MenuSection -&gt; CountryExplorer</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Write a clear written explanation of the problem, in your own words</strong></p>
+        <p>This is the most important step. Describe what MenuSection and NavigationPanel have to do with "favorites" conceptually (nothing), and why that is a problem as the project grows.</p>
+
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>prop_drilling_lab.py</code></td>
+            <td>Created</td>
+            <td>Deliberately recreates and documents the prop-drilling problem using composed classes.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-35/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add prop_drilling_lab.py docs/sessions/session-35/index.html
+git commit -m "session-35: deliberately experience and document the prop drilling problem"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "What do MenuSection and NavigationPanel actually have to do with the favorites feature, conceptually?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">CountryExplorer has a working toggle_favorite() method using a set</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">MenuSection and NavigationPanel each hold and forward a reference they do not otherwise use themselves</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">App.handle_favorite_click() successfully reaches CountryExplorer through the full chain</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The number of unrelated layers forced to forward the reference is explicitly counted and printed</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">A written explanation, in your own words, clearly names and describes the problem</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>You want a "favorites" feature: CountryExplorer needs to track which countries a user has favorited. A new outer class, App, needs to trigger toggling a favorite, but the actual state lives on CountryExplorer, two layers down. What is the direct, "just make it work" approach?</p>
+        <label class="quiz-option" data-val="a">Store favorites state directly on Country instances only</label>
+        <label class="quiz-option" data-val="b">Pass a reference to CountryExplorer down through every intermediate layer so App can eventually call explorer.toggle_favorite(country), even through layers that have nothing to do with favorites</label>
+        <label class="quiz-option" data-val="c">This scenario cannot occur in a composed object structure</label>
+        <label class="quiz-option" data-val="d">Skip the feature entirely</label>
+        <div class="explanation">This is the direct but painful approach: threading a reference (or a value) through layers that do not themselves use it, purely so it can reach a deeper layer that does — exactly the friction this session is designed to have you feel firsthand.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>If a new intermediate class, MenuSection, is added between App and CountryExplorer, and it must accept and forward an explorer reference purely so App can eventually reach it, what problem does this illustrate?</p>
+        <label class="quiz-option" data-val="a">There is no problem here; this is normal and has no downside</label>
+        <label class="quiz-option" data-val="b">MenuSection now depends on and must forward something it has no actual use for itself — every layer in between two collaborating objects becomes coupled to a value that conceptually has nothing to do with it</label>
+        <label class="quiz-option" data-val="c">MenuSection cannot be created if this occurs</label>
+        <label class="quiz-option" data-val="d">This only happens with the specific example of "favorites"</label>
+        <div class="explanation">This is the essence of the "prop drilling" problem: an unrelated intermediate layer is forced to know about and forward something purely for the benefit of a much deeper layer — adding coupling and noise to a class that otherwise has nothing to do with favorites.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is a growing chain of "pass this reference down another level, just in case something deeper needs it" considered a code smell, even if it technically works?</p>
+        <label class="quiz-option" data-val="a">It is not a real problem — this is the correct and only way to structure any Python program</label>
+        <label class="quiz-option" data-val="b">As more layers are added, every intermediate layer accumulates parameters and forwarding logic unrelated to its own actual responsibility, making the codebase harder to understand and change — the connection between where a value originates and where it is used becomes obscured</label>
+        <label class="quiz-option" data-val="c">It always causes a runtime error in Python</label>
+        <label class="quiz-option" data-val="d">This pattern is specific to only the "favorites" feature and cannot generalize</label>
+        <div class="explanation">This directly threatens the "focused, single-responsibility classes" principle from Sessions 12, 24, and 32 — intermediate classes end up cluttered with forwarding logic for values they conceptually have nothing to do with, purely as plumbing.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Why does this session deliberately NOT fully solve the prop drilling problem, only make you experience and name it?</p>
+        <label class="quiz-option" data-val="a">Because the problem has no solution in Python at all</label>
+        <label class="quiz-option" data-val="b">Because — following the same "concept before implementation" pattern used throughout this curriculum — genuinely understanding the pain and its cause is the prerequisite for correctly evaluating any solution (e.g. a shared/global-ish state object) in a future project, rather than reaching for a fix without understanding what problem it solves</label>
+        <label class="quiz-option" data-val="c">Because this is not actually a real problem worth understanding</label>
+        <label class="quiz-option" data-val="d">Because it was already fully solved in Session 34</label>
+        <div class="explanation">This mirrors the source React course's Session 35 exactly — deliberately experiencing the pain of a real architecture problem, by name, is what makes any future solution (whether a shared context object, dependency injection, or something else) make genuine sense later, instead of being memorized syntax for a problem never truly felt.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does this Python session's "prop drilling" problem relate to the concept of the same name in the original React course this curriculum is modeled on?</p>
+        <label class="quiz-option" data-val="a">It is completely unrelated; the term is coincidentally reused</label>
+        <label class="quiz-option" data-val="b">It is the exact same underlying architecture problem — data or a reference having to be threaded through layers that do not themselves use it — just expressed here through composed Python classes instead of nested React components</label>
+        <label class="quiz-option" data-val="c">Python cannot have this problem because it does not use JSX</label>
+        <label class="quiz-option" data-val="d">This problem only exists in JavaScript, never in Python</label>
+        <div class="explanation">This is a deliberate, direct parallel: the original React course's Session 35 covers "prop drilling" through nested components; this session recreates the identical underlying architecture problem using composed Python classes, since the root cause (a value needed deep in a structure, threaded through uninvolved intermediate layers) is language-independent.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>If a FOURTH layer were added between App and NavigationPanel, what would have to change, and in how many places?</li>
+        <li>Why does this problem specifically hurt the "single responsibility" principle established since Session 12, even though the code technically works correctly?</li>
+        <li>Can you think of a real Python project structure (not necessarily this one) where you might have already experienced something like this?</li>
+        <li>Without fully implementing a fix, sketch in words what a "shared reference every layer can reach directly" solution might look like, and what new problem THAT might introduce.</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Coupling that resists change:</strong> Every intermediate layer forced to forward an unrelated reference becomes harder to change independently — modifying MenuSection's constructor signature now risks breaking the entire favorites feature, even though MenuSection has nothing conceptually to do with favorites.</li>
+        <li><strong>Architecture review (Session 36):</strong> This deliberately-felt problem becomes one of the concrete case studies documented in the next session's full architecture review — a real, working example of a design tension worth recording and reasoning about.</li>
+        <li><strong>Recognizing this pattern in real projects:</strong> Having genuinely experienced this friction firsthand means you will recognize it immediately in a future real project, rather than accumulating unrelated forwarded parameters without noticing the underlying pattern.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> The prop drilling problem — threading a value or reference through composition layers that do not themselves use it, and why that couples unrelated classes together.</p>
+      <p><strong>Unlocks:</strong> You can now recognize this specific architecture smell by name and explain exactly why it is a problem, setting up an informed architecture review next session.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 36 — Architecture Review</a>. Layer 6 gate. We conduct a full architecture review of everything built so far, documenting every major structural decision and its tradeoffs.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

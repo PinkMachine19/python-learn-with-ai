@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompts — Python Learning</title>
+  <link rel="stylesheet" href="../styles.css" />
+
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../syllabus/index.html">Syllabus</a>
+    <a href="../sessions/index.html">Sessions</a>
+    <a href="../quizzes/index.html">Quizzes</a>
+    <a href="../labs/index.html">Labs</a>
+    <a href="../architecture/index.html">Architecture</a>
+    <a href="../session-notes/index.html">Notes</a>
+    <a href="../commit-reviews/index.html">Commits</a>
+    <a href="../prompts/index.html" class="active">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <h1>Prompt Log</h1>
+    <p class="subtitle">
+      Every prompt sent to the AI in this project, logged in order. Future AI sessions must
+      append new prompts here before doing anything else. This is a record of intent.
+    </p>
+
+    <div class="alert alert-info">
+      <strong>For AI sessions:</strong> Append each new prompt to this file at the start of every conversation,
+      using the format below. Prompt number increments from the last entry. Include the full prompt text.
+    </div>
+
+    <h2>Entry Format</h2>
+    <pre><code>&lt;div class="prompt-entry"&gt;
+  &lt;div class="prompt-meta"&gt;
+    &lt;span&gt;#N&lt;/span&gt;
+    &lt;span&gt;YYYY-MM-DD&lt;/span&gt;
+    &lt;span&gt;Session: session-XX (or "Pre-curriculum")&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class="prompt-text"&gt;...full prompt text...&lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+    <hr />
+
+    <h2>Prompt Entries</h2>
+
+    <div class="prompt-entry">
+      <div class="prompt-meta">
+        <span>#1</span>
+        <span>2026-07-26</span>
+        <span>Session: Pre-curriculum (Project Initialization)</span>
+      </div>
+      <div class="prompt-text">Analyze the existing React Learn with AI course as the canonical template. Do not change the teaching methodology, pacing, lesson structure, navigation, styling, or user experience unless absolutely necessary for Python. Create an equivalent Python Fundamentals course using the same pattern.
+
+Requirements:
+- Preserve the same lesson progression and chapter organization.
+- Keep lessons to approximately 30-40 minutes each.
+- Maintain the same "learn with AI" interactive style.
+- Cover Python fundamentals from beginner through intermediate, replacing React-specific content with the Python equivalent.
+- Reuse the same UI components, navigation, progress tracking, and layout where possible.
+- Generate all required markdown/content files.
+- Ensure the site builds successfully.
+- Publish it as a separate GitHub repository under my GitHub account.
+- Configure GitHub Pages so the course is publicly accessible.
+- Verify the deployed site works correctly.
+- Commit changes in logical commits with clear commit messages.
+
+Follow-up guidance: every quiz question must be grounded in the exact material and code
+presented in that same session — not generic, disconnected trivia.</div>
+    </div>
+
+
+  </div>
+</main>
+
+</body>
+</html>

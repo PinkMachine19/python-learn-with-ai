@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labs — Python Learning</title>
+  <link rel="stylesheet" href="../styles.css" />
+
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../syllabus/index.html">Syllabus</a>
+    <a href="../sessions/index.html">Sessions</a>
+    <a href="../quizzes/index.html">Quizzes</a>
+    <a href="../labs/index.html" class="active">Labs</a>
+    <a href="../architecture/index.html">Architecture</a>
+    <a href="../session-notes/index.html">Notes</a>
+    <a href="../commit-reviews/index.html">Commits</a>
+    <a href="../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <h1>Lab Reference Index</h1>
+    <p class="subtitle">
+      Labs are the hands-on portion of each session. Each lab has a tiny, specific objective.
+      Labs are embedded in the session doc — this page is an index for quick lookup.
+    </p>
+
+    <div class="alert alert-info">
+      Labs are designed to be completed in under 20 minutes. The rest of the session is
+      spent reading, quizzing, and reviewing the commit.
+    </div>
+
+    <h2>Lab Objectives by Session</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Lab Objective</th><th>Files Touched</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="../sessions/session-01/index.html">01</a></td>
+            <td>Create a single Python file that defines one country as a dictionary, reads its values two different ways, and prints the results.</td>
+            <td><code>country.py</code>, <code>docs/sessions/session-01/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-02/index.html">02</a></td>
+            <td>Store three countries as a list of dictionaries, iterate over it, and prove the mutating vs non-mutating distinction.</td>
+            <td><code>countries.py</code>, <code>docs/sessions/session-02/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-03/index.html">03</a></td>
+            <td>Rewrite loop-based transforms and filters from Session 02 as list comprehensions, and combine both in one line.</td>
+            <td><code>filters.py</code>, <code>docs/sessions/session-03/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-04/index.html">04</a></td>
+            <td>Write reusable functions for formatting and sorting countries, including one lambda used with sorted().</td>
+            <td><code>functions_lab.py</code>, <code>docs/sessions/session-04/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-05/index.html">05</a></td>
+            <td>Practice unpacking, *rest collection, and write functions using *args and **kwargs, including spreading a dict into a call.</td>
+            <td><code>unpacking_lab.py</code>, <code>docs/sessions/session-05/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-06/index.html">06</a></td>
+            <td>Split your country data into its own module, import it two different ways, and add a __main__ guard.</td>
+            <td><code>country_data.py</code>, <code>explorer.py</code>, <code>docs/sessions/session-06/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-07/index.html">07</a></td>
+            <td>Write a safe country lookup function that handles missing keys and invalid input using try/except, else, and finally, plus a function that raises its own exception.</td>
+            <td><code>errors_lab.py</code>, <code>docs/sessions/session-07/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-08/index.html">08</a></td>
+            <td>Define an empty Country class, create two separate instances, and prove they are independent objects — no meaningful behavior yet.</td>
+            <td><code>country_class.py</code>, <code>docs/sessions/session-08/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-09/index.html">09</a></td>
+            <td>Give Country a real constructor with name, region, and population, create multiple independent instances, and prove attributes are mutable.</td>
+            <td><code>country_init.py</code>, <code>docs/sessions/session-09/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-10/index.html">10</a></td>
+            <td>Add a summary method and a mutating grow_population method to Country, then prove the dot-call is equivalent to calling through the class directly.</td>
+            <td><code>country_methods.py</code>, <code>docs/sessions/session-10/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-11/index.html">11</a></td>
+            <td>Rewrite Country construction to always use keyword arguments, add a default population, and demonstrate why reading global state is risky.</td>
+            <td><code>construction_lab.py</code>, <code>docs/sessions/session-11/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-12/index.html">12</a></td>
+            <td>Build a CountryExplorer class that composes a list of Country instances and offers collection-level operations by delegating to each one.</td>
+            <td><code>explorer_composed.py</code>, <code>docs/sessions/session-12/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-13/index.html">13</a></td>
+            <td>Add conditional logic to CountryExplorer that handles an empty collection gracefully, using truthy checks and a ternary expression.</td>
+            <td><code>conditional_lab.py</code>, <code>docs/sessions/session-13/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-14/index.html">14</a></td>
+            <td>Build a from_dict classmethod on Country, convert a batch of raw records with a comprehension, and gracefully skip a malformed one.</td>
+            <td><code>build_list_lab.py</code>, <code>docs/sessions/session-14/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-15/index.html">15</a></td>
+            <td>Prove the default identity-based equality, implement a custom __eq__, and demonstrate is None as the idiomatic check.</td>
+            <td><code>identity_lab.py</code>, <code>docs/sessions/session-15/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-16/index.html">16</a></td>
+            <td>Identify and annotate which attributes across the project so far are state versus fixed identity, and observe uncontrolled mutation firsthand.</td>
+            <td><code>state_concept.py</code>, <code>docs/sessions/session-16/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-17/index.html">17</a></td>
+            <td>Add set_population, set_capital, and add_country as controlled, validating state-change methods, replacing direct attribute assignment.</td>
+            <td><code>controlled_state.py</code>, <code>docs/sessions/session-17/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-18/index.html">18</a></td>
+            <td>Build an interactive text menu that reads and validates user input, then applies it through the controlled state methods from Session 17.</td>
+            <td><code>input_lab.py</code>, <code>docs/sessions/session-18/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-19/index.html">19</a></td>
+            <td>Add print-based and logging-based traces to set_population, plus an update counter, and observe both in action.</td>
+            <td><code>tracing_lab.py</code>, <code>docs/sessions/session-19/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-20/index.html">20</a></td>
+            <td>Build a shared validators module with thorough name and population validation, and wire it into the Session 18 menu.</td>
+            <td><code>validators.py</code>, <code>menu.py</code>, <code>docs/sessions/session-20/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-21/index.html">21</a></td>
+            <td>Demonstrate mutation vs reassignment across functions, then refactor scattered menu state into one owning class passed explicitly.</td>
+            <td><code>state_passing_lab.py</code>, <code>docs/sessions/session-21/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-22/index.html">22</a></td>
+            <td>Identify and eliminate redundant stored state in CountryExplorer by converting it to @property-based computed values.</td>
+            <td><code>computed_lab.py</code>, <code>docs/sessions/session-22/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-23/index.html">23</a></td>
+            <td>Write a mock country dataset with 10 records mirroring the eventual real API shape, and build the full explorer entirely offline from it.</td>
+            <td><code>mock_countries.py</code>, <code>explore_offline.py</code>, <code>docs/sessions/session-23/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-24/index.html">24</a></td>
+            <td>Build a CountryRepository wrapping the mock data from Session 23, and connect it to a CountryExplorer built entirely through the repository's interface.</td>
+            <td><code>repository_lab.py</code>, <code>docs/sessions/session-24/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-25/index.html">25</a></td>
+            <td>Write the mock data to a real JSON file, read it back with graceful error handling, and point CountryRepository at it.</td>
+            <td><code>json_lab.py</code>, <code>countries.json</code>, <code>docs/sessions/session-25/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-26/index.html">26</a></td>
+            <td>Convert Country to a dataclass, prove type hints are not enforced, and add explicit contract validation for raw records loaded from JSON.</td>
+            <td><code>contracts_lab.py</code>, <code>docs/sessions/session-26/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-27/index.html">27</a></td>
+            <td>Write plain assert-based checks (no pytest yet) for the highest-value, most logic-bearing parts of the project, and consciously identify what NOT to test.</td>
+            <td><code>manual_tests.py</code>, <code>docs/sessions/session-27/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-28/index.html">28</a></td>
+            <td>Set up a proper project structure with a tests/ directory, convert Session 27's manual tests to pytest, and run the suite.</td>
+            <td><code>country.py</code>, <code>tests/test_country.py</code>, <code>docs/sessions/session-28/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-29/index.html">29</a></td>
+            <td>Write a systematic test suite covering normal, edge, and boundary cases for find_by_region, from_dict, and set_population, using parametrization.</td>
+            <td><code>country.py</code>, <code>tests/test_return_values.py</code>, <code>docs/sessions/session-29/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-30/index.html">30</a></td>
+            <td>Add CountryExplorer to country.py, then test state changes using fixtures, before/after checks, and a multi-step sequence.</td>
+            <td><code>country.py</code>, <code>tests/test_state_changes.py</code>, <code>docs/sessions/session-30/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-31/index.html">31</a></td>
+            <td>Build a complete, isolated test suite for CountryRepository and validate_country_record using small, purpose-built fake datasets.</td>
+            <td><code>country.py</code>, <code>tests/test_repository.py</code>, <code>docs/sessions/session-31/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-32/index.html">32</a></td>
+            <td>Reorganize country.py into a country_explorer/ package with focused submodules, update all imports, and confirm the full test suite still passes.</td>
+            <td><code>country_explorer/__init__.py</code>, <code>country_explorer/models.py</code>, <code>country_explorer/repository.py</code>, <code>country_explorer/validators.py</code>, <code>country.py</code>, <code>tests/*.py</code>, <code>docs/sessions/session-32/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-33/index.html">33</a></td>
+            <td>Extract a shared, documented, tested format_population function, and identify (without necessarily extracting) a case of premature abstraction.</td>
+            <td><code>country_explorer/formatting.py</code>, <code>country_explorer/models.py</code>, <code>tests/test_formatting.py</code>, <code>docs/sessions/session-33/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-34/index.html">34</a></td>
+            <td>Build a thoroughly tested search.py utility module, and use it from both CountryExplorer and CountryRepository.</td>
+            <td><code>country_explorer/search.py</code>, <code>country_explorer/models.py</code>, <code>country_explorer/repository.py</code>, <code>tests/test_search.py</code>, <code>tests/test_search_integration.py</code>, <code>docs/sessions/session-34/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-35/index.html">35</a></td>
+            <td>Build the layered App / MenuSection / CountryExplorer structure, deliberately experience the deep-reference threading problem, and document it clearly.</td>
+            <td><code>prop_drilling_lab.py</code>, <code>docs/sessions/session-35/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-36/index.html">36</a></td>
+            <td>Write a real architecture review document covering at least two decisions (one resolved, one open), and confirm the full test suite still passes.</td>
+            <td><code>ARCHITECTURE.md</code>, <code>docs/sessions/session-36/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-37/index.html">37</a></td>
+            <td>Rebuild CountryRepository to read from a real file path using with, correct modes, and encoding-aware error handling, with zero changes to its existing methods.</td>
+            <td><code>file_io_lab.py</code>, <code>load_log.txt</code>, <code>docs/sessions/session-37/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-38/index.html">38</a></td>
+            <td>Call the real REST Countries API, adapt its shape to our contract, and construct a working CountryRepository from genuinely live data.</td>
+            <td><code>real_api_lab.py</code>, <code>docs/sessions/session-38/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-39/index.html">39</a></td>
+            <td>Build a fully robust country-loading function combining timeouts, specific exception handling, and explicit loading/success/error feedback.</td>
+            <td><code>robust_loading_lab.py</code>, <code>docs/sessions/session-39/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+          <tr>
+            <td><a href="../sessions/session-40/index.html">40</a></td>
+            <td>Run the complete final test suite, trace the full architecture end to end in writing, and add a final whole-project retrospective to ARCHITECTURE.md.</td>
+            <td><code>capstone_trace.py</code>, <code>ARCHITECTURE.md</code>, <code>docs/sessions/session-40/index.html</code></td>
+            <td><span class="badge badge-current">Available</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+
+  </div>
+</main>
+
+</body>
+</html>

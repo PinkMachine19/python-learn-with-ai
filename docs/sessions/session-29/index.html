@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 29 — Testing Functions and Return Values — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-current">Session 29</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+    </div>
+    <h1>Testing Functions and Return Values</h1>
+    <p class="subtitle">We systematically test return values across the project, including edge cases: empty inputs, boundary values, and the exact examples used in each session's own concept explanation.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Write multiple test functions covering a normal case, an edge case, and a boundary case for one function</li>
+        <li>Use pytest parametrization to run the same test logic across several inputs</li>
+        <li>Test a list comprehension's output by checking exact contents, not just length</li>
+        <li>Test the from_dict classmethod from Session 14 with both valid and malformed input</li>
+        <li>Identify what "edge case" means concretely, using examples from this project</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
+        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
+        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
+        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
+        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
+        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 13).</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="a">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does @pytest.mark.parametrize let you do?</p>
+        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
+        <label class="quiz-option" data-val="b">Skip a test entirely</label>
+        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
+        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
+        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
+        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
+        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
+        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
+        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
+        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
+        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
+        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
+        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
+        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
+        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
+        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
+        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
+        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
+        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
+        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Testing Return Values Systematically</h2>
+
+    <h3>Three kinds of cases: normal, edge, and boundary</h3>
+    <p>A thorough test suite for a function covers its normal, expected use; edge cases (empty inputs, zero matches); and boundary cases (values right at a validation limit, like exactly 0).</p>
+    <pre><code># country.py additions
+def find_by_region(countries, region):
+    return [c for c in countries if c.region == region]
+
+# tests/test_find_by_region.py
+from country import Country, find_by_region
+
+def test_find_by_region_normal_case():
+    countries = [
+        Country(name="Kenya", region="Africa", population=54000000),
+        Country(name="Peru", region="Americas", population=33000000),
+    ]
+    result = find_by_region(countries, "Africa")
+    assert [c.name for c in result] == ["Kenya"]  # exact contents, not just length
+
+def test_find_by_region_no_matches_returns_empty_list():
+    countries = [Country(name="Kenya", region="Africa", population=54000000)]
+    result = find_by_region(countries, "Antarctica")
+    assert result == []  # Session 13's guarantee, verified
+
+def test_find_by_region_empty_source_list():
+    result = find_by_region([], "Africa")
+    assert result == []</code></pre>
+
+    <h3>Parametrizing repetitive test logic</h3>
+    <p>When the same test logic needs to run against several input/output pairs, @pytest.mark.parametrize avoids copy-pasting near-identical test functions.</p>
+    <pre><code>import pytest
+from country import Country
+
+@pytest.mark.parametrize("value,expected_valid", [
+    (54000000, True),
+    (0, True),         # boundary — exactly zero should be valid
+    (-1, False),        # boundary — just below zero should be invalid
+    (-999999, False),
+])
+def test_set_population_validity(value, expected_valid):
+    k = Country(name="Kenya", region="Africa", population=1)
+    if expected_valid:
+        k.set_population(value)
+        assert k.population == value
+    else:
+        with pytest.raises(ValueError):
+            k.set_population(value)</code></pre>
+    <div class="diagram">
+      <div class="diagram-box"><span class="diagram-label">test body</span>written once</div><span class="diagram-arrow">→</span>
+      <div class="diagram-box accent"><span class="diagram-label">parametrize</span>4 cases
+run automatically</div>
+      <div class="diagram-caption">One test body, run automatically once per parametrized case — no copy-pasted near-duplicate test functions.</div>
+    </div>
+
+    <h3>Testing from_dict with valid and malformed input</h3>
+    <p>Session 14's classmethod is a natural place for edge-case testing: what happens with correct data, and what happens with a missing required field.</p>
+    <pre><code>import pytest
+from country import Country
+
+def test_from_dict_builds_correct_instance():
+    data = {"name": "Kenya", "region": "Africa", "population": 54000000}
+    k = Country.from_dict(data)
+    assert k.name == "Kenya"
+    assert k.population == 54000000
+
+def test_from_dict_missing_field_raises():
+    data = {"name": "Ghost Nation"}  # missing region and population
+    with pytest.raises(TypeError):
+        Country.from_dict(data)</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Write a systematic test suite covering normal, edge, and boundary cases for find_by_region, from_dict, and set_population, using parametrization.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>tests/test_return_values.py</code>, building on Session 28's country.py.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Add find_by_region and from_dict to country.py if not already present</strong></p>
+
+        <pre><code># country.py (additions)
+def find_by_region(countries, region):
+    return [c for c in countries if c.region == region]
+
+class Country:
+    # ... existing __init__, summary, set_population, grow_population ...
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Write normal-case and exact-content tests for find_by_region</strong></p>
+
+        <pre><code># tests/test_return_values.py
+import pytest
+from country import Country, find_by_region
+
+def test_find_by_region_returns_exact_matches():
+    countries = [
+        Country(name="Kenya", region="Africa", population=54000000),
+        Country(name="Ghana", region="Africa", population=31000000),
+        Country(name="Peru", region="Americas", population=33000000),
+    ]
+    result = find_by_region(countries, "Africa")
+    assert [c.name for c in result] == ["Kenya", "Ghana"]</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add edge case tests: no matches, empty source</strong></p>
+
+        <pre><code>def test_find_by_region_no_matches():
+    countries = [Country(name="Kenya", region="Africa", population=54000000)]
+    assert find_by_region(countries, "Antarctica") == []
+
+def test_find_by_region_empty_source():
+    assert find_by_region([], "Africa") == []</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add from_dict tests, valid and malformed</strong></p>
+
+        <pre><code>def test_from_dict_valid():
+    k = Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})
+    assert k.name == "Kenya"
+    assert k.population == 54000000
+
+def test_from_dict_missing_field_raises():
+    with pytest.raises(TypeError):
+        Country.from_dict({"name": "Ghost Nation"})</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Add a parametrized boundary test for set_population</strong></p>
+
+        <pre><code>@pytest.mark.parametrize("value,should_succeed", [
+    (54000000, True),
+    (0, True),
+    (-1, False),
+])
+def test_set_population_boundaries(value, should_succeed):
+    k = Country(name="Kenya", region="Africa", population=1)
+    if should_succeed:
+        k.set_population(value)
+        assert k.population == value
+    else:
+        with pytest.raises(ValueError):
+            k.set_population(value)
+
+# Run: pytest -v   (the -v flag shows each parametrized case individually)</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>country.py</code></td>
+            <td>Modified</td>
+            <td>Adds find_by_region and from_dict if not already present.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_return_values.py</code></td>
+            <td>Created</td>
+            <td>Systematic normal/edge/boundary test coverage, including parametrized cases.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-29/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add country.py tests/test_return_values.py docs/sessions/session-29/index.html
+git commit -m "session-29: systematically test return values, including edge and boundary cases"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does test_find_by_region_returns_exact_matches check the exact list of names instead of just the count?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">find_by_region is tested for exact contents, no matches, and an empty source list</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">from_dict is tested for both valid construction and a malformed record raising TypeError</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">set_population's boundary (exactly 0 vs -1) is tested using @pytest.mark.parametrize</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">pytest -v is run and each parametrized case is visible individually in the output</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">All new tests pass</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
+        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
+        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
+        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
+        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
+        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 13).</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="a">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does @pytest.mark.parametrize let you do?</p>
+        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
+        <label class="quiz-option" data-val="b">Skip a test entirely</label>
+        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
+        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
+        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
+        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
+        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
+        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
+        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
+        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
+        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
+        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
+        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
+        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
+        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
+        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
+        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
+        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
+        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
+        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does testing the boundary value 0 for set_population matter specifically, given the validation rule is value < 0?</li>
+        <li>Could a bug exist where find_by_region returns the correct COUNT of countries but the WRONG countries? Design a scenario where only an exact-content test would catch it.</li>
+        <li>How did parametrizing the set_population boundary test compare, in terms of clarity, to writing three separate test functions?</li>
+        <li>Which of today's tests would have caught a real bug from an earlier session, if that bug had existed?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>False confidence from weak assertions:</strong> A test suite full of length-only or existence-only checks gives a false sense of safety — it can pass while the actual returned data is subtly wrong, exactly the gap exact-content assertions close.</li>
+        <li><strong>Testing state changes (Session 30):</strong> This session focused on return VALUES. The next session tests state CHANGES on an object over time — a related but distinct testing skill, since not every method returns something meaningful; some just mutate.</li>
+        <li><strong>Regression safety for the whole project:</strong> Every function and method tested in this session is now protected against silent regressions in every remaining session of the curriculum — this is the payoff of investing in test coverage now.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Systematic testing of return values — normal, edge, and boundary cases, exact-content assertions, and pytest parametrization.</p>
+      <p><strong>Unlocks:</strong> The project's core data-returning functions are now protected by a thorough, systematic test suite, not just a handful of happy-path checks.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 30 — Testing Classes and State Changes</a>. We test the other half of the picture: methods that change an object's state over time, rather than returning a value.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>
