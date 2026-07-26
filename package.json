@@ -1,0 +1,9 @@
+{
+  "name": "python-learn-with-ai",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Static site generator for the Python Fundamentals Learn-with-AI course (40-session curriculum, docs/ is the published GitHub Pages site).",
+  "scripts": {
+    "build": "node scripts/build-sessions.js && node scripts/build-hubs.js"
+  }
+}
