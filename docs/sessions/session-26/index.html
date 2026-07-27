@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 26 — Designing Data Contracts — Python Learning</title>
+  <title>Session 26 — Computed Properties — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-layer">Layer 3</span>
       <span class="badge badge-gate">Session 26 — Gate</span>
-      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
     </div>
-    <h1>Designing Data Contracts</h1>
-    <p class="subtitle">This is the Layer 4 gate. We formalize the informal "contract" from Session 23 using type hints and dataclasses, catching shape mismatches automatically instead of hoping.</p>
+    <h1>Computed Properties</h1>
+    <p class="subtitle">This is the Layer 3 gate. Some values should never be stored as their own piece of state — they should be computed fresh, every time, from state that already exists.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Add type hints to a function or method signature</li>
-        <li>Define a class using @dataclass instead of a hand-written __init__</li>
-        <li>Explain what type hints do and do not enforce at runtime</li>
-        <li>Validate that a raw dict matches the expected contract before constructing an instance from it</li>
-        <li>Compare the dataclass version of Country to the hand-written version from Session 09</li>
+        <li>Identify a value that is redundant because it can always be derived from existing state</li>
+        <li>Implement a computed value as a regular method</li>
+        <li>Use the @property decorator to expose a computed value with attribute-style access</li>
+        <li>Explain the bug risk of storing a derived value separately instead of computing it</li>
+        <li>Decide, for a given value, whether it belongs as real state or as a computed property</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
-        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
-        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
-        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
-        <label class="quiz-option" data-val="d">Only in Python 2</label>
-        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
+        <p>A CountryExplorer stores both self.countries and a separately maintained self.country_count, updated by hand every time countries changes. What is the risk?</p>
+        <label class="quiz-option" data-val="a">There is no risk — this is a common and recommended pattern</label>
+        <label class="quiz-option" data-val="b">country_count can drift out of sync with the real length of countries if any code path adds/removes an item without also remembering to update the count</label>
+        <label class="quiz-option" data-val="c">Python automatically keeps the two in sync</label>
+        <label class="quiz-option" data-val="d">This pattern is faster than computing len(countries) on demand</label>
+        <div class="explanation">Any derived value stored separately from its source is a duplication risk — the moment one code path updates <code>countries</code> but forgets to also update <code>country_count</code>, the two disagree, and nothing warns you.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 09?</p>
-        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
-        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
-        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
-        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
-        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 09, while still producing an ordinary class.</div>
+        <p>What is the fix for the country_count problem above, using what we already know about methods?</p>
+        <label class="quiz-option" data-val="a">Add more code paths that carefully update country_count everywhere</label>
+        <label class="quiz-option" data-val="b">Delete country_count entirely and compute it on demand with a method, e.g. def country_count(self): return len(self.countries)</label>
+        <label class="quiz-option" data-val="c">Make country_count a global variable instead</label>
+        <label class="quiz-option" data-val="d">There is no fix — this tradeoff is unavoidable</label>
+        <div class="explanation">A computed method has no way to drift out of sync, because it recalculates the true answer from the actual source of truth (self.countries) every single time it is called — there is nothing to forget to update.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 15 value-based __eq__ behavior?</p>
-        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
-        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 15 built manually</label>
-        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
-        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
-        <div class="explanation">This directly connects back to Session 15: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
+        <p>What does the @property decorator change about calling a method like def total_population(self): return sum(c.population for c in self.countries)?</p>
+        <label class="quiz-option" data-val="a">Nothing observable — it is purely cosmetic</label>
+        <label class="quiz-option" data-val="b">It lets callers access it as explorer.total_population (no parentheses), like an attribute, instead of explorer.total_population()</label>
+        <label class="quiz-option" data-val="c">It makes the value cacheable permanently</label>
+        <label class="quiz-option" data-val="d">It turns the method into a classmethod</label>
+        <div class="explanation"><code>@property</code> lets a method be READ using attribute syntax, without parentheses — useful when a computed value conceptually feels like a property of the object (like .total_population) rather than an action being performed.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
-        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
-        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
-        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
-        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
-        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 09's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
+        <p>Should country_count be given a setter, e.g. explorer.country_count = 5, allowing it to be assigned directly?</p>
+        <label class="quiz-option" data-val="a">Yes, this should always be allowed for flexibility</label>
+        <label class="quiz-option" data-val="b">No — since it is derived entirely from self.countries, allowing a direct assignment would create exactly the drift risk this session is trying to eliminate</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Python requires every property to have a setter</label>
+        <div class="explanation">A computed property's entire value is deriving safety from ALWAYS being recalculated from the real source of truth. Allowing it to be set directly would reintroduce the same "stored copy that can drift" problem this session solves.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
-        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
-        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
-        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
-        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
-        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 20's discipline) catches this immediately, with a clear message.</div>
+        <p>Which value is a better candidate to be stored as real state versus computed on demand: self.population (set by construction, changed by grow_population) or self.country_count (always equal to len(self.countries))?</p>
+        <label class="quiz-option" data-val="a">Both should be stored state</label>
+        <label class="quiz-option" data-val="b">population is legitimate stored state (it is the actual source of truth, not derived from anything else); country_count should be computed, since it is entirely derivable from countries</label>
+        <label class="quiz-option" data-val="c">Both should be computed properties</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction between the two</label>
+        <div class="explanation">The test is: can this value be recalculated purely from other state that already exists? population cannot — it IS the source of truth. country_count can — it is 100% derivable from len(self.countries), making it a computed property, not independent state.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,66 +141,75 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Data Contracts with Type Hints and Dataclasses</h2>
-
-    <h3>Type hints — documentation, not enforcement</h3>
-    <p>A type hint tells readers (and tools like editors and type checkers) what type a value is expected to be. Python itself does not check this at runtime — it is a critical fact to internalize, since it is easy to assume otherwise.</p>
-    <pre><code>def summary(country: dict) -&gt; str:
-    return f"{country['name']} ({country['region']})"
-
-# This "should" be wrong according to the type hint, but Python runs it anyway:
-print(summary(42))
-# TypeError happens INSIDE the function body (42 is not subscriptable),
-# not because the type hint was checked and enforced upfront</code></pre>
-
-    <h3>@dataclass — less boilerplate, same underlying class</h3>
-    <p>A dataclass declares its fields with type hints, and Python auto-generates __init__ (and by default, __eq__) from those declarations — directly replacing Session 09's hand-written boilerplate.</p>
-    <pre><code>from dataclasses import dataclass
-
-@dataclass
-class Country:
-    name: str
-    region: str
-    population: int
-
-kenya = Country(name="Kenya", region="Africa", population=54000000)
-print(kenya.name)        # "Kenya" — same as before
-print(kenya.population)  # 54000000
-
-peru1 = Country(name="Peru", region="Americas", population=33000000)
-peru2 = Country(name="Peru", region="Americas", population=33000000)
-print(peru1 == peru2)  # True — free, field-by-field equality (Session 15's manual __eq__, generated automatically)</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">field declarations</span>name: str
-region: str
-population: int</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">@dataclass generates</span>__init__, __eq__</div>
-      <div class="diagram-caption">@dataclass reads the field declarations and generates __init__ and __eq__ for you — the same result as Sessions 09 and 15, without the boilerplate.</div>
+    <h2>3. The Concept — Computed Properties</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">STORED COPY</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">can drift out</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">of sync</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">COMPUTED</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">always correct,</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">recalculated fresh</text>
+      </svg>
+      <p class="diagram-caption-text">Stored derived state can silently go stale. A computed method always re-derives the true answer from the real source.</p>
     </div>
 
-    <h3>Type hints still don't stop bad values at construction</h3>
-    <p>A dataclass will happily accept a value of the wrong type — the hint is not checked. This is why explicit validation, at the boundary where raw external data enters the program, is still necessary.</p>
-    <pre><code>bad = Country(name="Kenya", region="Africa", population="fifty-four-million")
-print(bad.population)  # "fifty-four-million" — a string, accepted without complaint!
-# This will fail confusingly later, wherever population is actually used as a number</code></pre>
 
-    <h3>Validating the contract before construction</h3>
-    <p>Combining Session 20's validation discipline with the dataclass gives us both convenience AND safety: check the raw dict's shape and types explicitly, THEN construct.</p>
-    <pre><code>def validate_country_record(data):
-    required = {"name": str, "region": str, "population": int}
-    for key, expected_type in required.items():
-        if key not in data:
-            raise ValueError(f"missing required field: {key}")
-        if not isinstance(data[key], expected_type):
-            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
-    return data
+    <h3>The redundant-state problem</h3>
+    <p>Storing a value that can always be recalculated from other state creates a duplication risk: the two copies can drift out of sync the moment one is updated without the other.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.country_count = len(countries)  # RISKY — a separate, stored copy
 
-def build_country(data):
-    validate_country_record(data)
-    return Country(**data)</code></pre>
+    def add_country(self, country):
+        self.countries.append(country)
+        # Forgot to update self.country_count here!
+        # Now it silently disagrees with the real length.
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(explorer.country_count)      # 0 — WRONG, still the stale initial value
+print(len(explorer.countries))     # 1 — the actual truth</code></pre>
+
+    <h3>The fix — compute it, don't store it</h3>
+    <p>A method that recalculates the value from the real source of truth every time it is called has nothing to forget to update — it is always correct by construction.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries  # the ONLY source of truth
+
+    def country_count(self):
+        return len(self.countries)  # always recalculated fresh, cannot drift
+
+    def add_country(self, country):
+        self.countries.append(country)
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(explorer.country_count())  # 1 — always correct, nothing to forget</code></pre>
+
+    <h3>@property — attribute-style access for a computed value</h3>
+    <p>When a computed value conceptually feels like a property of the object rather than an action, @property lets callers read it without parentheses, exactly like a stored attribute — while still guaranteeing it is always freshly derived.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(explorer.country_count)      # 2 — no parentheses, reads like an attribute
+print(explorer.total_population)   # 87000000 — freshly computed every access</code></pre>
+
+    <h3>When NOT to use a computed property</h3>
+    <p>A value that is genuinely independent — not derivable from other state — belongs as real, stored state. population itself cannot be computed from anything else; it IS the source of truth, changed only through the controlled methods from Session 21.</p>
 
     <div class="alert alert-warning">
-      <strong>Layer 4 gate:</strong> This is the last Layer 4 session. Every remaining layer assumes you understand that type hints document intent but do not enforce it, and that explicit validation is what actually protects the boundary between raw external data and your application.
+      <strong>Layer 3 gate:</strong> This is the last Layer 3 session. Deciding what is real state versus what should be computed on demand is a judgment call every remaining session assumes you can make correctly.
     </div>
 
 
@@ -208,92 +217,92 @@ def build_country(data):
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Convert Country to a dataclass, prove type hints are not enforced, and add explicit contract validation for raw records loaded from JSON.
+      <strong>Lab objective:</strong> Identify and eliminate redundant stored state in CountryExplorer by converting it to @property-based computed values.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>contracts_lab.py</code>.</p>
+    <p>A file called <code>computed_lab.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country as a dataclass</strong></p>
+        <p><strong>Create the file with the RISKY version that has stored, driftable derived state</strong></p>
 
-        <pre><code># contracts_lab.py
-from dataclasses import dataclass
-
-@dataclass
+        <pre><code># computed_lab.py
 class Country:
-    name: str
-    region: str
-    population: int
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
 
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
+
+class RiskyExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+        self.country_count = len(countries)   # stored, can drift
+        self.total_population = sum(c.population for c in countries)  # stored, can drift
+
+    def add_country(self, country):
+        self.countries.append(country)
+        # deliberately NOT updating country_count or total_population</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Prove the free __eq__ works, connecting back to Session 15</strong></p>
+        <p><strong>Prove the drift bug happens</strong></p>
 
-        <pre><code>a = Country(name="Kenya", region="Africa", population=54000000)
-b = Country(name="Kenya", region="Africa", population=54000000)
-print("a == b:", a == b)   # True — generated automatically
-print("a is b:", a is b)   # False — still separate objects</code></pre>
+        <pre><code>risky = RiskyExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+risky.add_country(Country(name="Peru", region="Americas", population=33000000))
+print("Stored count (WRONG):", risky.country_count)          # still 1
+print("Real count:", len(risky.countries))                    # 2
+print("Stored population (WRONG):", risky.total_population)   # still 54000000</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Prove type hints are not enforced at construction</strong></p>
+        <p><strong>Build the fixed version using @property</strong></p>
 
-        <pre><code>bad = Country(name="Kenya", region="Africa", population="not a number")
-print(bad.population)              # accepted anyway!
-print(type(bad.population))        # &lt;class 'str'&gt; — the hint did nothing to stop this</code></pre>
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        self.countries.append(country)
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Write validate_country_record() checking both presence and type</strong></p>
+        <p><strong>Prove the fixed version can never drift</strong></p>
 
-        <pre><code>def validate_country_record(data):
-    required = {"name": str, "region": str, "population": int}
-    for key, expected_type in required.items():
-        if key not in data:
-            raise ValueError(f"missing required field: {key}")
-        if not isinstance(data[key], expected_type):
-            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
-    return data</code></pre>
+        <pre><code>explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+explorer.add_country(Country(name="Peru", region="Americas", population=33000000))
+print("Computed count:", explorer.country_count)          # 2 — correct
+print("Computed population:", explorer.total_population)  # 87000000 — correct</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Validate a batch of raw records, including a deliberately bad one, and skip failures gracefully</strong></p>
-        <p>Reuse the Session 14 pattern of catching per-record errors without losing the whole batch.</p>
-        <pre><code>raw_records = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Bad Data", "region": "Africa", "population": "fifty"},  # wrong type
-    {"name": "Also Bad", "region": "Africa"},                          # missing key
-]
+        <p><strong>Write a one-sentence comment for each attribute in CountryExplorer classifying it as STATE or COMPUTED</strong></p>
+        <p>Connect this back to Session 20's STATE/FIXED annotation exercise.</p>
 
-good_countries = []
-for r in raw_records:
-    try:
-        validate_country_record(r)
-        good_countries.append(Country(**r))
-    except (ValueError, TypeError) as e:
-        print(f"Rejected {r!r}: {e}")
-
-print("Valid countries:", len(good_countries))</code></pre>
       </div>
     </div>
 
@@ -307,14 +316,14 @@ print("Valid countries:", len(good_countries))</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>contracts_lab.py</code></td>
+            <td><code>computed_lab.py</code></td>
             <td>Created</td>
-            <td>Converts Country to a dataclass and adds explicit contract validation for raw records.</td>
+            <td>Contrasts stored, driftable derived state with correct @property-based computed values.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-26/index.html</code></td>
             <td>Created</td>
-            <td>This session document — Layer 4 gate.</td>
+            <td>This session document — Layer 3 gate.</td>
           </tr>
         </tbody>
       </table>
@@ -328,11 +337,11 @@ print("Valid countries:", len(good_countries))</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add contracts_lab.py docs/sessions/session-26/index.html
-git commit -m "session-26: formalize the country data contract with dataclasses and explicit validation"</code></pre>
+    <pre><code>git add computed_lab.py docs/sessions/session-26/index.html
+git commit -m "session-26: replace stored derived state with @property computed values"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does population="not a number" get accepted by Country(**data) even though population is type-hinted as int?"
+      Do not commit until you can answer out loud: "Why can country_count as a @property never drift out of sync, while the stored version could?"
     </div>
 
     <hr class="section-divider" />
@@ -343,23 +352,23 @@ git commit -m "session-26: formalize the country data contract with dataclasses 
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">Country is defined using @dataclass with type-hinted fields</label>
+        <label for="c1">RiskyExplorer demonstrates the drift bug concretely, with printed WRONG values</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">The free, generated __eq__ is proven with two separately constructed, identically-valued instances</label>
+        <label for="c2">CountryExplorer replaces both derived values with @property methods</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">A wrong-typed value is passed to the dataclass and shown to be accepted anyway, proving hints are not enforced</label>
+        <label for="c3">The fixed version is proven correct after add_country() is called, with printed correct values</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">validate_country_record() checks both key presence and value type, raising clear errors</label>
+        <label for="c4">Every attribute is annotated as STATE (genuine, independent) or COMPUTED (derivable) with reasoning</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A batch including a bad record is processed, with bad records rejected individually and good ones kept</label>
+        <label for="c5">No computed property has a corresponding setter that would allow it to be assigned directly</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -379,52 +388,52 @@ git commit -m "session-26: formalize the country data contract with dataclasses 
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
-        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
-        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
-        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
-        <label class="quiz-option" data-val="d">Only in Python 2</label>
-        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
+        <p>A CountryExplorer stores both self.countries and a separately maintained self.country_count, updated by hand every time countries changes. What is the risk?</p>
+        <label class="quiz-option" data-val="a">There is no risk — this is a common and recommended pattern</label>
+        <label class="quiz-option" data-val="b">country_count can drift out of sync with the real length of countries if any code path adds/removes an item without also remembering to update the count</label>
+        <label class="quiz-option" data-val="c">Python automatically keeps the two in sync</label>
+        <label class="quiz-option" data-val="d">This pattern is faster than computing len(countries) on demand</label>
+        <div class="explanation">Any derived value stored separately from its source is a duplication risk — the moment one code path updates <code>countries</code> but forgets to also update <code>country_count</code>, the two disagree, and nothing warns you.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 09?</p>
-        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
-        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
-        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
-        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
-        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 09, while still producing an ordinary class.</div>
+        <p>What is the fix for the country_count problem above, using what we already know about methods?</p>
+        <label class="quiz-option" data-val="a">Add more code paths that carefully update country_count everywhere</label>
+        <label class="quiz-option" data-val="b">Delete country_count entirely and compute it on demand with a method, e.g. def country_count(self): return len(self.countries)</label>
+        <label class="quiz-option" data-val="c">Make country_count a global variable instead</label>
+        <label class="quiz-option" data-val="d">There is no fix — this tradeoff is unavoidable</label>
+        <div class="explanation">A computed method has no way to drift out of sync, because it recalculates the true answer from the actual source of truth (self.countries) every single time it is called — there is nothing to forget to update.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 15 value-based __eq__ behavior?</p>
-        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
-        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 15 built manually</label>
-        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
-        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
-        <div class="explanation">This directly connects back to Session 15: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
+        <p>What does the @property decorator change about calling a method like def total_population(self): return sum(c.population for c in self.countries)?</p>
+        <label class="quiz-option" data-val="a">Nothing observable — it is purely cosmetic</label>
+        <label class="quiz-option" data-val="b">It lets callers access it as explorer.total_population (no parentheses), like an attribute, instead of explorer.total_population()</label>
+        <label class="quiz-option" data-val="c">It makes the value cacheable permanently</label>
+        <label class="quiz-option" data-val="d">It turns the method into a classmethod</label>
+        <div class="explanation"><code>@property</code> lets a method be READ using attribute syntax, without parentheses — useful when a computed value conceptually feels like a property of the object (like .total_population) rather than an action being performed.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
-        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
-        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
-        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
-        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
-        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 09's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
+        <p>Should country_count be given a setter, e.g. explorer.country_count = 5, allowing it to be assigned directly?</p>
+        <label class="quiz-option" data-val="a">Yes, this should always be allowed for flexibility</label>
+        <label class="quiz-option" data-val="b">No — since it is derived entirely from self.countries, allowing a direct assignment would create exactly the drift risk this session is trying to eliminate</label>
+        <label class="quiz-option" data-val="c">It does not matter either way</label>
+        <label class="quiz-option" data-val="d">Python requires every property to have a setter</label>
+        <div class="explanation">A computed property's entire value is deriving safety from ALWAYS being recalculated from the real source of truth. Allowing it to be set directly would reintroduce the same "stored copy that can drift" problem this session solves.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
-        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
-        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
-        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
-        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
-        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 20's discipline) catches this immediately, with a clear message.</div>
+        <p>Which value is a better candidate to be stored as real state versus computed on demand: self.population (set by construction, changed by grow_population) or self.country_count (always equal to len(self.countries))?</p>
+        <label class="quiz-option" data-val="a">Both should be stored state</label>
+        <label class="quiz-option" data-val="b">population is legitimate stored state (it is the actual source of truth, not derived from anything else); country_count should be computed, since it is entirely derivable from countries</label>
+        <label class="quiz-option" data-val="c">Both should be computed properties</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction between the two</label>
+        <div class="explanation">The test is: can this value be recalculated purely from other state that already exists? population cannot — it IS the source of truth. country_count can — it is 100% derivable from len(self.countries), making it a computed property, not independent state.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -437,10 +446,10 @@ git commit -m "session-26: formalize the country data contract with dataclasses 
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why do you think Python chose not to enforce type hints at runtime by default, when other languages do enforce their type systems? What tradeoff does this represent?</li>
-        <li>How does validate_country_record() in this session compare to validate_population() from Session 20? What is genuinely new versus what is the same idea applied at a different level?</li>
-        <li>If a real API someday returns population as a string like "54000000" (valid digits, but the wrong TYPE), would your current validate_country_record() accept or reject it? Is that the right behavior?</li>
-        <li>How does the dataclass's generated __init__ relate back to everything you learned about __init__ and self in Session 09?</li>
+        <li>Can you think of a value from an earlier session (Sessions 1–21) that was accidentally stored as separate state when it could have been computed instead?</li>
+        <li>Why does @property choose to hide the fact that a value is being recalculated every single access, rather than making that obvious with parentheses?</li>
+        <li>Is population itself ever a good candidate to become a computed property? Why or why not, given what you know about its source of truth?</li>
+        <li>What is the performance tradeoff of computing a value fresh every access instead of caching it — when might that tradeoff actually matter?</li>
       </ol>
     </div>
 
@@ -449,9 +458,9 @@ git commit -m "session-26: formalize the country data contract with dataclasses 
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Trusting type hints as enforcement:</strong> A very common and dangerous misconception is believing type hints protect you from bad data at runtime. This session should permanently correct that — hints inform tooling and readers, but only explicit validation actually protects your program.</li>
-        <li><strong>Testing the data layer (Session 31):</strong> The tests you write for CountryRepository in Layer 5 will directly exercise validate_country_record() with both good and bad records — this session's validation logic IS what gets tested.</li>
-        <li><strong>Real, messy API data (Layer 7):</strong> A real external API is far less trustworthy than your own mock or JSON data — it can return unexpected types, missing fields, or malformed values at any time. The validation discipline from this session is what stands between that chaos and your application crashing.</li>
+        <li><strong>The classic "shows the wrong total" bug:</strong> Nearly every "the displayed total doesn't match the actual list" bug in real software comes from exactly this pattern: a stored derived value that one code path forgot to update. This session directly immunizes you against it.</li>
+        <li><strong>The mock data layer (Layer 4):</strong> Session 28's CountryRepository will expose several computed values (counts, filtered subsets) — built entirely on the @property pattern from this session.</li>
+        <li><strong>Testing derived values (Layer 5):</strong> Tests that assert on a count or a total (Session 33) are far simpler to write correctly against a computed property, since there is no separate "did you remember to update the stored copy" step to also test.</li>
       </ul>
     </div>
 
@@ -459,9 +468,9 @@ git commit -m "session-26: formalize the country data contract with dataclasses 
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Type hints as documentation (not enforcement), dataclasses as a concise way to define structured classes, and explicit validation as the real protection at data boundaries.</p>
-      <p><strong>Unlocks:</strong> The Country data contract is now explicit, documented, and actually enforced — the last Layer 4 skill before we start testing everything we've built.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 27 — Why We Test and What to Test</a>. Layer 5 begins. We start testing this application deliberately, instead of manually re-running scripts to check our work.</p>
+      <p><strong>Python concept mastered:</strong> Computed properties — eliminating redundant stored state by deriving values on demand with @property, guaranteeing they can never drift out of sync.</p>
+      <p><strong>Unlocks:</strong> You can now correctly judge whether a value is genuine state or a derived computation — the last Layer 3 skill before we start working with real (mock) data sources.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 27 — Why Mock Data Matters</a>. Layer 4 begins. We build against fake data before any real data source exists — exactly like real engineering teams do.</p>
     </div>
 
 

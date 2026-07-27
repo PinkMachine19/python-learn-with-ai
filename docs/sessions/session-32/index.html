@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 32 — Package and Folder Organization — Python Learning</title>
+  <title>Session 32 — Setting Up pytest — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-layer">Layer 5</span>
       <span class="badge badge-current">Session 32</span>
-      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
     </div>
-    <h1>Package and Folder Organization</h1>
-    <p class="subtitle">Layer 6 begins. Our project has grown past what flat files can comfortably hold. We reorganize into a proper Python package structure.</p>
+    <h1>Setting Up pytest</h1>
+    <p class="subtitle">We install and configure pytest, then convert Session 31's manual assert-based checks into real, discoverable, well-organized pytest tests.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Explain the difference between a module (Session 06) and a package</li>
-        <li>Create a package using an __init__.py file</li>
-        <li>Reorganize country.py's growing classes into a package with focused submodules</li>
-        <li>Update import statements across the project to match the new structure</li>
-        <li>Run the existing test suite after reorganizing, to confirm nothing broke</li>
+        <li>Install pytest and understand its file/function naming conventions for test discovery</li>
+        <li>Write a test function pytest can automatically discover and run</li>
+        <li>Run the test suite from the command line and read its output</li>
+        <li>Compare a failing pytest assertion's output to a bare assert's output</li>
+        <li>Organize tests into a dedicated tests/ directory, separate from application code</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What is the difference between a module (Session 06) and a package?</p>
-        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
-        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
-        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
-        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
-        <div class="explanation">A module (Session 06) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
+        <p>For pytest to automatically discover a test function without any extra configuration, what must be true about its name and the file it lives in?</p>
+        <label class="quiz-option" data-val="a">The file and function can be named anything at all</label>
+        <label class="quiz-option" data-val="b">The file name should start or end with test_ (e.g. test_country.py) and the function name should start with test_ (e.g. def test_summary_format())</label>
+        <label class="quiz-option" data-val="c">Only the file name matters; function names are irrelevant</label>
+        <label class="quiz-option" data-val="d">Test functions must be inside a class named TestSuite</label>
+        <div class="explanation">pytest's default discovery convention looks for files matching <code>test_*.py</code> or <code>*_test.py</code>, and within them, functions starting with <code>test_</code>. Following this convention means you never need to manually register a test.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
-        <label class="quiz-option" data-val="a">A file named package.json</label>
-        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
-        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
-        <label class="quiz-option" data-val="d">A README.md file</label>
-        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
+        <p>How do you actually run the discovered tests from the command line?</p>
+        <label class="quiz-option" data-val="a">python test_country.py</label>
+        <label class="quiz-option" data-val="b">pytest</label>
+        <label class="quiz-option" data-val="c">pip install test_country</label>
+        <label class="quiz-option" data-val="d">python -m unittest test_country</label>
+        <div class="explanation">Simply running <code>pytest</code> in the project directory automatically discovers and runs every test file/function matching its naming convention — no manual listing required.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
-        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
-        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
-        <label class="quiz-option" data-val="c">Country must be renamed</label>
-        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
-        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
+        <p>When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest's output show you that a bare Python assert (Session 31) does not?</p>
+        <label class="quiz-option" data-val="a">Nothing extra — the output is identical either way</label>
+        <label class="quiz-option" data-val="b">pytest shows the actual values on both sides of the comparison (e.g. "assert 54000000 == 55000000") automatically, without you writing a custom message</label>
+        <label class="quiz-option" data-val="c">pytest only tells you which file failed, never which line</label>
+        <label class="quiz-option" data-val="d">pytest requires you to manually format every failure message</label>
+        <div class="explanation">This is one of pytest's most useful features: it introspects a failing <code>assert</code> and shows you the actual runtime values involved, giving a much clearer picture of what went wrong than a bare assert's generic AssertionError.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
-        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
-        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
-        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
-        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
-        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
+        <p>Why organize tests into a separate tests/ directory instead of mixing test files in with application code?</p>
+        <label class="quiz-option" data-val="a">pytest requires this exact structure to function at all</label>
+        <label class="quiz-option" data-val="b">It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 10</label>
+        <label class="quiz-option" data-val="c">Tests placed outside tests/ run twice as slowly</label>
+        <label class="quiz-option" data-val="d">There is no benefit; it is arbitrary</label>
+        <div class="explanation">Just like Session 10's module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 24's separation of concerns?</p>
-        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
-        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
-        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
-        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
-        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 24's repository vs explorer distinction, Session 20's separate validators module) — grouping by responsibility, not arbitrarily.</div>
+        <p>What is the pytest equivalent of Session 31's manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?</p>
+        <label class="quiz-option" data-val="a">assert grow_population(-5) == False</label>
+        <label class="quiz-option" data-val="b">Using pytest.raises(ValueError): as a context manager around the call, e.g. with pytest.raises(ValueError): k.grow_population(-5)</label>
+        <label class="quiz-option" data-val="c">pytest cannot test for raised exceptions</label>
+        <label class="quiz-option" data-val="d">try/except is no longer needed with pytest</label>
+        <div class="explanation"><code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 31's manual try/except/assert False pattern with something more concise and pytest-native.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,64 +141,63 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Modules vs Packages</h2>
-
-    <h3>From one growing file to a package</h3>
-    <p>country.py has grown to contain Country, CountryExplorer, CountryRepository, and validate_country_record — several distinct responsibilities crammed into one file. A package lets us split these while keeping them organized under one importable unit.</p>
-    <pre><code># Before — everything in one growing file
-# country.py
-class Country: ...
-class CountryExplorer: ...
-class CountryRepository: ...
-def validate_country_record(data): ...</code></pre>
-
-    <h3>Creating a package with __init__.py</h3>
-    <p>A directory becomes a package once it contains an __init__.py file. The file can be empty, or it can re-export names to make imports more convenient for users of the package.</p>
-    <pre><code># country_explorer/__init__.py
-from .models import Country, CountryExplorer
-from .repository import CountryRepository
-from .validators import validate_country_record
-
-# This lets other code do: from country_explorer import Country
-# instead of the more verbose: from country_explorer.models import Country</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">country.py</span>one growing
-file</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">country_explorer/</span>models.py
-repository.py
-validators.py</div>
-      <div class="diagram-caption">country.py splits into a package: focused submodules, with __init__.py re-exporting the names external code actually needs.</div>
+    <h2>3. The Concept — pytest Fundamentals</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">BARE ASSERT</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">AssertionError</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(no detail)</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PYTEST ASSERT</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">assert 55000000</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">== 56000000</text>
+      </svg>
+      <p class="diagram-caption-text">A bare assert just says "failed." pytest shows you the actual values on both sides, automatically.</p>
     </div>
 
-    <h3>Splitting by responsibility</h3>
-    <p>Following the conceptual boundaries already established in the project — Session 24's repository/explorer split, Session 20's separate validators — gives a natural, sensible package layout.</p>
-    <pre><code># country_explorer/models.py
-class Country:
-    ...
 
-class CountryExplorer:
-    ...
+    <h3>Installing pytest</h3>
+    <p>pytest is installed like any third-party package, typically with pip.</p>
+    <pre><code># In your terminal (not in a .py file):
+# pip install pytest</code></pre>
 
-# country_explorer/repository.py
-from .models import Country
+    <h3>Test discovery conventions</h3>
+    <p>pytest automatically finds and runs tests that follow its naming conventions — no manual registration required, unlike Session 31's hand-called test functions.</p>
+    <pre><code># tests/test_country.py  — file name starts with test_
+from country import Country  # importing the real application module
 
-class CountryRepository:
-    ...
+def test_summary_format():   # function name starts with test_
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    assert k.summary() == "Kenya (Africa): pop. 54,000,000"</code></pre>
 
-# country_explorer/validators.py
-def validate_country_record(data):
-    ...</code></pre>
+    <h3>Running the suite</h3>
+    <p>A single command runs every discovered test and reports a summary — pass/fail counts and details on any failures.</p>
+    <pre><code># In your terminal:
+# pytest
+#
+# Example output:
+# ===== test session starts =====
+# collected 3 items
+#
+# tests/test_country.py ...                                    [100%]
+#
+# ===== 3 passed in 0.02s =====</code></pre>
 
-    <h3>Updating imports and re-running the test suite</h3>
-    <p>Every file that imported from country now needs to import from country_explorer (or a specific submodule). Running the full test suite immediately afterward confirms the reorganization did not silently break anything — the payoff of Layer 5's investment.</p>
-    <pre><code># tests/test_country.py — before
-# from country import Country
+    <h3>Readable failure output</h3>
+    <p>When a plain assert fails inside a pytest test, pytest shows you the actual values on both sides — far more informative than a bare AssertionError.</p>
+    <pre><code>def test_grow_population_increases_value():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    k.grow_population(1000000)
+    assert k.population == 56000000  # deliberately wrong, to see pytest's failure output
 
-# tests/test_country.py — after
-from country_explorer import Country
+# pytest shows something like:
+#     assert 55000000 == 56000000
+# — pytest introspected the actual values automatically, no manual message needed</code></pre>
 
-# Then: pytest -v
-# If every test still passes, the reorganization was behavior-preserving, as intended</code></pre>
+    <h3>Testing for raised exceptions with pytest.raises</h3>
+    <p>pytest provides a dedicated, cleaner way to assert that code raises a specific exception, replacing Session 31's manual try/except/assert False.</p>
+    <pre><code>import pytest
+
+def test_grow_population_rejects_negative():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    with pytest.raises(ValueError):
+        k.grow_population(-5)
+    # if grow_population does NOT raise ValueError, this test fails automatically</code></pre>
 
 
 
@@ -206,32 +205,20 @@ from country_explorer import Country
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Reorganize country.py into a country_explorer/ package with focused submodules, update all imports, and confirm the full test suite still passes.
+      <strong>Lab objective:</strong> Set up a proper project structure with a tests/ directory, convert Session 31's manual tests to pytest, and run the suite.
     </div>
 
     <h3>What you will build</h3>
-    <p>A new package directory <code>country_explorer/</code> replacing the flat <code>country.py</code>.</p>
+    <p>A file called <code>country.py</code> (the real module) and <code>tests/test_country.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the country_explorer/ directory with __init__.py</strong></p>
+        <p><strong>Create country.py as a real, importable module</strong></p>
 
-        <pre><code># country_explorer/__init__.py
-from .models import Country, CountryExplorer
-from .repository import CountryRepository
-from .validators import validate_country_record</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <p><strong>Move Country and CountryExplorer into models.py</strong></p>
-
-        <pre><code># country_explorer/models.py
+        <pre><code># country.py
 class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -249,79 +236,62 @@ class Country:
     def grow_population(self, amount):
         if amount &lt; 0:
             raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount
+        self.population += amount</code></pre>
+      </div>
+    </div>
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create the tests/ directory and test_country.py</strong></p>
 
+        <pre><code># tests/test_country.py
+import pytest
+from country import Country
 
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+def test_summary_format():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    assert k.summary() == "Kenya (Africa): pop. 54,000,000"
 
-    def add_country(self, country):
-        if not isinstance(country, Country):
-            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
-        self.countries.append(country)
-
-    @property
-    def country_count(self):
-        return len(self.countries)
-
-    @property
-    def total_population(self):
-        return sum(c.population for c in self.countries)</code></pre>
+def test_grow_population_increases_value():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    k.grow_population(1000000)
+    assert k.population == 55000000</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Move CountryRepository into repository.py, importing Country from models</strong></p>
+        <p><strong>Add exception tests using pytest.raises</strong></p>
 
-        <pre><code># country_explorer/repository.py
-from .models import Country
+        <pre><code>def test_grow_population_rejects_negative():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    with pytest.raises(ValueError):
+        k.grow_population(-5)
 
-class CountryRepository:
-    def __init__(self, raw_data):
-        self._raw_data = raw_data
-
-    def get_all(self):
-        return [Country.from_dict(r) for r in self._raw_data]
-
-    def find_by_region(self, region):
-        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]</code></pre>
+def test_set_population_rejects_negative():
+    k = Country(name="Kenya", region="Africa", population=54000000)
+    with pytest.raises(ValueError):
+        k.set_population(-1)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Move validate_country_record into validators.py</strong></p>
-
-        <pre><code># country_explorer/validators.py
-def validate_country_record(data):
-    required = {"name": str, "region": str, "population": int}
-    for key, expected_type in required.items():
-        if key not in data:
-            raise ValueError(f"missing required field: {key}")
-        if not isinstance(data[key], expected_type):
-            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
-    return data</code></pre>
+        <p><strong>Run pytest from the project root and confirm all tests pass</strong></p>
+        <p>Run the pytest command and read the summary output.</p>
+        <pre><code># pytest</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Update every test file's imports and run the full suite</strong></p>
-        <p>Change every from country import ... to from country_explorer import ..., delete the old country.py, and run pytest -v.</p>
-        <pre><code># tests/test_country.py, test_return_values.py, test_state_changes.py, test_repository.py
-# change: from country import Country, CountryExplorer, CountryRepository, validate_country_record
-# to:     from country_explorer import Country, CountryExplorer, CountryRepository, validate_country_record
+        <p><strong>Deliberately break one test to see pytest's failure output, then fix it</strong></p>
+        <p>Change an expected value to something wrong, run pytest again, read the detailed failure output, then revert it.</p>
 
-# pytest -v</code></pre>
       </div>
     </div>
 
@@ -335,34 +305,14 @@ def validate_country_record(data):
         </thead>
         <tbody>
           <tr>
-            <td><code>country_explorer/__init__.py</code></td>
-            <td>Created</td>
-            <td>Marks the directory as a package and re-exports the key names.</td>
-          </tr>
-          <tr>
-            <td><code>country_explorer/models.py</code></td>
-            <td>Created</td>
-            <td>Country and CountryExplorer, moved from country.py.</td>
-          </tr>
-          <tr>
-            <td><code>country_explorer/repository.py</code></td>
-            <td>Created</td>
-            <td>CountryRepository, moved from country.py.</td>
-          </tr>
-          <tr>
-            <td><code>country_explorer/validators.py</code></td>
-            <td>Created</td>
-            <td>validate_country_record, moved from country.py.</td>
-          </tr>
-          <tr>
             <td><code>country.py</code></td>
-            <td>Deleted</td>
-            <td>Replaced by the new country_explorer package.</td>
+            <td>Created</td>
+            <td>The real, importable Country module (no longer duplicated inline in a lab script).</td>
           </tr>
           <tr>
-            <td><code>tests/*.py</code></td>
-            <td>Modified</td>
-            <td>Import paths updated to the new package structure.</td>
+            <td><code>tests/test_country.py</code></td>
+            <td>Created</td>
+            <td>A proper pytest test suite for Country, organized in a dedicated tests/ directory.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-32/index.html</code></td>
@@ -374,19 +324,18 @@ def validate_country_record(data):
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 7 files.
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country_explorer/ tests/ docs/sessions/session-32/index.html
-git rm country.py
-git commit -m "session-32: reorganize into a country_explorer package with focused submodules"</code></pre>
+    <pre><code>git add country.py tests/test_country.py docs/sessions/session-32/index.html
+git commit -m "session-32: set up pytest with a real tests/ directory"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why did running the full test suite right after this reorganization matter more than after almost any previous session?"
+      Do not commit until you can answer out loud: "What naming convention did I follow to make pytest automatically discover these tests without any manual registration?"
     </div>
 
     <hr class="section-divider" />
@@ -397,23 +346,23 @@ git commit -m "session-32: reorganize into a country_explorer package with focus
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">country_explorer/ is a real package with __init__.py re-exporting the key names</label>
+        <label for="c1">country.py exists as a standalone, importable module (Session 10 discipline)</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">models.py, repository.py, and validators.py each contain only their own responsibility</label>
+        <label for="c2">tests/test_country.py follows pytest's file and function naming conventions</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">repository.py imports Country from .models rather than duplicating it</label>
+        <label for="c3">At least two tests use pytest.raises() instead of manual try/except</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Every test file's imports are updated to the new package path</label>
+        <label for="c4">Running pytest from the project root discovers and passes all tests</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">The full test suite passes with zero failures after the reorganization</label>
+        <label for="c5">A deliberately broken test was run once to observe pytest's detailed failure output, then fixed</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -433,52 +382,52 @@ git commit -m "session-32: reorganize into a country_explorer package with focus
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What is the difference between a module (Session 06) and a package?</p>
-        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
-        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
-        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
-        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
-        <div class="explanation">A module (Session 06) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
+        <p>For pytest to automatically discover a test function without any extra configuration, what must be true about its name and the file it lives in?</p>
+        <label class="quiz-option" data-val="a">The file and function can be named anything at all</label>
+        <label class="quiz-option" data-val="b">The file name should start or end with test_ (e.g. test_country.py) and the function name should start with test_ (e.g. def test_summary_format())</label>
+        <label class="quiz-option" data-val="c">Only the file name matters; function names are irrelevant</label>
+        <label class="quiz-option" data-val="d">Test functions must be inside a class named TestSuite</label>
+        <div class="explanation">pytest's default discovery convention looks for files matching <code>test_*.py</code> or <code>*_test.py</code>, and within them, functions starting with <code>test_</code>. Following this convention means you never need to manually register a test.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
-        <label class="quiz-option" data-val="a">A file named package.json</label>
-        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
-        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
-        <label class="quiz-option" data-val="d">A README.md file</label>
-        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
+        <p>How do you actually run the discovered tests from the command line?</p>
+        <label class="quiz-option" data-val="a">python test_country.py</label>
+        <label class="quiz-option" data-val="b">pytest</label>
+        <label class="quiz-option" data-val="c">pip install test_country</label>
+        <label class="quiz-option" data-val="d">python -m unittest test_country</label>
+        <div class="explanation">Simply running <code>pytest</code> in the project directory automatically discovers and runs every test file/function matching its naming convention — no manual listing required.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
-        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
-        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
-        <label class="quiz-option" data-val="c">Country must be renamed</label>
-        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
-        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
+        <p>When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest's output show you that a bare Python assert (Session 31) does not?</p>
+        <label class="quiz-option" data-val="a">Nothing extra — the output is identical either way</label>
+        <label class="quiz-option" data-val="b">pytest shows the actual values on both sides of the comparison (e.g. "assert 54000000 == 55000000") automatically, without you writing a custom message</label>
+        <label class="quiz-option" data-val="c">pytest only tells you which file failed, never which line</label>
+        <label class="quiz-option" data-val="d">pytest requires you to manually format every failure message</label>
+        <div class="explanation">This is one of pytest's most useful features: it introspects a failing <code>assert</code> and shows you the actual runtime values involved, giving a much clearer picture of what went wrong than a bare assert's generic AssertionError.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
-        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
-        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
-        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
-        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
-        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
+        <p>Why organize tests into a separate tests/ directory instead of mixing test files in with application code?</p>
+        <label class="quiz-option" data-val="a">pytest requires this exact structure to function at all</label>
+        <label class="quiz-option" data-val="b">It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 10</label>
+        <label class="quiz-option" data-val="c">Tests placed outside tests/ run twice as slowly</label>
+        <label class="quiz-option" data-val="d">There is no benefit; it is arbitrary</label>
+        <div class="explanation">Just like Session 10's module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 24's separation of concerns?</p>
-        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
-        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
-        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
-        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
-        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 24's repository vs explorer distinction, Session 20's separate validators module) — grouping by responsibility, not arbitrarily.</div>
+        <p>What is the pytest equivalent of Session 31's manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?</p>
+        <label class="quiz-option" data-val="a">assert grow_population(-5) == False</label>
+        <label class="quiz-option" data-val="b">Using pytest.raises(ValueError): as a context manager around the call, e.g. with pytest.raises(ValueError): k.grow_population(-5)</label>
+        <label class="quiz-option" data-val="c">pytest cannot test for raised exceptions</label>
+        <label class="quiz-option" data-val="d">try/except is no longer needed with pytest</label>
+        <div class="explanation"><code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 31's manual try/except/assert False pattern with something more concise and pytest-native.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -491,10 +440,10 @@ git commit -m "session-32: reorganize into a country_explorer package with focus
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Did any test fail immediately after the reorganization? If so, what did that reveal about a missed import? If not, what does that tell you about how thorough Layer 5's coverage really was?</li>
-        <li>Why does __init__.py re-export names instead of requiring every caller to know the exact submodule (models, repository, validators) a given class lives in?</li>
-        <li>How does this package split reflect the conceptual boundaries you've been building since Session 24 (repository) and Session 20 (validators), rather than an arbitrary split?</li>
-        <li>What would you do differently if you needed to add a FOURTH responsibility to this package later — how would you decide whether it deserves its own submodule?</li>
+        <li>Compare the effort of writing test_grow_population_rejects_negative() with pytest.raises() versus Session 31's manual try/except/assert False version. Which communicates intent more clearly to a reader?</li>
+        <li>Why does pytest need file and function names to follow a convention, instead of you manually telling it which functions are tests?</li>
+        <li>What did the deliberately-broken test's failure output show you that made it easy to identify the problem?</li>
+        <li>How does organizing tests/ separately from country.py reflect the same reasoning as splitting country_data.py from explorer.py back in Session 10?</li>
       </ol>
     </div>
 
@@ -503,9 +452,9 @@ git commit -m "session-32: reorganize into a country_explorer package with focus
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Import errors from a rushed reorganization:</strong> Reorganizing files without updating every import reference (and without a test suite to catch the ones you miss) is one of the most common sources of "it worked yesterday" bugs in real projects.</li>
-        <li><strong>Reusable modules (Session 33):</strong> The next session builds genuinely reusable utility functions — having a clean package structure in place first makes it obvious where new shared code should live.</li>
-        <li><strong>God objects and tight coupling (Session 35):</strong> A clean package split makes it much easier to SEE when one module starts doing too much or reaching too deeply into another's internals — the problem Session 35 addresses directly.</li>
+        <li><strong>Forgetting to run tests:</strong> Even a good test suite is useless if no one remembers to run it before shipping a change — this is a process discipline this session sets up the tooling for, but does not solve by itself (CI automation solves it, but is out of scope for this curriculum).</li>
+        <li><strong>Testing props/output specifically (Session 33):</strong> This session set up the tooling; the next two sessions dive into what specifically to assert on — return values and object state — building real test coverage across the whole project.</li>
+        <li><strong>Confident refactoring (Layer 6):</strong> A real, runnable pytest suite is the safety net that makes Layer 6's architecture refactoring sessions safe to do boldly instead of nervously.</li>
       </ul>
     </div>
 
@@ -513,9 +462,9 @@ git commit -m "session-32: reorganize into a country_explorer package with focus
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Packages vs modules, creating a package with __init__.py, and safely reorganizing a growing codebase with a test suite as a safety net.</p>
-      <p><strong>Unlocks:</strong> The project now has a real, scalable package structure instead of one growing flat file — and you have proven, with tests, that the reorganization changed nothing about behavior.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 33 — Reusable Functions and Modules</a>. We extract genuinely reusable functions and utility modules, building on the clean structure we just established.</p>
+      <p><strong>Python concept mastered:</strong> pytest fundamentals — installation, test discovery conventions, running the suite, readable failure output, and pytest.raises for exception testing.</p>
+      <p><strong>Unlocks:</strong> The project now has a real, professional testing setup — the foundation for every remaining test-writing session in Layer 5.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 33 — Testing Functions and Return Values</a>. We dig into what specifically to assert on for functions and methods that return values, covering edge cases systematically.</p>
     </div>
 
 

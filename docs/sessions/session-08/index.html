@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 08 — What Classes Are and Why — Python Learning</title>
+  <title>Session 08 — Functions and Lambda — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-layer">Layer 1</span>
       <span class="badge badge-current">Session 08</span>
-      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
     </div>
-    <h1>What Classes Are and Why</h1>
-    <p class="subtitle">Layer 2 begins. A dictionary describes data. A class describes a kind of thing — data plus the behavior that belongs with it. This is why we are switching.</p>
+    <h1>Functions and Lambda</h1>
+    <p class="subtitle">Every piece of logic we have written so far has been repeated inline. Functions let us name a piece of logic once and reuse it — the basis for everything from here forward.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Explain the difference between a dictionary and a class conceptually</li>
-        <li>Define an empty class and create an instance of it</li>
-        <li>Explain what an instance is, versus the class itself</li>
-        <li>Explain why grouping data with the behavior that operates on it reduces bugs</li>
-        <li>Recognise that this session is concept-only — no meaningful code is written yet</li>
+        <li>Define a function with def, including default parameter values</li>
+        <li>Explain the difference between a parameter and an argument, and between positional and keyword arguments</li>
+        <li>Use return to send a value back to the caller, and understand a function with no return gives back None</li>
+        <li>Write a small lambda expression and know when it is (and is not) appropriate</li>
+        <li>Pass a function as an argument to sorted() using the key parameter</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
-        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
-        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
-        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
-        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
-        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
+        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
+        <label class="quiz-option" data-val="a">None — the function only prints</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
+        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
+        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
+        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>class Country: pass</code> define?</p>
-        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
-        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
-        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
-        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
-        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
+        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
+        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
+        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
+        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
+        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="c">
+      <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is c in <code>c = Country()</code>?</p>
-        <label class="quiz-option" data-val="a">The class itself</label>
-        <label class="quiz-option" data-val="b">A function call that returns None</label>
-        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
-        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
-        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
+        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
+        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string</label>
+        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="a">
         <div class="question-num">Question 4 of 5</div>
-        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
-        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
-        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
-        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
-        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
-        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
+        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
+        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
+        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
+        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
+        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
-        <label class="quiz-option" data-val="a">It is always faster to execute</label>
-        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
-        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
-        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
-        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
+        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
+        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
+        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
+        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
+        <label class="quiz-option" data-val="d">It reverses the sort order</label>
+        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,112 +141,144 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Why Classes Exist</h2>
-
-    <h3>What we have been doing so far</h3>
-    <p>For seven sessions, a country has been a dictionary, and every operation on it — formatting, filtering, validating — has been a separate, standalone function that takes the dictionary as an argument. This works, but nothing stops any function anywhere from reading or writing the wrong key, or writing an invalid value.</p>
-    <pre><code>country = {"name": "Kenya", "population": 54000000}
-
-def set_population(country, value):
-    if value &lt; 0:
-        raise ValueError("population must be positive")
-    country["population"] = value
-
-# Nothing stops this — the dict has no memory of the rule above
-country["population"] = -100</code></pre>
-
-    <h3>A class bundles data and behavior together</h3>
-    <p>A class is a blueprint for a kind of thing. It groups the data that thing needs (its attributes) with the operations that belong to it (its methods) into a single definition. We will build this up piece by piece over the next several sessions — today, just the shell.</p>
-    <pre><code>class Country:
-    pass  # placeholder — a class body cannot be empty
-
-c = Country()
-print(type(c))     # &lt;class '__main__.Country'&gt;
-print(isinstance(c, Country))  # True</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">class</span>Country
-(the blueprint)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">instance</span>c = Country()</div>
-      <div class="diagram-caption">Country is the blueprint. c is one specific instance built from that blueprint — a second call would build a separate one.</div>
+    <h2>3. The Concept — Functions and Lambda</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">PRINT()</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">side effect</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(console only)</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">RETURN</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">value flows back</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">to the caller</text>
+      </svg>
+      <p class="diagram-caption-text">print() sends text to the console; return sends a value back into the calling code so it can be used further.</p>
     </div>
 
-    <h3>Class vs instance — a critical distinction</h3>
-    <p>The class is the definition, written once. An instance is a specific object built from that definition — you can build as many as you need, and each one is independent, just like each call to a function produces an independent result.</p>
-    <pre><code>c1 = Country()
-c2 = Country()
-print(c1 is c2)  # False — two separate instances, even though both are Country</code></pre>
 
-    <h3>What this unlocks</h3>
-    <p>Right now <code>Country</code> is an empty shell — it does nothing a dictionary couldn't already do. Over the next several sessions we will give it attributes (Session 09), methods (Session 10), a proper constructor (Session 11), and eventually a whole tree of related classes (Session 12) — building toward a real Country Explorer application.</p>
+    <h3>Defining a function</h3>
+    <p>A function packages up logic under a name so it can be called repeatedly instead of copy-pasted.</p>
+    <pre><code>def greet(name):
+    return f"Hello, {name}"
 
-    <div class="alert alert-warning">
-      <strong>Concept-only session:</strong> There is intentionally very little code today. The goal is to genuinely understand WHY we are switching from dictionaries to classes before writing the class itself in the next session.
-    </div>
+print(greet("Kenya"))  # "Hello, Kenya"
+print(greet("Ghana"))  # "Hello, Ghana"</code></pre>
+
+    <h3>return vs print — a critical distinction</h3>
+    <p><code>print()</code> displays something to the console as a side effect. <code>return</code> sends a value back to whoever called the function, so it can be stored, passed along, or used in another expression. A function with no <code>return</code> statement evaluates to <code>None</code>.</p>
+    <pre><code>def broken_greet(name):
+    print(f"Hello, {name}")   # side effect — does NOT return anything
+
+result = broken_greet("Kenya")   # prints "Hello, Kenya" as a side effect
+print(result)                     # None — nothing was returned</code></pre>
+
+    <h3>Default parameter values</h3>
+    <p>A parameter can have a default, used whenever the caller omits that argument.</p>
+    <pre><code>def region_label(name, region="Unknown"):
+    return f"{name} ({region})"
+
+print(region_label("Kenya", "Africa"))  # "Kenya (Africa)"
+print(region_label("Atlantis"))          # "Atlantis (Unknown)" — default used</code></pre>
+
+    <h3>Lambda — a small, anonymous function</h3>
+    <p>A lambda is a function expression with no name, written on one line, with the result implicitly returned. Lambdas are for short, throwaway logic — usually passed straight into another function.</p>
+    <pre><code># Full function
+def get_pop(c):
+    return c["population"]
+
+# Equivalent lambda
+get_pop = lambda c: c["population"]
+
+# Where lambdas actually shine: passed inline as an argument
+countries = [
+    {"name": "Kenya", "population": 54000000},
+    {"name": "Ghana", "population": 31000000},
+]
+by_population = sorted(countries, key=lambda c: c["population"])
+print([c["name"] for c in by_population])  # ['Ghana', 'Kenya']</code></pre>
+
+    <h3>When to use a full function instead of a lambda</h3>
+    <p>If the logic needs a name for clarity, spans more than one line, or is reused in several places, write a real <code>def</code> function. A lambda is for a single, obvious, inline expression only.</p>
+    <pre><code># Bad: cramming multi-step logic into a lambda hurts readability
+# label = lambda c: c["name"] + " (" + c["region"] + ")" if c.get("region") else c["name"]
+
+# Good: a real function with a name says what it does
+def format_label(c):
+    if c.get("region"):
+        return f"{c['name']} ({c['region']})"
+    return c["name"]</code></pre>
+
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Define an empty Country class, create two separate instances, and prove they are independent objects — no meaningful behavior yet.
+      <strong>Lab objective:</strong> Write reusable functions for formatting and sorting countries, including one lambda used with sorted().
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>country_class.py</code>.</p>
+    <p>A file called <code>functions_lab.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and define an empty class</strong></p>
+        <p><strong>Create the file and the country list</strong></p>
 
-        <pre><code># country_class.py
-class Country:
-    pass</code></pre>
+        <pre><code># functions_lab.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Create two separate instances</strong></p>
+        <p><strong>Write a function that formats one country as a label</strong></p>
+        <p>Give <code>region</code> a default value of <code>"Unknown"</code>.</p>
+        <pre><code>def format_country(name, region="Unknown"):
+    return f"{name} ({region})"
 
-        <pre><code>c1 = Country()
-c2 = Country()
-
-print(c1)
-print(c2)</code></pre>
+print(format_country("Kenya", "Africa"))
+print(format_country("Atlantis"))  # uses the default</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Confirm both are instances of Country</strong></p>
+        <p><strong>Write a function that returns the population, and one that prints it</strong></p>
+        <p>Call both and print the results to see the return-vs-print difference for yourself.</p>
+        <pre><code>def get_population(country):
+    return country["population"]
 
-        <pre><code>print(isinstance(c1, Country))  # True
-print(isinstance(c2, Country))  # True</code></pre>
+def show_population(country):
+    print(country["name"], "has population", country["population"])
+
+result = show_population(countries[0])
+print("show_population returned:", result)  # None
+print("get_population returned:", get_population(countries[0]))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Prove they are two distinct objects, not the same one</strong></p>
-        <p>Before running: predict what c1 is c2 will print, and why.</p>
-        <pre><code>print(c1 is c2)  # False — separate objects in memory</code></pre>
+        <p><strong>Sort countries by population using a lambda</strong></p>
+
+        <pre><code>by_population = sorted(countries, key=lambda c: c["population"])
+for c in by_population:
+    print(c["name"], c["population"])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Write a short comment explaining what problem this will eventually solve</strong></p>
-        <p>No code required here — write a plain-English comment in the file summarising, in your own words, why a class beats a loose dict + loose functions. This is the most important step in the lab.</p>
-        <pre><code># TODO: In your own words — why will bundling country data and
-# country behavior into one class reduce bugs compared to
-# passing a dict to a bunch of separate functions?</code></pre>
+        <p><strong>Sort countries by population, descending</strong></p>
+        <p>Look up the reverse parameter of sorted().</p>
+        <pre><code>by_population_desc = sorted(countries, key=lambda c: c["population"], reverse=True)
+print([c["name"] for c in by_population_desc])</code></pre>
       </div>
     </div>
 
@@ -260,9 +292,9 @@ print(isinstance(c2, Country))  # True</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>country_class.py</code></td>
+            <td><code>functions_lab.py</code></td>
             <td>Created</td>
-            <td>An empty Country class and proof that instances are independent.</td>
+            <td>Demonstrates function definitions, defaults, return vs print, and lambda with sorted().</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-08/index.html</code></td>
@@ -281,11 +313,11 @@ print(isinstance(c2, Country))  # True</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country_class.py docs/sessions/session-08/index.html
-git commit -m "session-08: define an empty Country class and confirm instances are independent"</code></pre>
+    <pre><code>git add functions_lab.py docs/sessions/session-08/index.html
+git commit -m "session-08: define reusable functions and sort with a lambda key"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "In my own words, what is the difference between the Country class and a Country instance?"
+      Do not commit until you can answer out loud: "Why did show_population() print the value but return None, and why does that matter?"
     </div>
 
     <hr class="section-divider" />
@@ -296,23 +328,23 @@ git commit -m "session-08: define an empty Country class and confirm instances a
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">The class is defined with class Country: pass</label>
+        <label for="c1">At least one function uses a default parameter value</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">Two separate instances are created</label>
+        <label for="c2">The return-vs-print distinction is demonstrated explicitly, printing the None result</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">isinstance() is used to confirm both belong to the Country class</label>
+        <label for="c3">At least one lambda is written and used as the key argument to sorted()</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">c1 is c2 is checked and correctly explained as False</label>
+        <label for="c4">sorted() is used both ascending and with reverse=True</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A written comment explains, in plain English, why a class beats a loose dict</label>
+        <label for="c5">No lambda spans more than one expression</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -332,52 +364,52 @@ git commit -m "session-08: define an empty Country class and confirm instances a
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
-        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
-        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
-        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
-        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
-        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
+        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
+        <label class="quiz-option" data-val="a">None — the function only prints</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
+        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
+        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
+        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>class Country: pass</code> define?</p>
-        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
-        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
-        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
-        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
-        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
+        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
+        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
+        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
+        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
+        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
+        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="c">
+      <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is c in <code>c = Country()</code>?</p>
-        <label class="quiz-option" data-val="a">The class itself</label>
-        <label class="quiz-option" data-val="b">A function call that returns None</label>
-        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
-        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
-        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
+        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
+        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
+        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">An empty string</label>
+        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="a">
         <div class="question-num">Question 4 of 5</div>
-        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
-        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
-        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
-        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
-        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
-        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
+        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
+        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
+        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
+        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
+        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
-        <label class="quiz-option" data-val="a">It is always faster to execute</label>
-        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
-        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
-        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
-        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
+        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
+        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
+        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
+        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
+        <label class="quiz-option" data-val="d">It reverses the sort order</label>
+        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -390,10 +422,10 @@ git commit -m "session-08: define an empty Country class and confirm instances a
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Before this session, every "operation" on a country was a standalone function taking a dict. Can you think of a bug you might have written in the labs so far that a class could have prevented?</li>
-        <li>Why do you think Python requires <code>pass</code> for an empty class body instead of allowing nothing at all?</li>
-        <li>What is the relationship between a class and the <code>type()</code> of an instance built from it?</li>
-        <li>If two instances of the same class can hold completely different data, what does that tell you about what a class actually "is" versus what an instance "is"?</li>
+        <li>Why does Python separate "produce a value" (return) from "display a value" (print) instead of combining them?</li>
+        <li>Rewrite the <code>lambda c: c["population"]</code> from the lab as a full <code>def</code> function. Which version is more readable in context?</li>
+        <li>What would happen if you forgot the <code>return</code> keyword inside <code>get_population</code>? Try it and observe.</li>
+        <li>Can you think of a case in the project ahead where a default parameter value would prevent a bug?</li>
       </ol>
     </div>
 
@@ -402,8 +434,9 @@ git commit -m "session-08: define an empty Country class and confirm instances a
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Confusing the class with an instance:</strong> If you don't internalize the class/instance distinction now, later sessions (attributes, methods, inheritance) will feel like memorized syntax instead of a coherent mental model — and debugging "why does every instance share this value" bugs becomes very hard.</li>
-        <li><strong>Attribute sessions ahead:</strong> Session 09 immediately builds on this by giving Country actual data via __init__. Without today's "class = blueprint, instance = built thing" model, __init__ will look like arbitrary magic syntax instead of a logical next step.</li>
+        <li><strong>The forgotten-return bug:</strong> Forgetting <code>return</code> is one of the most common beginner mistakes. The function appears to work (it prints correctly) but every caller that tries to use its result gets <code>None</code> instead — a bug that only shows up downstream.</li>
+        <li><strong>Data-layer functions (Layer 4):</strong> Session 28 builds a data-access layer entirely out of functions like the ones in this lab. If return values are not understood, that entire layer will silently pass <code>None</code> around.</li>
+        <li><strong>Sorting and filtering UI logic:</strong> Nearly every "sort by X" or "filter by Y" feature in real software is built on exactly the <code>key=lambda</code> pattern from this session.</li>
       </ul>
     </div>
 
@@ -411,9 +444,9 @@ git commit -m "session-08: define an empty Country class and confirm instances a
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> The class vs instance distinction, and the motivation for bundling data with behavior instead of using loose dicts and functions.</p>
-      <p><strong>Unlocks:</strong> You have a mental model for what a class is FOR. Every remaining Layer 2 session builds directly on top of this.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 09 — Class Anatomy — __init__ and Attributes</a>. We give Country real data — an __init__ method and instance attributes, so every instance can hold its own name, region, and population.</p>
+      <p><strong>Python concept mastered:</strong> Functions — def, parameters, defaults, return vs print, and lambda expressions used as sort keys.</p>
+      <p><strong>Unlocks:</strong> You can now name and reuse logic instead of repeating it, and pass small functions as arguments to other functions.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 09 — Unpacking and *args/**kwargs</a>. We will learn to unpack values out of lists and dicts in one line, and accept flexible numbers of arguments with *args and **kwargs.</p>
     </div>
 
 

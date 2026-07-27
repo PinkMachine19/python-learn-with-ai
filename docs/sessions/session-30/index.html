@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 30 — Testing Classes and State Changes — Python Learning</title>
+  <title>Session 30 — Designing Data Contracts — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 5</span>
-      <span class="badge badge-current">Session 30</span>
-      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-gate">Session 30 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
     </div>
-    <h1>Testing Classes and State Changes</h1>
-    <p class="subtitle">Not every method returns a meaningful value — many exist to change an object's state over time. We test that state changes correctly, using setup/teardown fixtures for clean, isolated tests.</p>
+    <h1>Designing Data Contracts</h1>
+    <p class="subtitle">This is the Layer 4 gate. We formalize the informal "contract" from Session 27 using type hints and dataclasses, catching shape mismatches automatically instead of hoping.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Write a test that verifies a mutation happened by checking state before and after</li>
-        <li>Use a pytest fixture to set up a fresh instance for every test, avoiding shared state between tests</li>
-        <li>Test that CountryExplorer's add_country correctly updates its computed properties</li>
-        <li>Test a multi-step sequence of state changes, not just a single call</li>
-        <li>Explain why sharing one instance across many tests is risky</li>
+        <li>Add type hints to a function or method signature</li>
+        <li>Define a class using @dataclass instead of a hand-written __init__</li>
+        <li>Explain what type hints do and do not enforce at runtime</li>
+        <li>Validate that a raw dict matches the expected contract before constructing an instance from it</li>
+        <li>Compare the dataclass version of Country to the hand-written version from Session 13</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why is checking state BOTH before and after a mutating call more thorough than only checking the state after?</p>
-        <label class="quiz-option" data-val="a">It is not more thorough — checking only after is always sufficient</label>
-        <label class="quiz-option" data-val="b">Confirming the "before" value is what you expect rules out a test that passes by coincidence — e.g. the value happening to already equal the expected "after" value for an unrelated reason</label>
-        <label class="quiz-option" data-val="c">pytest requires a before-check for every test</label>
-        <label class="quiz-option" data-val="d">This only matters for numeric attributes</label>
-        <div class="explanation">A test that never checks the "before" state cannot rule out that the method call did nothing at all, if the value happened to coincidentally already match the expected result — checking both is a stronger, more trustworthy test.</div>
+        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
+        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
+        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
+        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
+        <label class="quiz-option" data-val="d">Only in Python 2</label>
+        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is a pytest fixture, in the sense of def fresh_explorer(): return CountryExplorer(countries=[]) decorated with @pytest.fixture?</p>
-        <label class="quiz-option" data-val="a">A way to permanently modify pytest's configuration</label>
-        <label class="quiz-option" data-val="b">A reusable setup function that pytest automatically calls and injects into any test function that names it as a parameter, giving each test a fresh, isolated starting object</label>
-        <label class="quiz-option" data-val="c">A special kind of assertion</label>
-        <label class="quiz-option" data-val="d">A way to skip slow tests automatically</label>
-        <div class="explanation">A fixture provides reusable setup logic. Any test function that takes the fixture's name as a parameter automatically receives a freshly created object from it — every test gets its own independent starting point, with no manual setup code repeated in each test.</div>
+        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 13?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
+        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
+        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
+        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
+        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 13, while still producing an ordinary class.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why is sharing ONE CountryExplorer instance across many different test functions (instead of a fresh one per test, via a fixture) risky?</p>
-        <label class="quiz-option" data-val="a">There is no risk; sharing is always safe and faster</label>
-        <label class="quiz-option" data-val="b">A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test's starting state, since it is the same shared, mutable object — Session 01's reference lesson applied to testing itself</label>
-        <label class="quiz-option" data-val="c">pytest automatically prevents shared state between tests</label>
-        <label class="quiz-option" data-val="d">Only numeric state can leak between tests</label>
-        <div class="explanation">This is Session 01's and Session 16's reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.</div>
+        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 19 value-based __eq__ behavior?</p>
+        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
+        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 19 built manually</label>
+        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
+        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
+        <div class="explanation">This directly connects back to Session 19: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You want to test that CountryExplorer.total_population correctly reflects a country added via add_country(). What should the test check?</p>
-        <label class="quiz-option" data-val="a">Only that add_country() itself does not raise an exception</label>
-        <label class="quiz-option" data-val="b">That total_population BEFORE adding equals one value, and total_population AFTER calling add_country() correctly reflects the new total — the computed property tracking the mutation correctly</label>
-        <label class="quiz-option" data-val="c">That country_count is a string</label>
-        <label class="quiz-option" data-val="d">Nothing needs to be checked; @property is always correct by definition</label>
-        <div class="explanation">This directly verifies Session 22's guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.</div>
+        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
+        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
+        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
+        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
+        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 13's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>A test performs THREE sequential state changes (e.g. grow_population twice, then set_population once) and checks only the final value. What does this kind of test verify that three separate single-step tests would not?</p>
-        <label class="quiz-option" data-val="a">Nothing extra — it is equivalent to three separate tests</label>
-        <label class="quiz-option" data-val="b">That the methods compose correctly across a realistic sequence of operations, not just in isolation — catching bugs that only appear when state changes happen one after another</label>
-        <label class="quiz-option" data-val="c">This kind of test is never useful</label>
-        <label class="quiz-option" data-val="d">It verifies that pytest itself is installed correctly</label>
-        <div class="explanation">Some bugs only emerge from a REALISTIC SEQUENCE of state changes — for instance, a method that assumes it is always called first might behave incorrectly the second time. A multi-step test exercises this more realistic scenario that isolated single-call tests would miss.</div>
+        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
+        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
+        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
+        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
+        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
+        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 24's discipline) catches this immediately, with a clear message.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,172 +141,160 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Testing State Changes</h2>
-
-    <h3>Checking state before and after</h3>
-    <p>A thorough state-change test confirms the "before" value is what you expect, performs the mutation, and confirms the "after" value is correct — ruling out a test that would coincidentally pass even if the method silently did nothing.</p>
-    <pre><code>from country import Country
-
-def test_grow_population_changes_state():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    assert k.population == 54000000   # confirm the "before" state explicitly
-
-    k.grow_population(1000000)
-
-    assert k.population == 55000000   # confirm the "after" state</code></pre>
-
-    <h3>Fixtures — fresh, isolated setup for every test</h3>
-    <p>A fixture is reusable setup logic pytest automatically provides to any test that asks for it by parameter name — guaranteeing every test starts from a clean, independent instance.</p>
-    <pre><code>import pytest
-from country import Country
-
-@pytest.fixture
-def kenya():
-    return Country(name="Kenya", region="Africa", population=54000000)
-
-def test_grow_population(kenya):        # pytest automatically calls kenya() and passes the result in
-    kenya.grow_population(1000000)
-    assert kenya.population == 55000000
-
-def test_set_population(kenya):          # a COMPLETELY SEPARATE, fresh instance — not shared with the test above
-    kenya.set_population(99)
-    assert kenya.population == 99</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">fixture</span>kenya()</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">test A</span>fresh instance</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">test B</span>fresh instance</div>
-      <div class="diagram-caption">A fixture builds a brand-new instance for each test that requests it — no test can accidentally leak mutated state into another.</div>
+    <h2>3. The Concept — Data Contracts with Type Hints and Dataclasses</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">FIELD DECLARATIONS</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="54" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">name: str</text><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">region: str</text><text x="86" y="84" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">population: int</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">@DATACLASS GENERATES</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">__init__, __eq__</text>
+      </svg>
+      <p class="diagram-caption-text">@dataclass reads the field declarations and generates __init__ and __eq__ for you — the same result as Sessions 09 and 15, without the boilerplate.</p>
     </div>
 
-    <h3>The risk of a shared instance across tests</h3>
-    <p>Without a fixture, using one module-level instance across many tests means a mutation in one test silently carries into the next — a direct real-world consequence of the reference-sharing behaviour from Session 01 and 16.</p>
-    <pre><code># RISKY — a single shared instance across tests
-shared_kenya = Country(name="Kenya", region="Africa", population=54000000)
 
-def test_a_grows_population():
-    shared_kenya.grow_population(1000000)
-    assert shared_kenya.population == 55000000  # passes
+    <h3>Type hints — documentation, not enforcement</h3>
+    <p>A type hint tells readers (and tools like editors and type checkers) what type a value is expected to be. Python itself does not check this at runtime — it is a critical fact to internalize, since it is easy to assume otherwise.</p>
+    <pre><code>def summary(country: dict) -&gt; str:
+    return f"{country['name']} ({country['region']})"
 
-def test_b_expects_original_population():
-    assert shared_kenya.population == 54000000  # FAILS — test_a's mutation leaked in!
-    # This test's result now depends on test execution ORDER, which is a serious design flaw</code></pre>
+# This "should" be wrong according to the type hint, but Python runs it anyway:
+print(summary(42))
+# TypeError happens INSIDE the function body (42 is not subscriptable),
+# not because the type hint was checked and enforced upfront</code></pre>
 
-    <h3>Testing a computed property tracking a mutation</h3>
-    <p>Combining Session 22's computed properties with state-change testing verifies the whole chain works correctly together.</p>
-    <pre><code>from country import Country, CountryExplorer
+    <h3>@dataclass — less boilerplate, same underlying class</h3>
+    <p>A dataclass declares its fields with type hints, and Python auto-generates __init__ (and by default, __eq__) from those declarations — directly replacing Session 13's hand-written boilerplate.</p>
+    <pre><code>from dataclasses import dataclass
 
-@pytest.fixture
-def empty_explorer():
-    return CountryExplorer(countries=[])
+@dataclass
+class Country:
+    name: str
+    region: str
+    population: int
 
-def test_total_population_reflects_added_country(empty_explorer):
-    assert empty_explorer.total_population == 0   # before
+kenya = Country(name="Kenya", region="Africa", population=54000000)
+print(kenya.name)        # "Kenya" — same as before
+print(kenya.population)  # 54000000
 
-    empty_explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+peru1 = Country(name="Peru", region="Americas", population=33000000)
+peru2 = Country(name="Peru", region="Americas", population=33000000)
+print(peru1 == peru2)  # True — free, field-by-field equality (Session 19's manual __eq__, generated automatically)</code></pre>
 
-    assert empty_explorer.total_population == 54000000   # after — automatically correct</code></pre>
+    <h3>Type hints still don't stop bad values at construction</h3>
+    <p>A dataclass will happily accept a value of the wrong type — the hint is not checked. This is why explicit validation, at the boundary where raw external data enters the program, is still necessary.</p>
+    <pre><code>bad = Country(name="Kenya", region="Africa", population="fifty-four-million")
+print(bad.population)  # "fifty-four-million" — a string, accepted without complaint!
+# This will fail confusingly later, wherever population is actually used as a number</code></pre>
 
+    <h3>Validating the contract before construction</h3>
+    <p>Combining Session 24's validation discipline with the dataclass gives us both convenience AND safety: check the raw dict's shape and types explicitly, THEN construct.</p>
+    <pre><code>def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data
+
+def build_country(data):
+    validate_country_record(data)
+    return Country(**data)</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Layer 4 gate:</strong> This is the last Layer 4 session. Every remaining layer assumes you understand that type hints document intent but do not enforce it, and that explicit validation is what actually protects the boundary between raw external data and your application.
+    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Add CountryExplorer to country.py, then test state changes using fixtures, before/after checks, and a multi-step sequence.
+      <strong>Lab objective:</strong> Convert Country to a dataclass, prove type hints are not enforced, and add explicit contract validation for raw records loaded from JSON.
     </div>
 
     <h3>What you will build</h3>
-    <p>Extends <code>country.py</code> and adds <code>tests/test_state_changes.py</code>.</p>
+    <p>A file called <code>contracts_lab.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Add CountryExplorer with add_country and computed properties to country.py</strong></p>
+        <p><strong>Create the file with Country as a dataclass</strong></p>
 
-        <pre><code># country.py (additions)
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+        <pre><code># contracts_lab.py
+from dataclasses import dataclass
 
-    def add_country(self, country):
-        if not isinstance(country, Country):
-            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
-        self.countries.append(country)
+@dataclass
+class Country:
+    name: str
+    region: str
+    population: int
 
-    @property
-    def country_count(self):
-        return len(self.countries)
-
-    @property
-    def total_population(self):
-        return sum(c.population for c in self.countries)</code></pre>
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Write fixtures for a fresh Country and a fresh empty CountryExplorer</strong></p>
+        <p><strong>Prove the free __eq__ works, connecting back to Session 19</strong></p>
 
-        <pre><code># tests/test_state_changes.py
-import pytest
-from country import Country, CountryExplorer
-
-@pytest.fixture
-def kenya():
-    return Country(name="Kenya", region="Africa", population=54000000)
-
-@pytest.fixture
-def empty_explorer():
-    return CountryExplorer(countries=[])</code></pre>
+        <pre><code>a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+print("a == b:", a == b)   # True — generated automatically
+print("a is b:", a is b)   # False — still separate objects</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Write before/after tests for grow_population and set_population</strong></p>
+        <p><strong>Prove type hints are not enforced at construction</strong></p>
 
-        <pre><code>def test_grow_population_changes_state(kenya):
-    assert kenya.population == 54000000
-    kenya.grow_population(1000000)
-    assert kenya.population == 55000000
-
-def test_set_population_changes_state(kenya):
-    assert kenya.population == 54000000
-    kenya.set_population(1)
-    assert kenya.population == 1</code></pre>
+        <pre><code>bad = Country(name="Kenya", region="Africa", population="not a number")
+print(bad.population)              # accepted anyway!
+print(type(bad.population))        # &lt;class 'str'&gt; — the hint did nothing to stop this</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Test add_country updating both computed properties</strong></p>
+        <p><strong>Write validate_country_record() checking both presence and type</strong></p>
 
-        <pre><code>def test_add_country_updates_computed_properties(empty_explorer, kenya):
-    assert empty_explorer.country_count == 0
-    assert empty_explorer.total_population == 0
-
-    empty_explorer.add_country(kenya)
-
-    assert empty_explorer.country_count == 1
-    assert empty_explorer.total_population == 54000000</code></pre>
+        <pre><code>def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Write a multi-step sequence test</strong></p>
-        <p>Grow twice, then set once, checking the final value reflects all three operations correctly.</p>
-        <pre><code>def test_multi_step_population_sequence(kenya):
-    kenya.grow_population(1000000)   # 54,000,000 -&gt; 55,000,000
-    kenya.grow_population(2000000)   # 55,000,000 -&gt; 57,000,000
-    kenya.set_population(60000000)   # -&gt; 60,000,000 directly
-    assert kenya.population == 60000000</code></pre>
+        <p><strong>Validate a batch of raw records, including a deliberately bad one, and skip failures gracefully</strong></p>
+        <p>Reuse the Session 18 pattern of catching per-record errors without losing the whole batch.</p>
+        <pre><code>raw_records = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Bad Data", "region": "Africa", "population": "fifty"},  # wrong type
+    {"name": "Also Bad", "region": "Africa"},                          # missing key
+]
+
+good_countries = []
+for r in raw_records:
+    try:
+        validate_country_record(r)
+        good_countries.append(Country(**r))
+    except (ValueError, TypeError) as e:
+        print(f"Rejected {r!r}: {e}")
+
+print("Valid countries:", len(good_countries))</code></pre>
       </div>
     </div>
 
@@ -320,37 +308,32 @@ def test_set_population_changes_state(kenya):
         </thead>
         <tbody>
           <tr>
-            <td><code>country.py</code></td>
-            <td>Modified</td>
-            <td>Adds CountryExplorer with add_country and computed properties.</td>
-          </tr>
-          <tr>
-            <td><code>tests/test_state_changes.py</code></td>
+            <td><code>contracts_lab.py</code></td>
             <td>Created</td>
-            <td>Fixture-based, isolated tests for state changes, computed properties, and multi-step sequences.</td>
+            <td>Converts Country to a dataclass and adds explicit contract validation for raw records.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-30/index.html</code></td>
             <td>Created</td>
-            <td>This session document.</td>
+            <td>This session document — Layer 4 gate.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country.py tests/test_state_changes.py docs/sessions/session-30/index.html
-git commit -m "session-30: test state changes with fixtures, before/after checks, and multi-step sequences"</code></pre>
+    <pre><code>git add contracts_lab.py docs/sessions/session-30/index.html
+git commit -m "session-30: formalize the country data contract with dataclasses and explicit validation"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does using a fixture instead of one shared module-level instance prevent tests from affecting each other?"
+      Do not commit until you can answer out loud: "Why does population="not a number" get accepted by Country(**data) even though population is type-hinted as int?"
     </div>
 
     <hr class="section-divider" />
@@ -361,23 +344,23 @@ git commit -m "session-30: test state changes with fixtures, before/after checks
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">kenya and empty_explorer are defined as @pytest.fixture functions, not shared module-level instances</label>
+        <label for="c1">Country is defined using @dataclass with type-hinted fields</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">At least two tests check state explicitly before AND after a mutating call</label>
+        <label for="c2">The free, generated __eq__ is proven with two separately constructed, identically-valued instances</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">test_add_country_updates_computed_properties verifies both country_count and total_population</label>
+        <label for="c3">A wrong-typed value is passed to the dataclass and shown to be accepted anyway, proving hints are not enforced</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">A multi-step sequence test performs at least 3 chained state changes and checks the final result</label>
+        <label for="c4">validate_country_record() checks both key presence and value type, raising clear errors</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">All tests pass when run independently AND in any order (confirm by running pytest normally, which does not guarantee a fixed order)</label>
+        <label for="c5">A batch including a bad record is processed, with bad records rejected individually and good ones kept</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -397,52 +380,52 @@ git commit -m "session-30: test state changes with fixtures, before/after checks
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why is checking state BOTH before and after a mutating call more thorough than only checking the state after?</p>
-        <label class="quiz-option" data-val="a">It is not more thorough — checking only after is always sufficient</label>
-        <label class="quiz-option" data-val="b">Confirming the "before" value is what you expect rules out a test that passes by coincidence — e.g. the value happening to already equal the expected "after" value for an unrelated reason</label>
-        <label class="quiz-option" data-val="c">pytest requires a before-check for every test</label>
-        <label class="quiz-option" data-val="d">This only matters for numeric attributes</label>
-        <div class="explanation">A test that never checks the "before" state cannot rule out that the method call did nothing at all, if the value happened to coincidentally already match the expected result — checking both is a stronger, more trustworthy test.</div>
+        <p>Given <code>def summary(country: dict) -> str:</code>, does Python prevent you from calling summary(42) at runtime?</p>
+        <label class="quiz-option" data-val="a">Yes — Python raises a TypeError immediately for the wrong type</label>
+        <label class="quiz-option" data-val="b">No — type hints are documentation and tooling support (e.g. editors, type checkers); Python itself does not enforce them at runtime</label>
+        <label class="quiz-option" data-val="c">Only if the function has a docstring</label>
+        <label class="quiz-option" data-val="d">Only in Python 2</label>
+        <div class="explanation">This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is a pytest fixture, in the sense of def fresh_explorer(): return CountryExplorer(countries=[]) decorated with @pytest.fixture?</p>
-        <label class="quiz-option" data-val="a">A way to permanently modify pytest's configuration</label>
-        <label class="quiz-option" data-val="b">A reusable setup function that pytest automatically calls and injects into any test function that names it as a parameter, giving each test a fresh, isolated starting object</label>
-        <label class="quiz-option" data-val="c">A special kind of assertion</label>
-        <label class="quiz-option" data-val="d">A way to skip slow tests automatically</label>
-        <div class="explanation">A fixture provides reusable setup logic. Any test function that takes the fixture's name as a parameter automatically receives a freshly created object from it — every test gets its own independent starting point, with no manual setup code repeated in each test.</div>
+        <p>What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 13?</p>
+        <label class="quiz-option" data-val="a">Nothing — it is purely decorative</label>
+        <label class="quiz-option" data-val="b">An __init__ method (and a few other dunder methods, including __eq__) based on the class's declared fields, without you writing them by hand</label>
+        <label class="quiz-option" data-val="c">A complete REST API for the class</label>
+        <label class="quiz-option" data-val="d">Automatic file I/O for the class</label>
+        <div class="explanation">@dataclass inspects the class's field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 13, while still producing an ordinary class.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why is sharing ONE CountryExplorer instance across many different test functions (instead of a fresh one per test, via a fixture) risky?</p>
-        <label class="quiz-option" data-val="a">There is no risk; sharing is always safe and faster</label>
-        <label class="quiz-option" data-val="b">A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test's starting state, since it is the same shared, mutable object — Session 01's reference lesson applied to testing itself</label>
-        <label class="quiz-option" data-val="c">pytest automatically prevents shared state between tests</label>
-        <label class="quiz-option" data-val="d">Only numeric state can leak between tests</label>
-        <div class="explanation">This is Session 01's and Session 16's reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.</div>
+        <p>Given <code>@dataclass\nclass Country:\n    name: str\n    region: str\n    population: int</code>, does this dataclass automatically give you the Session 19 value-based __eq__ behavior?</p>
+        <label class="quiz-option" data-val="a">No — you still must write __eq__ by hand</label>
+        <label class="quiz-option" data-val="b">Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 19 built manually</label>
+        <label class="quiz-option" data-val="c">Only if you also inherit from a base class</label>
+        <label class="quiz-option" data-val="d">Dataclasses do not support equality comparison at all</label>
+        <div class="explanation">This directly connects back to Session 19: a dataclass's default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You want to test that CountryExplorer.total_population correctly reflects a country added via add_country(). What should the test check?</p>
-        <label class="quiz-option" data-val="a">Only that add_country() itself does not raise an exception</label>
-        <label class="quiz-option" data-val="b">That total_population BEFORE adding equals one value, and total_population AFTER calling add_country() correctly reflects the new total — the computed property tracking the mutation correctly</label>
-        <label class="quiz-option" data-val="c">That country_count is a string</label>
-        <label class="quiz-option" data-val="d">Nothing needs to be checked; @property is always correct by definition</label>
-        <div class="explanation">This directly verifies Session 22's guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.</div>
+        <p>A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?</p>
+        <label class="quiz-option" data-val="a">population silently defaults to 0</label>
+        <label class="quiz-option" data-val="b">A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would</label>
+        <label class="quiz-option" data-val="c">The dataclass ignores the missing field entirely</label>
+        <label class="quiz-option" data-val="d">It raises a KeyError instead of a TypeError</label>
+        <div class="explanation">Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 13's hand-written version. This is why validating BEFORE construction (as this session's lab does) is still necessary for a clear, early error.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>A test performs THREE sequential state changes (e.g. grow_population twice, then set_population once) and checks only the final value. What does this kind of test verify that three separate single-step tests would not?</p>
-        <label class="quiz-option" data-val="a">Nothing extra — it is equivalent to three separate tests</label>
-        <label class="quiz-option" data-val="b">That the methods compose correctly across a realistic sequence of operations, not just in isolation — catching bugs that only appear when state changes happen one after another</label>
-        <label class="quiz-option" data-val="c">This kind of test is never useful</label>
-        <label class="quiz-option" data-val="d">It verifies that pytest itself is installed correctly</label>
-        <div class="explanation">Some bugs only emerge from a REALISTIC SEQUENCE of state changes — for instance, a method that assumes it is always called first might behave incorrectly the second time. A multi-step test exercises this more realistic scenario that isolated single-call tests would miss.</div>
+        <p>Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?</p>
+        <label class="quiz-option" data-val="a">There is no reason to; the dataclass handles this automatically</label>
+        <label class="quiz-option" data-val="b">Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream</label>
+        <label class="quiz-option" data-val="c">Validation is only useful for strings, never numbers</label>
+        <label class="quiz-option" data-val="d">Dataclasses reject bad types automatically at construction time</label>
+        <div class="explanation">Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 24's discipline) catches this immediately, with a clear message.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -455,10 +438,10 @@ git commit -m "session-30: test state changes with fixtures, before/after checks
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Rewrite one of this session's fixture-based tests using a single shared module-level instance instead. Can you construct a second test that would now fail due to leaked state?</li>
-        <li>Why does test_add_country_updates_computed_properties need to check BOTH country_count and total_population, rather than just one of them?</li>
-        <li>What real bug would the multi-step sequence test catch that three separate single-step tests might miss?</li>
-        <li>How does pytest deciding to call kenya() fresh for every test that requests it relate to Session 09's lesson that every __init__ call creates an independent instance?</li>
+        <li>Why do you think Python chose not to enforce type hints at runtime by default, when other languages do enforce their type systems? What tradeoff does this represent?</li>
+        <li>How does validate_country_record() in this session compare to validate_population() from Session 24? What is genuinely new versus what is the same idea applied at a different level?</li>
+        <li>If a real API someday returns population as a string like "54000000" (valid digits, but the wrong TYPE), would your current validate_country_record() accept or reject it? Is that the right behavior?</li>
+        <li>How does the dataclass's generated __init__ relate back to everything you learned about __init__ and self in Session 13?</li>
       </ol>
     </div>
 
@@ -467,9 +450,9 @@ git commit -m "session-30: test state changes with fixtures, before/after checks
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Order-dependent test failures:</strong> Tests that share mutable state can pass or fail depending on the ORDER they happen to run in — an extremely confusing and hard-to-diagnose category of bug in a test suite, entirely avoided by fixtures.</li>
-        <li><strong>Testing the data layer (Session 31):</strong> The next session — the Layer 5 gate — applies these exact same fixture and state-testing techniques to CountryRepository, using a mock data source built specifically for testing.</li>
-        <li><strong>Safe architecture refactoring (Layer 6):</strong> A test suite with reliable, isolated tests (thanks to fixtures) is what makes Layer 6's refactoring sessions safe — an unreliable, order-dependent suite would give false confidence or false alarms during a refactor.</li>
+        <li><strong>Trusting type hints as enforcement:</strong> A very common and dangerous misconception is believing type hints protect you from bad data at runtime. This session should permanently correct that — hints inform tooling and readers, but only explicit validation actually protects your program.</li>
+        <li><strong>Testing the data layer (Session 35):</strong> The tests you write for CountryRepository in Layer 5 will directly exercise validate_country_record() with both good and bad records — this session's validation logic IS what gets tested.</li>
+        <li><strong>Real, messy API data (Layer 7):</strong> A real external API is far less trustworthy than your own mock or JSON data — it can return unexpected types, missing fields, or malformed values at any time. The validation discipline from this session is what stands between that chaos and your application crashing.</li>
       </ul>
     </div>
 
@@ -477,9 +460,9 @@ git commit -m "session-30: test state changes with fixtures, before/after checks
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Testing state changes with before/after assertions, pytest fixtures for isolated setup, and multi-step sequence testing.</p>
-      <p><strong>Unlocks:</strong> You can now write reliable, independent tests for any object whose behavior involves changing over time — not just functions that simply return a value.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 31 — Testing the Data Layer with Mocks</a>. Layer 5 gate. We test the data-access layer itself, using a small mock repository built specifically for testing, isolated from real data entirely.</p>
+      <p><strong>Python concept mastered:</strong> Type hints as documentation (not enforcement), dataclasses as a concise way to define structured classes, and explicit validation as the real protection at data boundaries.</p>
+      <p><strong>Unlocks:</strong> The Country data contract is now explicit, documented, and actually enforced — the last Layer 4 skill before we start testing everything we've built.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 31 — Why We Test and What to Test</a>. Layer 5 begins. We start testing this application deliberately, instead of manually re-running scripts to check our work.</p>
     </div>
 
 

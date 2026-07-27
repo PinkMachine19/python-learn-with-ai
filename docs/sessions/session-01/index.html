@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 01 — Dictionaries — Python Learning</title>
+  <title>Session 01 — Hello, World & Variables — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,26 +54,26 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-layer">Layer 0</span>
       <span class="badge badge-current">Session 01</span>
-      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Basics</span>
     </div>
-    <h1>Dictionaries</h1>
-    <p class="subtitle">Before we can model a country, a class, or any structured data in Python, we must deeply understand dictionaries — the container every later session builds on.</p>
+    <h1>Hello, World & Variables</h1>
+    <p class="subtitle">Layer 0 begins. Before we can explore any Python data structure, we need the absolute basics: running a line of code, naming a value, and knowing what kind of value it is.</p>
 
     <div class="alert alert-info">
-      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+      Estimated time: 30–35 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>
 
     <h2>1. Learning Objective</h2>
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Create a dictionary using literal syntax</li>
-        <li>Read values using key lookup and the .get() method</li>
-        <li>Add, update, and delete key-value pairs</li>
-        <li>Explain why dictionaries are mutable and what that means when two names point at the same one</li>
-        <li>Describe why Python classes store their data in a dictionary-like structure</li>
+        <li>Run a Python file and see output with print()</li>
+        <li>Create a variable and explain what "assignment" actually does</li>
+        <li>Identify the four core built-in types: str, int, float, bool</li>
+        <li>Use type() to check what kind of value a variable holds</li>
+        <li>Explain why variable names matter for reading code, not just writing it</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have this code: <code>country = {"name": "Kenya", "region": "Africa"}</code><br/>What does <code>country["region"]</code> return?</p>
-        <label class="quiz-option" data-val="a">"Kenya"</label>
-        <label class="quiz-option" data-val="b">"Africa"</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">A KeyError</label>
-        <div class="explanation">Square-bracket lookup reads a value by its key. <code>country["region"]</code> looks up the key "region" and returns "Africa".</div>
+        <p>What does <code>print("Hello, World")</code> do?</p>
+        <label class="quiz-option" data-val="a">Creates a variable named Hello, World</label>
+        <label class="quiz-option" data-val="b">Displays the text Hello, World in the console/terminal</label>
+        <label class="quiz-option" data-val="c">Saves the text to a file called World</label>
+        <label class="quiz-option" data-val="d">Nothing — it needs a semicolon to run</label>
+        <div class="explanation"><code>print()</code> is a built-in function that displays whatever you pass it to the console. It is the most basic way to see what a Python program is doing.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="c">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>You write <code>a = {"x": 1}</code> then <code>b = a</code> then <code>b["x"] = 99</code>.<br/>What is <code>a["x"]</code> after this?</p>
-        <label class="quiz-option" data-val="a">1 — because assignment always copies in Python</label>
-        <label class="quiz-option" data-val="b">1 — because b is a new dictionary</label>
-        <label class="quiz-option" data-val="c">99 — because a and b point to the same dictionary object</label>
-        <label class="quiz-option" data-val="d">A TypeError — dictionaries cannot be reassigned</label>
-        <div class="explanation">Dictionaries are mutable objects. <code>b = a</code> does not copy the dictionary — it copies the reference. Both names point to the same object in memory, so mutating through <code>b</code> is visible through <code>a</code>.</div>
+        <p>Given <code>age = 30</code>, what is happening on this line?</p>
+        <label class="quiz-option" data-val="a">Python checks whether age already equals 30</label>
+        <label class="quiz-option" data-val="b">A variable named age is created (or updated) to refer to the value 30</label>
+        <label class="quiz-option" data-val="c">This compares age to 30 and returns True or False</label>
+        <label class="quiz-option" data-val="d">This is invalid syntax — variables must be declared with a type first</label>
+        <div class="explanation">A single <code>=</code> is assignment, not comparison. It creates a name (<code>age</code>) that now refers to the value <code>30</code>. Unlike some languages, Python does not require you to declare a type upfront.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="a">
+      <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A key is stored in a variable: <code>key = "population"</code>.<br/>Which correctly reads that value from <code>country</code>?</p>
-        <label class="quiz-option" data-val="a"><code>country[key]</code></label>
-        <label class="quiz-option" data-val="b"><code>country.key</code></label>
-        <label class="quiz-option" data-val="c"><code>country.population</code></label>
-        <label class="quiz-option" data-val="d">Both a and c work identically</label>
-        <div class="explanation">Python dictionaries do not support dot notation at all — <code>country.key</code> is not valid syntax for reading a dictionary value. <code>country[key]</code> evaluates the variable first, then looks up that key.</div>
+        <p>What does <code>type("30")</code> return, as opposed to <code>type(30)</code>?</p>
+        <label class="quiz-option" data-val="a">Both return the same type, int</label>
+        <label class="quiz-option" data-val="b"><code>type("30")</code> returns str (it's in quotes, so it's text); <code>type(30)</code> returns int (no quotes, so it's a number)</label>
+        <label class="quiz-option" data-val="c"><code>type("30")</code> returns int; <code>type(30)</code> returns str</label>
+        <label class="quiz-option" data-val="d">type() only works on variables, not literal values</label>
+        <div class="explanation">Quotes make a value text (a string, <code>str</code>), regardless of what characters are inside them — even digits. <code>"30"</code> is text that looks like a number; <code>30</code> is an actual number (<code>int</code>).</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is the difference between <code>country["capital"]</code> and <code>country.get("capital")</code> when the key does not exist?</p>
-        <label class="quiz-option" data-val="a">They behave identically</label>
-        <label class="quiz-option" data-val="b">Bracket access raises a KeyError; .get() returns None (or a default you supply)</label>
-        <label class="quiz-option" data-val="c">.get() raises an error; bracket access returns None</label>
-        <label class="quiz-option" data-val="d">Both silently return an empty string</label>
-        <div class="explanation">Bracket access is strict — a missing key raises <code>KeyError</code>. <code>.get()</code> is forgiving — it returns <code>None</code> by default, or a second argument you provide, e.g. <code>country.get("capital", "Unknown")</code>.</div>
+        <p>Which of these is a float, not an int?</p>
+        <label class="quiz-option" data-val="a"><code>population = 54000000</code></label>
+        <label class="quiz-option" data-val="b"><code>is_active = True</code></label>
+        <label class="quiz-option" data-val="c"><code>growth_rate = 2.3</code></label>
+        <label class="quiz-option" data-val="d"><code>name = "Kenya"</code></label>
+        <div class="explanation">A <code>float</code> is a number with a decimal point, like <code>2.3</code>. A whole number with no decimal point is an <code>int</code>. <code>True</code> is a <code>bool</code>, and <code>"Kenya"</code> is a <code>str</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Which correctly adds a new key to an existing dictionary <code>country</code>?</p>
-        <label class="quiz-option" data-val="a"><code>country.append("flag", "🇰🇪")</code></label>
-        <label class="quiz-option" data-val="b"><code>country["flag"] = "🇰🇪"</code></label>
-        <label class="quiz-option" data-val="c"><code>country.flag = "🇰🇪"</code></label>
-        <label class="quiz-option" data-val="d">You must create a new dictionary — existing ones cannot grow</label>
-        <div class="explanation">Assigning to a bracket key that does not yet exist creates it. Dictionaries have no <code>.append()</code> — that is a list method. Dot-assignment sets an attribute, not a dictionary key.</div>
+        <p>Why does a variable name like <code>population</code> matter more than a name like <code>x</code>, given that Python runs both identically?</p>
+        <label class="quiz-option" data-val="a">It does not matter at all — Python only cares about correctness, never readability</label>
+        <label class="quiz-option" data-val="b">A clear name tells a human reader (including future you) what the value represents, without needing to trace back through the code to figure it out</label>
+        <label class="quiz-option" data-val="c"><code>x</code> is actually invalid as a variable name in Python</label>
+        <label class="quiz-option" data-val="d">Longer variable names make the program run faster</label>
+        <div class="explanation">Python executes <code>x = 54000000</code> and <code>population = 54000000</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,190 +141,128 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Python Dictionaries</h2>
-
-    <h3>What is a dictionary?</h3>
-    <p>A dictionary groups related data together under one name, using key-value pairs. Instead of three separate variables for a country's data, you have one container that holds all of them.</p>
-    <pre><code># Without a dictionary — three unrelated variables
-country_name = "Kenya"
-country_region = "Africa"
-country_population = 54000000
-
-# With a dictionary — one container, logically grouped
-country = {
-    "name": "Kenya",
-    "region": "Africa",
-    "population": 54000000,
-}</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">3 variables</span>country_name
-country_region
-country_population</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">one dict</span>name: "Kenya"
-region: "Africa"
-population: 54000000</div>
-      <div class="diagram-caption">Three loose variables collapse into one dict — each entry is a key : value pair.</div>
+    <h2>3. The Concept — Running Code, Variables, and Types</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">LINE 1</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">print(</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">"Hello, World")</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">CONSOLE</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Hello, World</text>
+      </svg>
+      <p class="diagram-caption-text">A Python file runs top to bottom, one line at a time — print() is your window into what is happening.</p>
     </div>
 
-    <h3>Reading values — bracket access vs .get()</h3>
-    <p>There are two ways to read a value from a dictionary, and they behave differently on a missing key.</p>
-    <pre><code>country = {"name": "Kenya", "region": "Africa"}
 
-print(country["name"])          # "Kenya"
-print(country["region"])        # "Africa"
+    <h3>print() — seeing what your program is doing</h3>
+    <p>Every Python file is a list of instructions, run top to bottom. <code>print()</code> is how a program communicates with you — it writes text to the console, the simplest possible feedback loop.</p>
+    <pre><code>print("Hello, World")
+print("This is a second line")
 
-# Missing key with bracket access -&gt; KeyError, program crashes
-# print(country["capital"])
+# print can take more than one thing, separated by commas — it joins them with a space
+print("The answer is", 42)</code></pre>
 
-# Missing key with .get() -&gt; None, no crash
-print(country.get("capital"))            # None
-print(country.get("capital", "Unknown")) # "Unknown" — explicit default</code></pre>
+    <h3>Variables — naming a value so you can use it again</h3>
+    <p>A variable is a name that refers to a value. Once created, you can use the name instead of retyping the value everywhere — and if the value needs to change, you only update it in one place.</p>
+    <pre><code>name = "Kenya"
+population = 54000000
 
-    <h3>Dictionaries are mutable — this is critical</h3>
-    <p>In Python there are mutable types (dict, list, set) and immutable types (str, int, float, bool, tuple). Immutable values are copied when assigned. Mutable objects are not copied — only the reference is copied.</p>
-    <pre><code># Immutable — a new value is bound, the old one is untouched
-x = 5
-y = x
-y = 99
-print(x)  # still 5
+print(name)
+print(population)
+print(name, "has a population of", population)
 
-# Mutable — reference is shared, NOT copied
-a = {"score": 5}
-b = a          # b now refers to the SAME dict as a
-b["score"] = 99
-print(a["score"])  # 99 — because a and b are the same object</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">a</span>→</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">b</span>→</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">heap</span>{"score": 99}</div>
-      <div class="diagram-caption">a and b are two names pointing at one dict in memory — mutating through either name is visible through both.</div>
+# The value can change — the variable is reassigned, not "locked"
+population = 55000000
+print(population)  # 55000000</code></pre>
+
+    <h3>The four core types you will see constantly</h3>
+    <p>Every value in Python has a type. These four cover almost everything you will touch in your first weeks: <code>str</code> (text), <code>int</code> (whole numbers), <code>float</code> (decimal numbers), and <code>bool</code> (True or False).</p>
+    <pre><code>name = "Kenya"           # str   — text, always in quotes
+population = 54000000    # int   — a whole number
+growth_rate = 2.3          # float — a number with a decimal point
+is_independent = True      # bool  — exactly True or False, capitalized, no quotes
+
+print(type(name))           # &lt;class 'str'&gt;
+print(type(population))     # &lt;class 'int'&gt;
+print(type(growth_rate))    # &lt;class 'float'&gt;
+print(type(is_independent)) # &lt;class 'bool'&gt;</code></pre>
+
+    <h3>Quotes make all the difference</h3>
+    <p>The exact same characters can be a string or a number depending entirely on whether they are in quotes. This distinction matters constantly — a number in quotes cannot be used in arithmetic without converting it first (we cover that next session).</p>
+    <pre><code>population_text = "54000000"   # str — this is TEXT that happens to look like a number
+population_number = 54000000    # int — this is an actual number
+
+print(type(population_text))    # &lt;class 'str'&gt;
+print(type(population_number))  # &lt;class 'int'&gt;</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>This is Layer 0 — a true starting point:</strong> If you have programmed before, this session moves fast. If this is genuinely your first code, take your time here — everything in Layer 1 onward assumes these ideas are second nature.
     </div>
 
-    <h3>Adding, updating, and deleting keys</h3>
-    <p>Dictionaries grow and shrink after creation. Adding an unused key creates it; assigning an existing key overwrites it.</p>
-    <pre><code>country = {"name": "Kenya"}
-
-# Add a new key
-country["capital"] = "Nairobi"
-print(country)  # {'name': 'Kenya', 'capital': 'Nairobi'}
-
-# Update an existing key
-country["name"] = "Kenya (updated)"
-
-# Delete a key
-del country["capital"]
-print(country)  # {'name': 'Kenya (updated)'}</code></pre>
-
-    <h3>Nested dictionaries</h3>
-    <p>Values can themselves be dictionaries — this is how you model structured, hierarchical data.</p>
-    <pre><code>country = {
-    "name": "Kenya",
-    "location": {
-        "continent": "Africa",
-        "coordinates": {"lat": -0.0236, "lng": 37.9062},
-    },
-}
-
-print(country["location"]["continent"])            # "Africa"
-print(country["location"]["coordinates"]["lat"])    # -0.0236</code></pre>
-
-
-    <p>We are not writing classes yet, but when we do in Session 08, you will recognise this pattern immediately: an object's internal attributes are stored and looked up the same way you just looked up dictionary keys.</p>
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Create a single Python file that defines one country as a dictionary, reads its values two different ways, and prints the results.
+      <strong>Lab objective:</strong> Write a file that prints several values, stores them in well-named variables, and confirms their types with type().
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>country.py</code> that demonstrates every dictionary concept from this session. Nothing more.</p>
+    <p>A file called <code>hello.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file</strong></p>
-        <p>Create a new file at <code>country.py</code>. It does not exist yet.</p>
-        <pre><code># country.py</code></pre>
+        <p><strong>Create the file and print a greeting</strong></p>
+
+        <pre><code># hello.py
+print("Hello, World")
+print("My name is Ada and I am learning Python")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Define your country dictionary</strong></p>
-        <p>Write a variable called <code>country</code>. Give it at least 5 keys. Use real values — pick any country you like.</p>
-        <pre><code>country = {
-    "name": "Kenya",
-    "capital": "Nairobi",
-    "region": "Africa",
-    "population": 54000000,
-    "independent": True,
-}</code></pre>
+        <p><strong>Create four variables, one of each core type</strong></p>
+        <p>Use real, meaningful values — pick a country, like the rest of this course will.</p>
+        <pre><code>country_name = "Kenya"
+population = 54000000
+growth_rate = 2.3
+is_independent = True</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Read values with bracket access</strong></p>
-        <p>Print three of the values using bracket access.</p>
-        <pre><code>print("Name (bracket):", country["name"])
-print("Capital (bracket):", country["capital"])
-print("Region (bracket):", country["region"])</code></pre>
+        <p><strong>Print each variable with a label using print()'s comma-joining</strong></p>
+
+        <pre><code>print("Country:", country_name)
+print("Population:", population)
+print("Growth rate:", growth_rate)
+print("Independent:", is_independent)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Read a value with .get(), including a missing key</strong></p>
-        <p>Prove that .get() does not crash on a missing key, while bracket access would.</p>
-        <pre><code>print("Flag (.get, missing):", country.get("flag"))
-print("Flag with default:", country.get("flag", "🏳"))</code></pre>
+        <p><strong>Print the type of each variable</strong></p>
+        <p>Before running: predict what each type() call will print.</p>
+        <pre><code>print(type(country_name))
+print(type(population))
+print(type(growth_rate))
+print(type(is_independent))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Prove the reference behaviour</strong></p>
-        <p>Before running: write down what you think <code>original["score"]</code> will be. Then run it.</p>
-        <pre><code>original = {"name": "Kenya", "score": 0}
-copy = original       # This is NOT a copy
-copy["score"] = 99
+        <p><strong>Reassign one variable and prove the old value is gone</strong></p>
 
-print("original[score]:", original["score"])  # What do you expect?
-print("copy[score]:", copy["score"])</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">6</div>
-      <div class="step-body">
-        <p><strong>Add and delete a key</strong></p>
-
-        <pre><code>country["flag"] = "🇰🇪"
-print("After add:", country["flag"])
-del country["independent"]
-print("After delete:", country)</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">7</div>
-      <div class="step-body">
-        <p><strong>Add a nested dictionary</strong></p>
-        <p>Access a deeply nested value.</p>
-        <pre><code>country["location"] = {
-    "continent": "Africa",
-    "coordinates": {"lat": -0.0236, "lng": 37.9062},
-}
-print("Continent:", country["location"]["continent"])
-print("Latitude:", country["location"]["coordinates"]["lat"])</code></pre>
+        <pre><code>population = 55000000
+print("Updated population:", population)</code></pre>
       </div>
     </div>
 
@@ -338,7 +276,7 @@ print("Latitude:", country["location"]["coordinates"]["lat"])</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>country.py</code></td>
+            <td><code>hello.py</code></td>
             <td>Created</td>
             <td>The only file for this session. Plain Python, no imports.</td>
           </tr>
@@ -359,11 +297,11 @@ print("Latitude:", country["location"]["coordinates"]["lat"])</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country.py docs/sessions/session-01/index.html
-git commit -m "session-01: define country as a dict, explore lookup and reference behaviour"</code></pre>
+    <pre><code>git add hello.py docs/sessions/session-01/index.html
+git commit -m "session-01: print output, create variables, and check their types"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What is the difference between bracket access and .get(), and when would I use each?"
+      Do not commit until you can answer out loud: "What is the difference between "54000000" and 54000000, and why does that difference matter?"
     </div>
 
     <hr class="section-divider" />
@@ -374,31 +312,27 @@ git commit -m "session-01: define country as a dict, explore lookup and referenc
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">The dictionary uses <code>{}</code> literal syntax, not <code>dict()</code></label>
+        <label for="c1">print() is used at least 3 times with different arguments</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">Every key is a string in quotes; every pair is separated by a comma</label>
+        <label for="c2">Four variables are created, one of each core type (str, int, float, bool), with meaningful names</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">Bracket access example is present and printed</label>
+        <label for="c3">type() is called on every variable and the output is observed</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">.get() is used with a missing key and does not crash</label>
+        <label for="c4">A variable is reassigned and the new value is printed to confirm the change</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">Reference behaviour is demonstrated (two names, one dict, mutation proof)</label>
+        <label for="c5">Every variable name clearly describes what it holds</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
-        <label for="c6">A nested dictionary is present and a deeply nested value is accessed</label>
-      </div>
-      <div class="checklist-item">
-        <input type="checkbox" id="c7" />
-        <label for="c7">I can explain every line without looking at the concept section</label>
+        <label for="c6">I can explain every line without looking at the concept section</label>
       </div>
     </div>
 
@@ -414,52 +348,52 @@ git commit -m "session-01: define country as a dict, explore lookup and referenc
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have this code: <code>country = {"name": "Kenya", "region": "Africa"}</code><br/>What does <code>country["region"]</code> return?</p>
-        <label class="quiz-option" data-val="a">"Kenya"</label>
-        <label class="quiz-option" data-val="b">"Africa"</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">A KeyError</label>
-        <div class="explanation">Square-bracket lookup reads a value by its key. <code>country["region"]</code> looks up the key "region" and returns "Africa".</div>
+        <p>What does <code>print("Hello, World")</code> do?</p>
+        <label class="quiz-option" data-val="a">Creates a variable named Hello, World</label>
+        <label class="quiz-option" data-val="b">Displays the text Hello, World in the console/terminal</label>
+        <label class="quiz-option" data-val="c">Saves the text to a file called World</label>
+        <label class="quiz-option" data-val="d">Nothing — it needs a semicolon to run</label>
+        <div class="explanation"><code>print()</code> is a built-in function that displays whatever you pass it to the console. It is the most basic way to see what a Python program is doing.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="c">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>You write <code>a = {"x": 1}</code> then <code>b = a</code> then <code>b["x"] = 99</code>.<br/>What is <code>a["x"]</code> after this?</p>
-        <label class="quiz-option" data-val="a">1 — because assignment always copies in Python</label>
-        <label class="quiz-option" data-val="b">1 — because b is a new dictionary</label>
-        <label class="quiz-option" data-val="c">99 — because a and b point to the same dictionary object</label>
-        <label class="quiz-option" data-val="d">A TypeError — dictionaries cannot be reassigned</label>
-        <div class="explanation">Dictionaries are mutable objects. <code>b = a</code> does not copy the dictionary — it copies the reference. Both names point to the same object in memory, so mutating through <code>b</code> is visible through <code>a</code>.</div>
+        <p>Given <code>age = 30</code>, what is happening on this line?</p>
+        <label class="quiz-option" data-val="a">Python checks whether age already equals 30</label>
+        <label class="quiz-option" data-val="b">A variable named age is created (or updated) to refer to the value 30</label>
+        <label class="quiz-option" data-val="c">This compares age to 30 and returns True or False</label>
+        <label class="quiz-option" data-val="d">This is invalid syntax — variables must be declared with a type first</label>
+        <div class="explanation">A single <code>=</code> is assignment, not comparison. It creates a name (<code>age</code>) that now refers to the value <code>30</code>. Unlike some languages, Python does not require you to declare a type upfront.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="a">
+      <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A key is stored in a variable: <code>key = "population"</code>.<br/>Which correctly reads that value from <code>country</code>?</p>
-        <label class="quiz-option" data-val="a"><code>country[key]</code></label>
-        <label class="quiz-option" data-val="b"><code>country.key</code></label>
-        <label class="quiz-option" data-val="c"><code>country.population</code></label>
-        <label class="quiz-option" data-val="d">Both a and c work identically</label>
-        <div class="explanation">Python dictionaries do not support dot notation at all — <code>country.key</code> is not valid syntax for reading a dictionary value. <code>country[key]</code> evaluates the variable first, then looks up that key.</div>
+        <p>What does <code>type("30")</code> return, as opposed to <code>type(30)</code>?</p>
+        <label class="quiz-option" data-val="a">Both return the same type, int</label>
+        <label class="quiz-option" data-val="b"><code>type("30")</code> returns str (it's in quotes, so it's text); <code>type(30)</code> returns int (no quotes, so it's a number)</label>
+        <label class="quiz-option" data-val="c"><code>type("30")</code> returns int; <code>type(30)</code> returns str</label>
+        <label class="quiz-option" data-val="d">type() only works on variables, not literal values</label>
+        <div class="explanation">Quotes make a value text (a string, <code>str</code>), regardless of what characters are inside them — even digits. <code>"30"</code> is text that looks like a number; <code>30</code> is an actual number (<code>int</code>).</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is the difference between <code>country["capital"]</code> and <code>country.get("capital")</code> when the key does not exist?</p>
-        <label class="quiz-option" data-val="a">They behave identically</label>
-        <label class="quiz-option" data-val="b">Bracket access raises a KeyError; .get() returns None (or a default you supply)</label>
-        <label class="quiz-option" data-val="c">.get() raises an error; bracket access returns None</label>
-        <label class="quiz-option" data-val="d">Both silently return an empty string</label>
-        <div class="explanation">Bracket access is strict — a missing key raises <code>KeyError</code>. <code>.get()</code> is forgiving — it returns <code>None</code> by default, or a second argument you provide, e.g. <code>country.get("capital", "Unknown")</code>.</div>
+        <p>Which of these is a float, not an int?</p>
+        <label class="quiz-option" data-val="a"><code>population = 54000000</code></label>
+        <label class="quiz-option" data-val="b"><code>is_active = True</code></label>
+        <label class="quiz-option" data-val="c"><code>growth_rate = 2.3</code></label>
+        <label class="quiz-option" data-val="d"><code>name = "Kenya"</code></label>
+        <div class="explanation">A <code>float</code> is a number with a decimal point, like <code>2.3</code>. A whole number with no decimal point is an <code>int</code>. <code>True</code> is a <code>bool</code>, and <code>"Kenya"</code> is a <code>str</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Which correctly adds a new key to an existing dictionary <code>country</code>?</p>
-        <label class="quiz-option" data-val="a"><code>country.append("flag", "🇰🇪")</code></label>
-        <label class="quiz-option" data-val="b"><code>country["flag"] = "🇰🇪"</code></label>
-        <label class="quiz-option" data-val="c"><code>country.flag = "🇰🇪"</code></label>
-        <label class="quiz-option" data-val="d">You must create a new dictionary — existing ones cannot grow</label>
-        <div class="explanation">Assigning to a bracket key that does not yet exist creates it. Dictionaries have no <code>.append()</code> — that is a list method. Dot-assignment sets an attribute, not a dictionary key.</div>
+        <p>Why does a variable name like <code>population</code> matter more than a name like <code>x</code>, given that Python runs both identically?</p>
+        <label class="quiz-option" data-val="a">It does not matter at all — Python only cares about correctness, never readability</label>
+        <label class="quiz-option" data-val="b">A clear name tells a human reader (including future you) what the value represents, without needing to trace back through the code to figure it out</label>
+        <label class="quiz-option" data-val="c"><code>x</code> is actually invalid as a variable name in Python</label>
+        <label class="quiz-option" data-val="d">Longer variable names make the program run faster</label>
+        <div class="explanation">Python executes <code>x = 54000000</code> and <code>population = 54000000</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -472,10 +406,10 @@ git commit -m "session-01: define country as a dict, explore lookup and referenc
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>You've used key-value structures before (JSON, hash maps, objects). What was different or surprising about Python's reference behaviour?</li>
-        <li>If dictionaries are shared by reference, what real bug could happen if you passed a dictionary into a function and the function modified it without you expecting that?</li>
-        <li>In Step 4, <code>.get()</code> returned <code>None</code> instead of crashing. When would you actually prefer the crash?</li>
-        <li>Can you think of a realistic program where a dictionary key would need to be looked up dynamically from a variable?</li>
+        <li>Why do you think Python does not require you to write the type of a variable when you create it, unlike some other languages you may have heard of?</li>
+        <li>What would happen if you tried to print a variable name you never created? Try it and read the error message carefully — what does it call this kind of error?</li>
+        <li>Why might a program with variables named a, b, c be harder to review than one with country_name, population, growth_rate?</li>
+        <li>Can you think of a value that seems like a number but should actually be stored as a string? (Hint: think about a postal code or a phone number.)</li>
       </ol>
     </div>
 
@@ -484,9 +418,8 @@ git commit -m "session-01: define country as a dict, explore lookup and referenc
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Silent state bugs:</strong> If you believe dictionaries are copied when assigned, you will be confused when a function's changes to a dictionary affect the caller's copy too. This is the single most common source of "spooky action at a distance" bugs in Python.</li>
-        <li><strong>Class attributes (Layer 2):</strong> In Session 08, you will learn that every Python object stores its attributes in a dictionary-like structure internally. Understanding key-value lookup here is the entire foundation for understanding <code>self.name</code> later.</li>
-        <li><strong>JSON and APIs (Layer 4 and 7):</strong> Every JSON API response you will parse in Session 38 becomes a Python dictionary. Missing this session means you cannot read real API data.</li>
+        <li><strong>Every single session after this one:</strong> Variables and print() are used in literally every remaining lab in this curriculum without being re-explained. If reading a line like <code>population = 54000000</code> does not feel automatic yet, slow down here before continuing.</li>
+        <li><strong>Type confusion bugs:</strong> Confusing "54000000" (text) with 54000000 (a number) is one of the most common beginner mistakes — it causes errors the moment you try to do arithmetic with the text version, which the next session covers directly.</li>
       </ul>
     </div>
 
@@ -494,9 +427,9 @@ git commit -m "session-01: define country as a dict, explore lookup and referenc
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Dictionaries — key-value containers, bracket access vs .get(), mutability, reference semantics, nesting.</p>
-      <p><strong>Unlocks:</strong> You now understand the data structure Python uses everywhere: function keyword arguments, JSON, and (soon) object attributes.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 02 — Lists and Iteration</a>. We will store multiple countries and iterate over them — the pattern every later data-processing session builds on.</p>
+      <p><strong>Python concept mastered:</strong> Running Python code, print() for output, variables as named values, and the four core built-in types.</p>
+      <p><strong>Unlocks:</strong> You can now read and write the most basic unit of every Python program: a line that creates or displays a value.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 02 — Operators, Strings & Type Conversion</a>. We do arithmetic and text manipulation, and learn to convert between types deliberately.</p>
     </div>
 
 

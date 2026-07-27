@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 21 — Passing State Between Functions — Python Learning</title>
+  <title>Session 21 — Updating State via Methods — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -58,8 +58,8 @@
       <span class="badge badge-current">Session 21</span>
       <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
     </div>
-    <h1>Passing State Between Functions</h1>
-    <p class="subtitle">When several functions need to work with the same evolving state, where should that state actually live? This session is about ownership, not just passing values around.</p>
+    <h1>Updating State via Methods</h1>
+    <p class="subtitle">Direct attribute assignment lets anyone set invalid state from anywhere. This session channels every state change through named, validating methods instead.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Pass an object between functions and confirm mutations are visible to all of them (Session 01's reference lesson, applied)</li>
-        <li>Decide when a function should own state versus receive it from a caller</li>
-        <li>Move a piece of state up to a shared "owner" when multiple functions need to coordinate around it</li>
-        <li>Explain the risk of two different functions each keeping their own separate copy of what should be one shared piece of state</li>
-        <li>Refactor a menu's local state into a small class that owns it</li>
+        <li>Rewrite direct attribute mutation as a named, validating method call</li>
+        <li>Design a method name that clearly communicates what state change it performs</li>
+        <li>Validate a proposed state change before applying it, reusing Session 11's exception patterns</li>
+        <li>Explain why "one method, one clear responsibility" makes state changes traceable</li>
+        <li>Add a second controlled-update method to CountryExplorer for adding a country safely</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>A function search(term) filters a CountryExplorer's countries and a separate function stats() reports on the SAME explorer. If both take explorer as a parameter, do they see the same countries?</p>
-        <label class="quiz-option" data-val="a">No — each function gets its own independent copy</label>
-        <label class="quiz-option" data-val="b">Yes — since explorer is passed by reference (Session 01), both functions see the exact same underlying data, including any changes made by either one</label>
-        <label class="quiz-option" data-val="c">Only if they are called in the same file</label>
-        <label class="quiz-option" data-val="d">Only if explorer is a global variable</label>
-        <div class="explanation">Passing an object as a function argument passes the reference, not a copy (Session 01). Both functions operate on the same shared CountryExplorer, so any state change either one makes is visible to the other.</div>
+        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
+        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
+        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
+        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
+        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
+        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 11's raise) before any bad data is ever stored.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Two separate functions each maintain their own local list of "loaded countries" instead of sharing one CountryExplorer. What risk does this create?</p>
-        <label class="quiz-option" data-val="a">No risk — Python automatically keeps separate copies in sync</label>
-        <label class="quiz-option" data-val="b">The two lists can drift out of sync, since a change in one is invisible to the other — they are no longer describing the same reality</label>
-        <label class="quiz-option" data-val="c">This is always faster than sharing a reference</label>
-        <label class="quiz-option" data-val="d">Python would raise an error preventing this from happening</label>
-        <div class="explanation">If two lists are meant to represent the same underlying data but are not literally the same object, nothing keeps them consistent — this "divided state" is a common real bug where two parts of a program disagree about what is currently true.</div>
+        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
+        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
+        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
+        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
+        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
+        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>When should a function OWN a piece of state (create and hold it) versus RECEIVE it as a parameter from a caller?</p>
-        <label class="quiz-option" data-val="a">A function should never own state; state must always come from outside</label>
-        <label class="quiz-option" data-val="b">A function should own state it exclusively manages and no one else needs to coordinate around; it should receive state as a parameter when multiple parts of the program need to share and coordinate around the same data</label>
-        <label class="quiz-option" data-val="c">It does not matter, both approaches are always equivalent</label>
-        <label class="quiz-option" data-val="d">Ownership is determined automatically by Python based on variable names</label>
-        <div class="explanation">This is a design decision: private, function-local state should be owned locally; shared, coordinated state (like the explorer's country list, used by search AND stats) should be passed in explicitly so every function operates on the same source of truth.</div>
+        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
+        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
+        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
+        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
+        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
+        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You refactor a menu's ad-hoc local variables into a small MenuState class that owns them. What is the main benefit?</p>
-        <label class="quiz-option" data-val="a">It makes the code run faster</label>
-        <label class="quiz-option" data-val="b">It gives the previously scattered local state a clear owner and a name, and lets you pass ONE object between functions instead of many loose variables</label>
-        <label class="quiz-option" data-val="c">It removes the need for functions entirely</label>
-        <label class="quiz-option" data-val="d">It automatically adds input validation</label>
-        <div class="explanation">This mirrors Session 08's original motivation for classes: bundling related data (and now, shared state) under one name is easier to pass around and reason about than several independent loose variables that must always be kept in sync manually.</div>
+        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 20)?</p>
+        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
+        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
+        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
+        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
+        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>If a function receives an object and reassigns the LOCAL parameter name to point at a brand new object (e.g. explorer = CountryExplorer(countries=[])), does that affect the caller's original object?</p>
-        <label class="quiz-option" data-val="a">Yes — reassignment inside a function always affects the caller</label>
-        <label class="quiz-option" data-val="b">No — reassigning what a local parameter name points to only affects that local name; the caller's original reference is untouched (this is different from mutating the object's contents)</label>
-        <label class="quiz-option" data-val="c">It depends on the object's class</label>
-        <label class="quiz-option" data-val="d">It causes a RuntimeError</label>
-        <div class="explanation">This is a subtle but important distinction: MUTATING an object through a parameter (like .append()) is visible to the caller, because both names point to the same object. But REASSIGNING the local parameter name to a different object only changes what that local name points to — the caller's original variable still points at the original object.</div>
+        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
+        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
+        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
+        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
+        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
+        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,74 +141,65 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — State Ownership Between Functions</h2>
+    <h2>3. The Concept — Controlled State Updates</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">PROPOSED VALUE</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">-999999</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">VALIDATION</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">rejected</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(ValueError)</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">SELF.POPULATION</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="474" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">unchanged</text>
+      </svg>
+      <p class="diagram-caption-text">A method acts as a checkpoint — invalid values are rejected before they ever reach the attribute.</p>
+    </div>
 
-    <h3>Shared state is visible everywhere it is referenced</h3>
-    <p>This session applies Session 01's reference lesson directly to whole objects passed between functions — a natural consequence of everything already learned, formalized as a design principle.</p>
+
+    <h3>From direct assignment to a named method</h3>
+    <p>Session 14 already introduced grow_population as a validating method. This session generalizes that pattern: every state change should go through a method, never a bare attribute assignment from outside the class.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value  # only reachable if the value passed validation</code></pre>
+
+    <h3>Naming a method to communicate intent</h3>
+    <p>A generic update(field, value) method either needs complicated per-field logic or skips validation entirely. Specific method names — set_population, grow_population, set_capital — each validate exactly one clear case.</p>
+    <pre><code># Avoid: a generic method that has to guess what "field" even means
+def update(self, field, value):
+    setattr(self, field, value)  # no validation possible here — dangerous
+
+# Prefer: specific, self-documenting, individually validated methods
+def set_capital(self, new_capital):
+    if not new_capital:
+        raise ValueError("capital cannot be empty")
+    self.capital = new_capital</code></pre>
+
+    <h3>Extending the pattern to CountryExplorer</h3>
+    <p>The same discipline applies to the collection-level state from Session 16 — an add_country method guarantees every item in the list is actually a valid Country.</p>
     <pre><code>class CountryExplorer:
     def __init__(self, countries):
         self.countries = countries
 
-def search(explorer, term):
-    return [c for c in explorer.countries if term.lower() in c.name.lower()]
-
-def add_sample_data(explorer):
-    explorer.countries.append(Country(name="Kenya", region="Africa", population=54000000))
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
 
 explorer = CountryExplorer(countries=[])
-add_sample_data(explorer)
-print(search(explorer, "ken"))  # finds Kenya — both functions see the SAME explorer</code></pre>
+explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
+print(len(explorer.countries))  # 1
 
-    <h3>Mutation vs reassignment — a subtle but important distinction</h3>
-    <p>Mutating an object through a function parameter is visible to the caller. Reassigning what the local parameter name points to is NOT — the caller's original reference is untouched.</p>
-    <pre><code>def mutate_countries(explorer):
-    explorer.countries.append(Country(name="Ghana", region="Africa", population=31000000))
-    # visible to the caller — same object, contents changed
+# explorer.add_country("not a country")  # raises TypeError — caught before corrupting the list</code></pre>
 
-def reassign_explorer(explorer):
-    explorer = CountryExplorer(countries=[])
-    # NOT visible to the caller — this only rebinds the LOCAL name "explorer"
-    # to a brand new object; the caller's original variable is untouched
-
-original = CountryExplorer(countries=[])
-mutate_countries(original)
-print(len(original.countries))    # 1
-
-reassign_explorer(original)
-print(len(original.countries))    # still 1 — the reassignment inside the function had no effect here</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">mutate</span>same object,
-caller sees it</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">reassign</span>local name only,
-caller unaffected</div>
-      <div class="diagram-caption">Mutating through a parameter changes the shared object. Reassigning the local name just points that one name elsewhere.</div>
-    </div>
-
-    <h3>Deciding who owns state</h3>
-    <p>Local, private data that only one function cares about should be owned locally. Data that multiple functions need to coordinate around should be passed in explicitly, so everyone works from the same source of truth.</p>
-    <pre><code># Risky — two functions each keep their OWN separate list, meant to represent the same thing
-loaded_a = []
-loaded_b = []
-
-def load_into_a():
-    loaded_a.append("Kenya")
-
-def report_from_b():
-    print(loaded_b)  # never sees "Kenya" — these are two DIFFERENT lists!
-
-# Better — one owner, shared and passed explicitly
-class Loader:
-    def __init__(self):
-        self.loaded = []
-
-    def load(self, name):
-        self.loaded.append(name)
-
-    def report(self):
-        print(self.loaded)  # always sees everything loaded through THIS instance</code></pre>
-
-    <h3>Bundling scattered local state into a small owning class</h3>
-    <p>When a menu (Session 18) accumulates several loose local variables that all need to travel together between functions, wrapping them in a small class — exactly like Session 08's original motivation — gives them a clear, shared owner.</p>
+    <h3>Why this actually solves Session 20's risk</h3>
+    <p>Once population can only change through grow_population or set_population, tracing an unexpected value means checking those two call sites — not the entire codebase.</p>
 
 
 
@@ -216,98 +207,115 @@ class Loader:
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Demonstrate mutation vs reassignment across functions, then refactor scattered menu state into one owning class passed explicitly.
+      <strong>Lab objective:</strong> Add set_population, set_capital, and add_country as controlled, validating state-change methods, replacing direct attribute assignment.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>state_passing_lab.py</code>.</p>
+    <p>A file called <code>controlled_state.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country and CountryExplorer</strong></p>
+        <p><strong>Create the file with Country including grow_population from Session 14</strong></p>
 
-        <pre><code># state_passing_lab.py
+        <pre><code># controlled_state.py
 class Country:
-    def __init__(self, name, region, population):
+    def __init__(self, name, region, population, capital=None):
         self.name = name
         self.region = region
         self.population = population
+        self.capital = capital
 
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries</code></pre>
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Write two functions that both operate on the same passed-in explorer</strong></p>
+        <p><strong>Add set_population and set_capital methods, both validating</strong></p>
 
-        <pre><code>def search(explorer, term):
-    return [c for c in explorer.countries if term.lower() in c.name.lower()]
+        <pre><code>class Country:
+    def __init__(self, name, region, population, capital=None):
+        self.name = name
+        self.region = region
+        self.population = population
+        self.capital = capital
 
-def add_sample_data(explorer):
-    explorer.countries.append(Country(name="Kenya", region="Africa", population=54000000))
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
 
-explorer = CountryExplorer(countries=[])
-add_sample_data(explorer)
-print(search(explorer, "ken"))</code></pre>
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+
+    def set_capital(self, new_capital):
+        if not new_capital:
+            raise ValueError("capital cannot be empty")
+        self.capital = new_capital</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Demonstrate the mutation-vs-reassignment distinction explicitly</strong></p>
-        <p>Predict the output of each print BEFORE running.</p>
-        <pre><code>def mutate_countries(exp):
-    exp.countries.append(Country(name="Ghana", region="Africa", population=31000000))
+        <p><strong>Prove invalid changes are rejected and valid state is preserved</strong></p>
 
-def reassign_explorer(exp):
-    exp = CountryExplorer(countries=[])  # only rebinds the local name
+        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
 
-mutate_countries(explorer)
-print("After mutate:", len(explorer.countries))     # 2
+try:
+    k.set_population(-5)
+except ValueError as e:
+    print("Rejected:", e)
 
-reassign_explorer(explorer)
-print("After reassign attempt:", len(explorer.countries))  # still 2</code></pre>
+print("Population still valid:", k.population)  # unchanged — still 54000000
+
+try:
+    k.set_capital("")
+except ValueError as e:
+    print("Rejected:", e)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Write a MenuState class that owns previously-scattered local variables</strong></p>
+        <p><strong>Add add_country to CountryExplorer with type validation</strong></p>
 
-        <pre><code>class MenuState:
-    def __init__(self, explorer):
-        self.explorer = explorer
-        self.last_search_term = None
-        self.action_count = 0
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
 
-    def run_search(self, term):
-        self.last_search_term = term
-        self.action_count += 1
-        return search(self.explorer, term)</code></pre>
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+explorer = CountryExplorer(countries=[])
+explorer.add_country(k)
+print(len(explorer.countries))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Pass one MenuState object between two functions and confirm both see the same data</strong></p>
+        <p><strong>Attempt to add an invalid item and confirm it is rejected</strong></p>
 
-        <pre><code>def report(state):
-    print("Last search:", state.last_search_term)
-    print("Actions taken:", state.action_count)
+        <pre><code>try:
+    explorer.add_country("not a country")
+except TypeError as e:
+    print("Rejected:", e)
 
-state = MenuState(explorer)
-state.run_search("gh")
-report(state)  # sees the search performed by run_search, because it's the SAME state object</code></pre>
+print("Collection still valid, length:", len(explorer.countries))  # still 1</code></pre>
       </div>
     </div>
 
@@ -321,9 +329,9 @@ report(state)  # sees the search performed by run_search, because it's the SAME 
         </thead>
         <tbody>
           <tr>
-            <td><code>state_passing_lab.py</code></td>
+            <td><code>controlled_state.py</code></td>
             <td>Created</td>
-            <td>Demonstrates shared reference passing, mutation vs reassignment, and a MenuState owner class.</td>
+            <td>Replaces direct attribute assignment with validating set_population, set_capital, and add_country methods.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-21/index.html</code></td>
@@ -342,11 +350,11 @@ report(state)  # sees the search performed by run_search, because it's the SAME 
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add state_passing_lab.py docs/sessions/session-21/index.html
-git commit -m "session-21: pass shared state explicitly between functions via one owning object"</code></pre>
+    <pre><code>git add controlled_state.py docs/sessions/session-21/index.html
+git commit -m "session-21: channel all state changes through validating methods"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why did reassign_explorer have no visible effect on explorer.countries, while mutate_countries did?"
+      Do not commit until you can answer out loud: "Why does the object's state stay valid even after I tried to set an invalid population?"
     </div>
 
     <hr class="section-divider" />
@@ -357,23 +365,23 @@ git commit -m "session-21: pass shared state explicitly between functions via on
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">search() and add_sample_data() both operate on the same passed-in explorer instance</label>
+        <label for="c1">set_population and set_capital both validate before assigning</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">The mutation-vs-reassignment distinction is demonstrated with a predicted-then-confirmed output</label>
+        <label for="c2">A rejected set_population call is proven to leave the previous valid population untouched</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">MenuState bundles previously scattered variables (explorer, last_search_term, action_count) under one owner</label>
+        <label for="c3">add_country validates its argument type before appending to self.countries</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Two functions share one MenuState instance and both observe the same updated data</label>
+        <label for="c4">A rejected add_country call is proven to leave the collection's length unchanged</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No global variables are used to share state between functions</label>
+        <label for="c5">No code in the file assigns to .population, .capital, or .countries directly from outside the class</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -393,52 +401,52 @@ git commit -m "session-21: pass shared state explicitly between functions via on
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>A function search(term) filters a CountryExplorer's countries and a separate function stats() reports on the SAME explorer. If both take explorer as a parameter, do they see the same countries?</p>
-        <label class="quiz-option" data-val="a">No — each function gets its own independent copy</label>
-        <label class="quiz-option" data-val="b">Yes — since explorer is passed by reference (Session 01), both functions see the exact same underlying data, including any changes made by either one</label>
-        <label class="quiz-option" data-val="c">Only if they are called in the same file</label>
-        <label class="quiz-option" data-val="d">Only if explorer is a global variable</label>
-        <div class="explanation">Passing an object as a function argument passes the reference, not a copy (Session 01). Both functions operate on the same shared CountryExplorer, so any state change either one makes is visible to the other.</div>
+        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
+        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
+        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
+        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
+        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
+        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 11's raise) before any bad data is ever stored.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Two separate functions each maintain their own local list of "loaded countries" instead of sharing one CountryExplorer. What risk does this create?</p>
-        <label class="quiz-option" data-val="a">No risk — Python automatically keeps separate copies in sync</label>
-        <label class="quiz-option" data-val="b">The two lists can drift out of sync, since a change in one is invisible to the other — they are no longer describing the same reality</label>
-        <label class="quiz-option" data-val="c">This is always faster than sharing a reference</label>
-        <label class="quiz-option" data-val="d">Python would raise an error preventing this from happening</label>
-        <div class="explanation">If two lists are meant to represent the same underlying data but are not literally the same object, nothing keeps them consistent — this "divided state" is a common real bug where two parts of a program disagree about what is currently true.</div>
+        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
+        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
+        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
+        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
+        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
+        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>When should a function OWN a piece of state (create and hold it) versus RECEIVE it as a parameter from a caller?</p>
-        <label class="quiz-option" data-val="a">A function should never own state; state must always come from outside</label>
-        <label class="quiz-option" data-val="b">A function should own state it exclusively manages and no one else needs to coordinate around; it should receive state as a parameter when multiple parts of the program need to share and coordinate around the same data</label>
-        <label class="quiz-option" data-val="c">It does not matter, both approaches are always equivalent</label>
-        <label class="quiz-option" data-val="d">Ownership is determined automatically by Python based on variable names</label>
-        <div class="explanation">This is a design decision: private, function-local state should be owned locally; shared, coordinated state (like the explorer's country list, used by search AND stats) should be passed in explicitly so every function operates on the same source of truth.</div>
+        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
+        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
+        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
+        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
+        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
+        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You refactor a menu's ad-hoc local variables into a small MenuState class that owns them. What is the main benefit?</p>
-        <label class="quiz-option" data-val="a">It makes the code run faster</label>
-        <label class="quiz-option" data-val="b">It gives the previously scattered local state a clear owner and a name, and lets you pass ONE object between functions instead of many loose variables</label>
-        <label class="quiz-option" data-val="c">It removes the need for functions entirely</label>
-        <label class="quiz-option" data-val="d">It automatically adds input validation</label>
-        <div class="explanation">This mirrors Session 08's original motivation for classes: bundling related data (and now, shared state) under one name is easier to pass around and reason about than several independent loose variables that must always be kept in sync manually.</div>
+        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 20)?</p>
+        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
+        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
+        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
+        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
+        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>If a function receives an object and reassigns the LOCAL parameter name to point at a brand new object (e.g. explorer = CountryExplorer(countries=[])), does that affect the caller's original object?</p>
-        <label class="quiz-option" data-val="a">Yes — reassignment inside a function always affects the caller</label>
-        <label class="quiz-option" data-val="b">No — reassigning what a local parameter name points to only affects that local name; the caller's original reference is untouched (this is different from mutating the object's contents)</label>
-        <label class="quiz-option" data-val="c">It depends on the object's class</label>
-        <label class="quiz-option" data-val="d">It causes a RuntimeError</label>
-        <div class="explanation">This is a subtle but important distinction: MUTATING an object through a parameter (like .append()) is visible to the caller, because both names point to the same object. But REASSIGNING the local parameter name to a different object only changes what that local name points to — the caller's original variable still points at the original object.</div>
+        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
+        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
+        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
+        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
+        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
+        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -451,10 +459,10 @@ git commit -m "session-21: pass shared state explicitly between functions via on
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Before running the lab, did you correctly predict that reassign_explorer would have no effect on the caller's explorer? What was your reasoning?</li>
-        <li>Can you think of a case in the earlier labs where you accidentally relied on (or were confused by) this exact mutation-vs-reassignment distinction?</li>
-        <li>Why does bundling loose local variables into MenuState make it easier to eventually add a THIRD function that also needs last_search_term?</li>
-        <li>How does this session's "one owner, passed explicitly" principle compare to Session 16's warning about uncontrolled shared mutation? Are they in tension, or do they work together?</li>
+        <li>Compare this session's code to Session 20's uncontrolled mutation demo. Walk through, step by step, why the exact same invalid value (-999999 or empty string) is now safely rejected.</li>
+        <li>What would a generic update(field, value) version of set_population and set_capital look like, and why is it worse for validation specifically?</li>
+        <li>If a bug report said "population went negative somewhere," how would having these controlled methods change your debugging process compared to Session 20's version?</li>
+        <li>Is there a state change you can think of for Country or CountryExplorer that this session did not cover, but probably should have its own controlled method?</li>
       </ol>
     </div>
 
@@ -463,9 +471,9 @@ git commit -m "session-21: pass shared state explicitly between functions via on
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Silently divided state:</strong> If two parts of a program each keep their own copy of what should be one shared truth, they will eventually disagree — one shows stale data while the other has the update, and there is no way to tell which one is "correct" without deep debugging.</li>
-        <li><strong>Computed properties (Session 22):</strong> The next session (the Layer 3 gate) asks: should a value be stored as state, or computed fresh each time from other state? Understanding who owns data and how it flows is required before that question makes sense.</li>
-        <li><strong>Sharing data with a repository (Layer 4):</strong> Session 24 introduces a CountryRepository that many different parts of the application share explicitly, exactly the pattern this session establishes.</li>
+        <li><strong>Silent data corruption returns:</strong> If even one code path in a large project still assigns .population directly instead of calling set_population, the guarantee this whole session builds is broken — controlled state updates only work if EVERY mutation goes through the checkpoint, with no exceptions.</li>
+        <li><strong>Event handling (Session 22):</strong> The next session adds user input as a trigger for these exact methods. Without a solid, validated set_population/set_capital to call INTO, handling user input safely is not possible.</li>
+        <li><strong>Data contracts (Layer 4):</strong> Session 30 formalizes exactly this kind of validation using type hints and dataclasses — this session is the hand-rolled version of a discipline that later gets language-level support.</li>
       </ul>
     </div>
 
@@ -473,9 +481,9 @@ git commit -m "session-21: pass shared state explicitly between functions via on
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> State ownership between functions — reference sharing, the mutation vs reassignment distinction, and bundling scattered local state into one owning object.</p>
-      <p><strong>Unlocks:</strong> You can now design who owns a given piece of state and pass it deliberately, instead of accidentally creating divided, out-of-sync copies.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 22 — Computed Properties</a>. Layer 3 gate. We ask whether a value should be stored as state at all, or computed on demand from other state.</p>
+      <p><strong>Python concept mastered:</strong> Controlled state updates — validating, specifically-named methods as the only path to changing an object's state, replacing direct attribute assignment.</p>
+      <p><strong>Unlocks:</strong> Country and CountryExplorer can no longer silently enter an invalid state — every change is validated at a single, traceable checkpoint.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 22 — Handling User Input</a>. We connect these controlled methods to an actual trigger: input typed by a user at the keyboard.</p>
     </div>
 
 

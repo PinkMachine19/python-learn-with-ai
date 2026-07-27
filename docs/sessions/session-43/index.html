@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 43 — Handling Errors and Edge Cases Gracefully — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-current">Session 43</span>
+      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+    </div>
+    <h1>Handling Errors and Edge Cases Gracefully</h1>
+    <p class="subtitle">A real network call can fail in many ways: no connection, a timeout, a malformed response. We build proper loading and error feedback instead of a program that silently hangs or crashes.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Set a timeout on a network request and handle it when it fires</li>
+        <li>Catch requests-specific exceptions distinctly from generic ones</li>
+        <li>Design a simple three-state loading/success/error model for a network operation</li>
+        <li>Provide clear, actionable feedback for each of those three states</li>
+        <li>Bring every error-handling technique from the whole curriculum together into one cohesive, real operation</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why should a network request always specify a timeout, e.g. requests.get(url, timeout=5)?</p>
+        <label class="quiz-option" data-val="a">It has no real effect; requests always returns quickly</label>
+        <label class="quiz-option" data-val="b">Without a timeout, a request to an unresponsive server could hang indefinitely, freezing the whole program; a timeout guarantees it fails (raising an exception you can catch) after a bounded amount of time instead</label>
+        <label class="quiz-option" data-val="c">timeout is required syntax and has no functional purpose</label>
+        <label class="quiz-option" data-val="d">Timeouts only apply to file operations, not network requests</label>
+        <div class="explanation">Without a timeout, a request to a slow or unresponsive server could hang forever, freezing the entire program. Specifying <code>timeout=5</code> guarantees the request either succeeds or fails within a bounded time, raising a catchable exception if it does not.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does requests.exceptions.ConnectionError typically indicate, as opposed to requests.exceptions.Timeout?</p>
+        <label class="quiz-option" data-val="a">They are identical exceptions with different names</label>
+        <label class="quiz-option" data-val="b">ConnectionError typically means the network connection could not be established at all (e.g. no internet, DNS failure); Timeout specifically means the request took too long and was cut off, per the timeout setting</label>
+        <label class="quiz-option" data-val="c">ConnectionError only happens with HTTPS URLs</label>
+        <label class="quiz-option" data-val="d">Timeout means the server actively rejected the request</label>
+        <div class="explanation">These are distinct failure modes the requests library exposes as separate exception types — being able to distinguish "we could not even connect" from "we connected but it took too long" lets you give the user more specific, useful feedback.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is a three-state model (loading, success, error) more useful for a network operation than a program that just silently waits and then either works or crashes?</p>
+        <label class="quiz-option" data-val="a">There is no benefit; a program should never show intermediate states</label>
+        <label class="quiz-option" data-val="b">It gives the user or caller clear, honest feedback about what is currently happening — including that something is actively in progress — rather than an unexplained pause followed by either a result or an unexplained failure</label>
+        <label class="quiz-option" data-val="c">Three-state models are required by the requests library</label>
+        <label class="quiz-option" data-val="d"> This concept only applies to graphical user interfaces, never to command-line programs</label>
+        <div class="explanation">This mirrors the "loading and error states" concept from the original React course this curriculum is modeled on — any operation that takes time and can fail benefits from explicitly communicating its current state, rather than leaving the user guessing during a silent pause.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A network call might fail from a connection error, a timeout, OR return a non-200 status code (Session 42). Should all three be handled with a single, generic except Exception?</p>
+        <label class="quiz-option" data-val="a">Yes — this is the simplest and best approach</label>
+        <label class="quiz-option" data-val="b">No — per Session 11's discipline, each distinct failure mode should be caught and handled specifically, so the user gets an accurate, specific message about what actually went wrong rather than one generic, unhelpful failure</label>
+        <label class="quiz-option" data-val="c">Only ConnectionError needs specific handling; the rest do not matter</label>
+        <label class="quiz-option" data-val="d">Python does not allow catching more than one exception type in the same function</label>
+        <div class="explanation">This is Session 11's "catch narrowly" principle applied at full scale to a real, multi-failure-mode operation: connection errors, timeouts, and bad status codes are all distinct, specific situations that deserve their own specific handling and messaging, not one catch-all.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does this session's error handling relate to everything else built across the curriculum, particularly Sessions 11, 24, 29, and 41?</p>
+        <label class="quiz-option" data-val="a">It is unrelated new material with no connection to prior sessions</label>
+        <label class="quiz-option" data-val="b">It is the culmination of the same exception-handling discipline (Session 11), input/response validation (Session 24, 30), and resource-safety practices (Session 29, 41) applied together to the single riskiest, least controllable operation in the whole project: a real network call</label>
+        <label class="quiz-option" data-val="c">Only Session 11 is relevant; the others do not apply here</label>
+        <label class="quiz-option" data-val="d">Network calls require an entirely different, unrelated set of skills</label>
+        <div class="explanation">This session is deliberately a synthesis point — every defensive technique built up over the whole curriculum (specific exception catching, validating untrusted input, safe resource handling) comes together here, applied to the single most unpredictable operation the project performs.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Robust Network Error Handling</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">CONNECTIONERROR</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">no internet</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">TIMEOUT</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">too slow</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">BAD STATUS</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="474" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">server error</text>
+      </svg>
+      <p class="diagram-caption-text">Each distinct network failure mode gets its own specific handling and message, per Session 11's catch-narrowly discipline.</p>
+    </div>
+
+
+    <h3>Always set a timeout</h3>
+    <p>Without a timeout, a request to an unresponsive server can hang the entire program indefinitely. A timeout guarantees the request either succeeds or fails within a bounded time.</p>
+    <pre><code>import requests
+
+try:
+    response = requests.get(
+        "https://www.apicountries.com/countries",
+        timeout=5,  # give up after 5 seconds
+    )
+except requests.exceptions.Timeout:
+    print("The request took too long and was cancelled.")</code></pre>
+
+    <h3>Catching distinct network failure modes specifically</h3>
+    <p>The requests library provides specific exception types for different failure modes — catching them individually (Session 11's discipline) gives clearer, more actionable feedback than one generic catch.</p>
+    <pre><code>import requests
+
+def fetch_countries_safely():
+    try:
+        response = requests.get(
+            "https://www.apicountries.com/countries",
+            timeout=5,
+        )
+    except requests.exceptions.ConnectionError:
+        return None, "Could not connect — check your internet connection."
+    except requests.exceptions.Timeout:
+        return None, "The request took too long and was cancelled."
+    except requests.exceptions.RequestException as e:
+        return None, f"An unexpected network error occurred: {e}"
+
+    if response.status_code != 200:
+        return None, f"The API returned an error (status {response.status_code})."
+
+    return response.json(), None</code></pre>
+
+    <h3>A three-state model: loading, success, error</h3>
+    <p>Rather than a silent pause followed by an unexplained result, explicitly represent and communicate what is currently happening — directly analogous to the loading/error states covered in the original React course this curriculum is modeled on.</p>
+    <pre><code>def load_countries_with_feedback():
+    print("Loading countries...")  # the "loading" state, communicated explicitly
+
+    data, error = fetch_countries_safely()
+
+    if error:
+        print(f"Error: {error}")   # the "error" state, with a specific, useful message
+        return []
+
+    print(f"Loaded {len(data)} countries successfully.")  # the "success" state
+    return data</code></pre>
+
+    <h3>Bringing it all together</h3>
+    <p>This combines Session 11's exception discipline, Session 30's validation, Session 41's resource safety, and Session 42's API adaptation into one cohesive, defensively-built operation — the most robust piece of code in the entire project.</p>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Build a fully robust country-loading function combining timeouts, specific exception handling, and explicit loading/success/error feedback.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>robust_loading_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with a timeout-protected, specifically-handled fetch function</strong></p>
+
+        <pre><code># robust_loading_lab.py
+import requests
+
+def fetch_countries_safely(url, timeout=5):
+    try:
+        response = requests.get(url, timeout=timeout)
+    except requests.exceptions.ConnectionError:
+        return None, "Could not connect — check your internet connection."
+    except requests.exceptions.Timeout:
+        return None, "The request took too long and was cancelled."
+    except requests.exceptions.RequestException as e:
+        return None, f"An unexpected network error occurred: {e}"
+
+    if response.status_code != 200:
+        return None, f"The API returned an error (status {response.status_code})."
+
+    return response.json(), None</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Test the happy path with the real API</strong></p>
+
+        <pre><code>data, error = fetch_countries_safely("https://www.apicountries.com/countries")
+if error:
+    print("Error:", error)
+else:
+    print(f"Loaded {len(data)} countries")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Test the error path with a deliberately bad URL</strong></p>
+        <p>This should trigger ConnectionError handling, not a crash.</p>
+        <pre><code>data, error = fetch_countries_safely("https://this-domain-does-not-exist-12345.example")
+print("Error:", error)
+print("Data:", data)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Test the error path with an intentionally short timeout</strong></p>
+        <p>Use timeout=0.001 against the real API to force a Timeout exception.</p>
+        <pre><code>data, error = fetch_countries_safely(
+    "https://www.apicountries.com/countries",
+    timeout=0.001,
+)
+print("Error:", error)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Combine everything into a full loading pipeline with explicit state messages</strong></p>
+        <p>Adapt the data (Session 42), validate a sample (Session 30), and build a CountryRepository, all with explicit loading/success/error feedback.</p>
+        <pre><code>from country_explorer import CountryRepository, validate_country_record
+
+def adapt_api_record(raw):
+    return {
+        "name": raw.get("name", "Unknown"),
+        "region": raw.get("region", "Unknown"),
+        "population": raw.get("population", 0),
+    }
+
+def load_country_repository(url):
+    print("Loading countries...")
+    raw_data, error = fetch_countries_safely(url)
+    if error:
+        print(f"Error: {error}")
+        return CountryRepository(raw_data=[])
+
+    adapted = [adapt_api_record(r) for r in raw_data]
+    if adapted:
+        validate_country_record(adapted[0])
+    print(f"Loaded {len(adapted)} countries successfully.")
+    return CountryRepository(raw_data=adapted)
+
+repo = load_country_repository("https://www.apicountries.com/countries")
+print(repo.get_all()[0].summary())</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>robust_loading_lab.py</code></td>
+            <td>Created</td>
+            <td>A fully robust, defensively-built network loading pipeline with three-state feedback.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-43/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add robust_loading_lab.py docs/sessions/session-43/index.html
+git commit -m "session-43: add timeouts, specific error handling, and loading/success/error feedback"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does fetch_countries_safely catch ConnectionError, Timeout, and RequestException separately instead of one generic except Exception?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">Every requests.get() call specifies an explicit timeout</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">ConnectionError, Timeout, and the general RequestException are each caught separately with distinct messages</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A non-200 status code is treated as an error case, not blindly parsed as success</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The loading pipeline explicitly communicates its loading, success, and error states</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">All three test scenarios (happy path, bad URL, forced timeout) were run and observed</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Why should a network request always specify a timeout, e.g. requests.get(url, timeout=5)?</p>
+        <label class="quiz-option" data-val="a">It has no real effect; requests always returns quickly</label>
+        <label class="quiz-option" data-val="b">Without a timeout, a request to an unresponsive server could hang indefinitely, freezing the whole program; a timeout guarantees it fails (raising an exception you can catch) after a bounded amount of time instead</label>
+        <label class="quiz-option" data-val="c">timeout is required syntax and has no functional purpose</label>
+        <label class="quiz-option" data-val="d">Timeouts only apply to file operations, not network requests</label>
+        <div class="explanation">Without a timeout, a request to a slow or unresponsive server could hang forever, freezing the entire program. Specifying <code>timeout=5</code> guarantees the request either succeeds or fails within a bounded time, raising a catchable exception if it does not.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does requests.exceptions.ConnectionError typically indicate, as opposed to requests.exceptions.Timeout?</p>
+        <label class="quiz-option" data-val="a">They are identical exceptions with different names</label>
+        <label class="quiz-option" data-val="b">ConnectionError typically means the network connection could not be established at all (e.g. no internet, DNS failure); Timeout specifically means the request took too long and was cut off, per the timeout setting</label>
+        <label class="quiz-option" data-val="c">ConnectionError only happens with HTTPS URLs</label>
+        <label class="quiz-option" data-val="d">Timeout means the server actively rejected the request</label>
+        <div class="explanation">These are distinct failure modes the requests library exposes as separate exception types — being able to distinguish "we could not even connect" from "we connected but it took too long" lets you give the user more specific, useful feedback.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>Why is a three-state model (loading, success, error) more useful for a network operation than a program that just silently waits and then either works or crashes?</p>
+        <label class="quiz-option" data-val="a">There is no benefit; a program should never show intermediate states</label>
+        <label class="quiz-option" data-val="b">It gives the user or caller clear, honest feedback about what is currently happening — including that something is actively in progress — rather than an unexplained pause followed by either a result or an unexplained failure</label>
+        <label class="quiz-option" data-val="c">Three-state models are required by the requests library</label>
+        <label class="quiz-option" data-val="d"> This concept only applies to graphical user interfaces, never to command-line programs</label>
+        <div class="explanation">This mirrors the "loading and error states" concept from the original React course this curriculum is modeled on — any operation that takes time and can fail benefits from explicitly communicating its current state, rather than leaving the user guessing during a silent pause.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>A network call might fail from a connection error, a timeout, OR return a non-200 status code (Session 42). Should all three be handled with a single, generic except Exception?</p>
+        <label class="quiz-option" data-val="a">Yes — this is the simplest and best approach</label>
+        <label class="quiz-option" data-val="b">No — per Session 11's discipline, each distinct failure mode should be caught and handled specifically, so the user gets an accurate, specific message about what actually went wrong rather than one generic, unhelpful failure</label>
+        <label class="quiz-option" data-val="c">Only ConnectionError needs specific handling; the rest do not matter</label>
+        <label class="quiz-option" data-val="d">Python does not allow catching more than one exception type in the same function</label>
+        <div class="explanation">This is Session 11's "catch narrowly" principle applied at full scale to a real, multi-failure-mode operation: connection errors, timeouts, and bad status codes are all distinct, specific situations that deserve their own specific handling and messaging, not one catch-all.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>How does this session's error handling relate to everything else built across the curriculum, particularly Sessions 11, 24, 29, and 41?</p>
+        <label class="quiz-option" data-val="a">It is unrelated new material with no connection to prior sessions</label>
+        <label class="quiz-option" data-val="b">It is the culmination of the same exception-handling discipline (Session 11), input/response validation (Session 24, 30), and resource-safety practices (Session 29, 41) applied together to the single riskiest, least controllable operation in the whole project: a real network call</label>
+        <label class="quiz-option" data-val="c">Only Session 11 is relevant; the others do not apply here</label>
+        <label class="quiz-option" data-val="d">Network calls require an entirely different, unrelated set of skills</label>
+        <div class="explanation">This session is deliberately a synthesis point — every defensive technique built up over the whole curriculum (specific exception catching, validating untrusted input, safe resource handling) comes together here, applied to the single most unpredictable operation the project performs.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why does this session catch requests.exceptions.RequestException as a broader fallback AFTER the two more specific exceptions, rather than instead of them? What does exception ordering have to do with this?</li>
+        <li>Trace through everything that would go wrong if fetch_countries_safely had no timeout at all and the API server happened to hang without ever responding.</li>
+        <li>How many distinct sessions' worth of error-handling technique can you identify being used together in load_country_repository? List them.</li>
+        <li>If you were building a real, user-facing application (not a console script) around this loading pipeline, what would the loading/success/error states actually look like to the user?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>A frozen, unresponsive program:</strong> Without a timeout, one unresponsive server could freeze the entire program indefinitely — completely unacceptable for anything meant to be used interactively or run unattended.</li>
+        <li><strong>Confusing, generic failures:</strong> Catching everything with one generic except Exception (rather than the specific types this session teaches) means a user experiencing a connection problem sees the exact same unhelpful message as someone hitting a slow timeout or a server error — making the problem much harder to diagnose or explain to someone else.</li>
+        <li><strong>The capstone review (Session 44):</strong> This session's robust loading pipeline is the single piece of code most representative of everything the curriculum has built toward — the final session reviews it, and everything else, end to end.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Robust network error handling — timeouts, specific exception types for distinct failure modes, and explicit loading/success/error state communication.</p>
+      <p><strong>Unlocks:</strong> The Country Explorer can now handle real-world network unreliability gracefully, giving clear feedback instead of hanging or crashing — the last new skill before the capstone review.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 44 — Capstone Review</a>. The capstone. We walk through the entire project end to end, review every architectural decision, and take a comprehensive quiz across all seven layers.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

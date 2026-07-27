@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 06 — Modules and Imports — Python Learning</title>
+  <title>Session 06 — Lists and Iteration — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -58,8 +58,8 @@
       <span class="badge badge-current">Session 06</span>
       <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
     </div>
-    <h1>Modules and Imports</h1>
-    <p class="subtitle">Our country data and our logic have been living in one file. Real projects split code into modules — this session is about how Python finds, loads, and shares code across files.</p>
+    <h1>Lists and Iteration</h1>
+    <p class="subtitle">A single country dictionary is not a country explorer. We need to hold many of them — that means lists, indexing, and loops.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Split code across multiple .py files and import between them</li>
-        <li>Use import module and from module import name, and explain the difference</li>
-        <li>Alias an import with as</li>
-        <li>Explain what if __name__ == "__main__": guards and why it matters</li>
-        <li>Understand why a module is only executed once, no matter how many times it is imported</li>
+        <li>Create a list using literal syntax and understand that it is ordered and mutable</li>
+        <li>Access items by index, including negative indexing</li>
+        <li>Use len() and iterate with a for loop</li>
+        <li>Explain the difference between mutating methods (.append, .sort) and non-mutating operations</li>
+        <li>Store a list of dictionaries — the shape our whole project will use</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
-        <label class="quiz-option" data-val="a"><code>import data</code></label>
-        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
-        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
-        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
-        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
+        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
+        <label class="quiz-option" data-val="a">"Kenya"</label>
+        <label class="quiz-option" data-val="b">"Ghana"</label>
+        <label class="quiz-option" data-val="c">"Peru"</label>
+        <label class="quiz-option" data-val="d">An IndexError</label>
+        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="b">
+      <div class="quiz-question" data-question="1" data-answer="c">
         <div class="question-num">Question 2 of 5</div>
-        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
-        <label class="quiz-option" data-val="a"><code>countries</code></label>
-        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
-        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
-        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
-        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
+        <p>What does <code>countries[-1]</code> return for the same list?</p>
+        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
+        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
+        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What does <code>import numpy as np</code> do?</p>
-        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
-        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
-        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
-        <label class="quiz-option" data-val="d">Is invalid syntax</label>
-        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
+        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
+        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
+        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
+        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
+        <label class="quiz-option" data-val="d">A TypeError</label>
+        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
-        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
-        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
-        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
-        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
-        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
+        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
+        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
+        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
+        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
+        <label class="quiz-option" data-val="d">A copy of the whole list</label>
+        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="c">
         <div class="question-num">Question 5 of 5</div>
-        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
-        <label class="quiz-option" data-val="a">Twice — once per import</label>
-        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
-        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
-        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
-        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
+        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
+        <label class="quiz-option" data-val="a">A list of strings</label>
+        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
+        <label class="quiz-option" data-val="c">A list of dictionaries</label>
+        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
+        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,145 +141,165 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Modules and Imports</h2>
-
-    <h3>A module is just a .py file</h3>
-    <p>Any Python file can be imported by another. The filename (without .py) becomes the module name.</p>
-    <pre><code># data.py
-countries = [
-    {"name": "Kenya", "region": "Africa"},
-    {"name": "Ghana", "region": "Africa"},
-]
-
-def find_by_region(region):
-    return [c for c in countries if c["region"] == region]</code></pre>
-
-    <h3>import module vs from module import name</h3>
-    <p>Both forms load the same file. They differ in what name(s) end up available in the importing file.</p>
-    <pre><code># main.py — Option 1: import the whole module
-import data
-print(data.countries)
-print(data.find_by_region("Africa"))
-
-# main.py — Option 2: import specific names directly
-from data import countries, find_by_region
-print(countries)
-print(find_by_region("Africa"))</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">import data</span>data.countries
-data.find_by_region</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">from data import</span>countries
-find_by_region</div>
-      <div class="diagram-caption">import module gives you one namespaced object; from module import name gives you the names directly, unprefixed.</div>
+    <h2>3. The Concept — Python Lists and Iteration</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">INDEX 0</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">"Kenya"</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">INDEX 1</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">"Ghana"</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">INDEX 2 / -1</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="474" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">"Peru"</text>
+      </svg>
+      <p class="diagram-caption-text">Index counts up from 0 on the left, and down from -1 on the right — both point into the same list.</p>
     </div>
 
-    <h3>Aliasing with as</h3>
-    <p>You can rename what you import, either to shorten a long name or to avoid a clash with something already defined.</p>
-    <pre><code>import data as d
-print(d.countries)
 
-from data import find_by_region as search
-print(search("Africa"))</code></pre>
+    <h3>What is a list?</h3>
+    <p>A list is an ordered, mutable sequence of values. Unlike a dictionary, items are accessed by position (index), not by name.</p>
+    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
 
-    <h3>The if __name__ == "__main__": guard</h3>
-    <p>Every Python file has a built-in variable <code>__name__</code>. When the file is run directly, it equals <code>"__main__"</code>. When the file is imported by another file, it equals the module's own name instead. This guard lets a file define reusable functions AND include a demo that only runs when the file is executed directly.</p>
-    <pre><code># data.py
-countries = [{"name": "Kenya", "region": "Africa"}]
+print(countries[0])   # "Kenya"  — first item, index 0
+print(countries[1])   # "Ghana"
+print(countries[-1])  # "Peru"   — last item, negative index
+print(len(countries)) # 3</code></pre>
 
-def find_by_region(region):
-    return [c for c in countries if c["region"] == region]
+    <h3>Iterating with a for loop</h3>
+    <p>The most common way to process every item in a list is a <code>for ... in</code> loop. No manual index counting required.</p>
+    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
 
-if __name__ == "__main__":
-    # This block only runs when you execute: python data.py
-    # It does NOT run when another file does: import data
-    print(find_by_region("Africa"))</code></pre>
+for country in countries:
+    print(country)
+# Kenya
+# Ghana
+# Peru
 
-    <h3>A module's top-level code runs once, and only once</h3>
-    <p>Python caches every module after its first import. If ten different files import the same module, its top-level code still only executes a single time — every importer shares the same already-built module object.</p>
-    <pre><code># counter.py
-print("data.py is loading...")
-value = 0
+# When you need the index too, use enumerate()
+for i, country in enumerate(countries):
+    print(i, country)
+# 0 Kenya
+# 1 Ghana
+# 2 Peru</code></pre>
 
-# app.py
-import counter          # prints "data.py is loading..." — first time
-import counter as c2     # does NOT print again — already cached
-print(counter is c2)     # True — same object</code></pre>
+    <h3>Mutating vs non-mutating operations</h3>
+    <p>Some list methods change the list in place and return <code>None</code>. Others return a new value and leave the original untouched. Confusing the two is a very common bug.</p>
+    <pre><code>nums = [3, 1, 2]
 
+nums.append(9)     # mutates in place -&gt; [3, 1, 2, 9]
+nums.sort()         # mutates in place -&gt; [1, 2, 3, 9]
+
+# sorted() is non-mutating — it returns a NEW list
+original = [3, 1, 2]
+result = sorted(original)
+print(original)  # [3, 1, 2] — unchanged
+print(result)    # [1, 2, 3] — new list</code></pre>
+    <div class="diagram-svg">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">.SORT()</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">nums → [1, 2, 3, 9]</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(same object)</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">SORTED()</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">original unchanged</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">result = new list</text>
+      </svg>
+      <p class="diagram-caption-text">.sort() mutates the original object; sorted() leaves it alone and hands back a new list.</p>
+    </div>
+
+    <h3>A list of dictionaries — our project's core data shape</h3>
+    <p>Combining what we learned in Session 05 with lists gives us exactly what a real application needs: a collection of structured records.</p>
+    <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru",  "region": "Americas", "population": 33000000},
+]
+
+for country in countries:
+    print(country["name"], "-", country["region"])
+# Kenya - Africa
+# Ghana - Africa
+# Peru - Americas</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Why this matters for the project:</strong> Every screen of our Country Explorer app — search, filtering, display — starts from exactly this shape: a list of dictionaries. Everything from here forward operates on this structure.
+    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Split your country data into its own module, import it two different ways, and add a __main__ guard.
+      <strong>Lab objective:</strong> Store three countries as a list of dictionaries, iterate over it, and prove the mutating vs non-mutating distinction.
     </div>
 
     <h3>What you will build</h3>
-    <p>Two files: <code>country_data.py</code> (the module) and <code>explorer.py</code> (imports and uses it).</p>
+    <p>A file called <code>countries.py</code> that builds on Session 05's single dictionary.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create country_data.py with the list and one function</strong></p>
+        <p><strong>Create the file</strong></p>
 
-        <pre><code># country_data.py
-countries = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-]
-
-def find_by_region(region):
-    return [c for c in countries if c["region"] == region]
-
-if __name__ == "__main__":
-    print("Running country_data.py directly")
-    print(find_by_region("Africa"))</code></pre>
+        <pre><code># countries.py</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Run country_data.py directly and observe the guard firing</strong></p>
-        <p>Confirm the __main__ block runs when you execute the file itself.</p>
-
+        <p><strong>Build a list of at least 3 country dictionaries</strong></p>
+        <p>Reuse the shape from Session 05 — each item needs at least name, region, and population.</p>
+        <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru",  "region": "Americas", "population": 33000000},
+]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Create explorer.py using import module style</strong></p>
-
-        <pre><code># explorer.py
-import country_data
-
-print(country_data.countries)
-print(country_data.find_by_region("Africa"))</code></pre>
+        <p><strong>Iterate and print each country's name</strong></p>
+        <p>Use a plain for loop, no enumerate yet.</p>
+        <pre><code>for country in countries:
+    print(country["name"])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Run explorer.py and confirm the __main__ block did NOT run</strong></p>
-        <p>You should NOT see "Running country_data.py directly" — only the two lines you explicitly printed.</p>
+        <p><strong>Iterate with enumerate() to also print position</strong></p>
 
+        <pre><code>for i, country in enumerate(countries):
+    print(f"{i}: {country['name']}")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Change explorer.py to use from...import with an alias</strong></p>
+        <p><strong>Add a country with .append()</strong></p>
+        <p>Print the list before and after to confirm it mutated in place.</p>
+        <pre><code>print("Before:", len(countries))
+countries.append({"name": "Japan", "region": "Asia", "population": 125000000})
+print("After:", len(countries))</code></pre>
+      </div>
+    </div>
 
-        <pre><code># explorer.py
-from country_data import find_by_region as search
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <p><strong>Prove sorted() does not mutate</strong></p>
+        <p>Sort the country names alphabetically without touching the original list.</p>
+        <pre><code>names = [c["name"] for c in countries] if False else None  # ignore, next session
+name_list = ["Peru", "Ghana", "Kenya", "Japan"]
+sorted_names = sorted(name_list)
+print("Original order:", name_list)
+print("Sorted copy:", sorted_names)</code></pre>
+      </div>
+    </div>
 
-print(search("Africa"))</code></pre>
+    <div class="step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <p><strong>Access the last item with negative indexing</strong></p>
+
+        <pre><code>print("Last country added:", countries[-1]["name"])</code></pre>
       </div>
     </div>
 
@@ -293,14 +313,9 @@ print(search("Africa"))</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>country_data.py</code></td>
+            <td><code>countries.py</code></td>
             <td>Created</td>
-            <td>The reusable module — data and functions, with a __main__ guard.</td>
-          </tr>
-          <tr>
-            <td><code>explorer.py</code></td>
-            <td>Created</td>
-            <td>Imports and uses country_data two different ways.</td>
+            <td>Builds a list of dictionaries and demonstrates iteration.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-06/index.html</code></td>
@@ -312,18 +327,18 @@ print(search("Africa"))</code></pre>
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country_data.py explorer.py docs/sessions/session-06/index.html
-git commit -m "session-06: split data into a module, import it two ways, add a __main__ guard"</code></pre>
+    <pre><code>git add countries.py docs/sessions/session-06/index.html
+git commit -m "session-06: store countries in a list, iterate, and separate mutating from non-mutating ops"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why did the __main__ block run when I executed country_data.py directly, but not when explorer.py imported it?"
+      Do not commit until you can answer out loud: "What is the difference between .sort() and sorted(), and why does it matter?"
     </div>
 
     <hr class="section-divider" />
@@ -334,27 +349,31 @@ git commit -m "session-06: split data into a module, import it two ways, add a _
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">country_data.py contains the list, at least one function, and a __main__ guard</label>
+        <label for="c1">The list is declared with <code>[]</code> literal syntax containing at least 3 dictionaries</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">explorer.py demonstrates import module style (module.name access)</label>
+        <label for="c2">A plain <code>for ... in</code> loop is used and prints correctly</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">explorer.py also demonstrates from module import name style, with an alias</label>
+        <label for="c3"><code>enumerate()</code> is used at least once with both index and value</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Running country_data.py directly shows the guarded print statement</label>
+        <label for="c4"><code>.append()</code> is demonstrated and shown to mutate in place</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">Running explorer.py does NOT show the guarded print statement</label>
+        <label for="c5"><code>sorted()</code> is demonstrated and shown to NOT mutate the original</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
-        <label for="c6">I can explain every line without looking at the concept section</label>
+        <label for="c6">Negative indexing is used at least once</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c7" />
+        <label for="c7">I can explain every line without looking at the concept section</label>
       </div>
     </div>
 
@@ -370,52 +389,52 @@ git commit -m "session-06: split data into a module, import it two ways, add a _
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
-        <label class="quiz-option" data-val="a"><code>import data</code></label>
-        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
-        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
-        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
-        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
+        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
+        <label class="quiz-option" data-val="a">"Kenya"</label>
+        <label class="quiz-option" data-val="b">"Ghana"</label>
+        <label class="quiz-option" data-val="c">"Peru"</label>
+        <label class="quiz-option" data-val="d">An IndexError</label>
+        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="b">
+      <div class="quiz-question" data-question="1" data-answer="c">
         <div class="question-num">Question 2 of 5</div>
-        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
-        <label class="quiz-option" data-val="a"><code>countries</code></label>
-        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
-        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
-        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
-        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
+        <p>What does <code>countries[-1]</code> return for the same list?</p>
+        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
+        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
+        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
+        <label class="quiz-option" data-val="d">None</label>
+        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What does <code>import numpy as np</code> do?</p>
-        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
-        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
-        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
-        <label class="quiz-option" data-val="d">Is invalid syntax</label>
-        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
+        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
+        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
+        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
+        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
+        <label class="quiz-option" data-val="d">A TypeError</label>
+        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
-        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
-        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
-        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
-        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
-        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
+        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
+        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
+        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
+        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
+        <label class="quiz-option" data-val="d">A copy of the whole list</label>
+        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="c">
         <div class="question-num">Question 5 of 5</div>
-        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
-        <label class="quiz-option" data-val="a">Twice — once per import</label>
-        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
-        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
-        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
-        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
+        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
+        <label class="quiz-option" data-val="a">A list of strings</label>
+        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
+        <label class="quiz-option" data-val="c">A list of dictionaries</label>
+        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
+        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -428,10 +447,10 @@ git commit -m "session-06: split data into a module, import it two ways, add a _
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why would putting a "demo" print statement at the top level of country_data.py (outside the guard) have caused a problem in explorer.py?</li>
-        <li>When would you prefer <code>import module</code> over <code>from module import name</code>, given that the second saves typing?</li>
-        <li>What real-world project structure benefit comes from every module only executing once, even if imported from many places?</li>
-        <li>How does a Python module's import caching remind you of anything else you've learned about references and shared state (Session 01)?</li>
+        <li>Why do you think Python chose zero-based indexing instead of starting at 1?</li>
+        <li>If <code>.append()</code> mutates in place and returns <code>None</code>, what would <code>countries = countries.append(x)</code> incorrectly leave <code>countries</code> as? Try it.</li>
+        <li>When would negative indexing actually save you from an error-prone calculation?</li>
+        <li>Why is "a list of dictionaries" a more useful shape than three separate parallel lists (names, regions, populations)?</li>
       </ol>
     </div>
 
@@ -440,9 +459,9 @@ git commit -m "session-06: split data into a module, import it two ways, add a _
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Demo code leaking into imports:</strong> Without the <code>__main__</code> guard, any print statements, test calls, or demo code at the top level of a module will fire every single time that module is imported anywhere — cluttering output and sometimes causing real side effects in production code.</li>
-        <li><strong>Circular imports:</strong> Once code is split across files, it becomes possible for module A to import module B while B tries to import A — a circular import error. Understanding how imports execute (once, top to bottom) is the first step to debugging this later.</li>
-        <li><strong>Project architecture (Layer 6):</strong> Sessions 32–36 are entirely about organizing a growing codebase into modules and packages. Everything there assumes you are comfortable splitting files and importing between them.</li>
+        <li><strong>The append-return bug:</strong> A very common beginner mistake is writing <code>x = some_list.append(item)</code>, expecting <code>x</code> to be the updated list. It is actually <code>None</code>, because mutating methods return nothing. This trips people up for years if never explained explicitly.</li>
+        <li><strong>List comprehensions (Session 07):</strong> The next session builds directly on for-loop iteration. If you cannot trace what a for loop does step by step, list comprehensions will look like meaningless syntax instead of a shorthand for something you already understand.</li>
+        <li><strong>Testing (Layer 5):</strong> Later, you will write tests that assert on list contents and order. Without understanding indexing and iteration, you cannot reason about what a test assertion is actually checking.</li>
       </ul>
     </div>
 
@@ -450,9 +469,9 @@ git commit -m "session-06: split data into a module, import it two ways, add a _
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Modules and the import system — import vs from-import, aliasing, and the __main__ guard.</p>
-      <p><strong>Unlocks:</strong> You can now split growing code across multiple files instead of one giant script — the basis for any real Python project structure.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 07 — Errors and Exceptions</a>. We will learn to handle things going wrong — try/except and raising exceptions — before we build anything more complex.</p>
+      <p><strong>Python concept mastered:</strong> Lists — indexing (including negative), len(), for-loop iteration, enumerate(), mutating vs non-mutating operations.</p>
+      <p><strong>Unlocks:</strong> You can now hold and process a real collection of records — the shape our whole Country Explorer project uses.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 07 — List Comprehensions</a>. We will learn to transform and filter this list without a manual for-loop, using list comprehensions.</p>
     </div>
 
 

@@ -391,50 +391,23 @@ hr {
   color: var(--yellow);
 }
 
-/* ── Concept diagrams (lightweight box/flow diagrams) ───────────────── */
-.diagram {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
+/* ── Concept diagrams (real inline SVG, like the source course) ─────── */
+.diagram-svg {
   background: #111111;
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 16px;
   margin: 16px 0;
 }
 
-.diagram-box {
-  border: 1.5px solid var(--border);
-  border-radius: 4px;
-  padding: 10px 14px;
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text);
-  background: transparent;
-  min-width: 120px;
+.diagram-svg-opening {
+  border: 1px solid var(--border);
+  margin: 14px 0 28px;
 }
 
-.diagram-box.accent { border-color: var(--accent); color: var(--accent); }
-.diagram-box .diagram-label {
-  display: block;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.diagram-arrow {
-  color: var(--accent);
-  font-size: 18px;
-  flex-shrink: 0;
-}
-
-.diagram-caption {
-  width: 100%;
+.diagram-caption-text {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: -4px;
+  margin: 10px 0 0;
 }
 
 /* ── Responsive ──────────────────────────────────────────────────── */

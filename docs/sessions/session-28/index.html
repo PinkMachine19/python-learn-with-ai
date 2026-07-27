@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 28 — Setting Up pytest — Python Learning</title>
+  <title>Session 28 — Building a Data Access Layer — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-layer">Layer 4</span>
       <span class="badge badge-current">Session 28</span>
-      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
     </div>
-    <h1>Setting Up pytest</h1>
-    <p class="subtitle">We install and configure pytest, then convert Session 27's manual assert-based checks into real, discoverable, well-organized pytest tests.</p>
+    <h1>Building a Data Access Layer</h1>
+    <p class="subtitle">Application logic should not know or care where its data comes from. We build a CountryRepository that hides that detail behind a clean, swappable interface.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Install pytest and understand its file/function naming conventions for test discovery</li>
-        <li>Write a test function pytest can automatically discover and run</li>
-        <li>Run the test suite from the command line and read its output</li>
-        <li>Compare a failing pytest assertion's output to a bare assert's output</li>
-        <li>Organize tests into a dedicated tests/ directory, separate from application code</li>
+        <li>Build a repository class that wraps a data source behind a small set of methods</li>
+        <li>Explain the separation of concerns between "fetching/storing data" and "using data"</li>
+        <li>Swap a repository's underlying data source without changing any code that calls it</li>
+        <li>Explain why this separation makes the application easier to test later (Layer 5 preview)</li>
+        <li>Distinguish a repository's methods from CountryExplorer's methods from Session 16</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>For pytest to automatically discover a test function without any extra configuration, what must be true about its name and the file it lives in?</p>
-        <label class="quiz-option" data-val="a">The file and function can be named anything at all</label>
-        <label class="quiz-option" data-val="b">The file name should start or end with test_ (e.g. test_country.py) and the function name should start with test_ (e.g. def test_summary_format())</label>
-        <label class="quiz-option" data-val="c">Only the file name matters; function names are irrelevant</label>
-        <label class="quiz-option" data-val="d">Test functions must be inside a class named TestSuite</label>
-        <div class="explanation">pytest's default discovery convention looks for files matching <code>test_*.py</code> or <code>*_test.py</code>, and within them, functions starting with <code>test_</code>. Following this convention means you never need to manually register a test.</div>
+        <p>A CountryRepository class wraps MOCK_COUNTRIES and exposes get_all() and find_by_region(region). Why not just let every part of the application import MOCK_COUNTRIES directly?</p>
+        <label class="quiz-option" data-val="a">There is no difference — direct import is equally good</label>
+        <label class="quiz-option" data-val="b">Wrapping it behind a repository means the rest of the application depends only on the repository's interface, not on where or how the data is actually stored — that detail can change freely later</label>
+        <label class="quiz-option" data-val="c">Python does not allow importing the same variable in two places</label>
+        <label class="quiz-option" data-val="d">MOCK_COUNTRIES cannot be imported more than once</label>
+        <div class="explanation">This is separation of concerns: the repository owns the detail of HOW data is fetched (a mock list today, a JSON file or real API tomorrow); everything else only needs to know WHAT methods the repository offers, not how they work internally.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>How do you actually run the discovered tests from the command line?</p>
-        <label class="quiz-option" data-val="a">python test_country.py</label>
-        <label class="quiz-option" data-val="b">pytest</label>
-        <label class="quiz-option" data-val="c">pip install test_country</label>
-        <label class="quiz-option" data-val="d">python -m unittest test_country</label>
-        <div class="explanation">Simply running <code>pytest</code> in the project directory automatically discovers and runs every test file/function matching its naming convention — no manual listing required.</div>
+        <p>If CountryRepository.get_all() currently reads from MOCK_COUNTRIES, and later you change it to read from a JSON file instead, what code outside the repository needs to change?</p>
+        <label class="quiz-option" data-val="a">Every place in the application that calls repository.get_all()</label>
+        <label class="quiz-option" data-val="b">Nothing outside CountryRepository itself — callers only depend on the method's existence and its return shape, not its internal implementation</label>
+        <label class="quiz-option" data-val="c">All the Country and CountryExplorer classes</label>
+        <label class="quiz-option" data-val="d">The whole application must be rewritten</label>
+        <div class="explanation">This is the entire point of the abstraction: as long as get_all() keeps returning the same shape of data, its INTERNAL implementation can change freely (mock list, JSON file, real API) without touching a single line of code anywhere else.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest's output show you that a bare Python assert (Session 27) does not?</p>
-        <label class="quiz-option" data-val="a">Nothing extra — the output is identical either way</label>
-        <label class="quiz-option" data-val="b">pytest shows the actual values on both sides of the comparison (e.g. "assert 54000000 == 55000000") automatically, without you writing a custom message</label>
-        <label class="quiz-option" data-val="c">pytest only tells you which file failed, never which line</label>
-        <label class="quiz-option" data-val="d">pytest requires you to manually format every failure message</label>
-        <div class="explanation">This is one of pytest's most useful features: it introspects a failing <code>assert</code> and shows you the actual runtime values involved, giving a much clearer picture of what went wrong than a bare assert's generic AssertionError.</div>
+        <p>What is the difference between CountryRepository (this session) and CountryExplorer (Session 16)?</p>
+        <label class="quiz-option" data-val="a">They are the same thing with different names</label>
+        <label class="quiz-option" data-val="b">CountryRepository's job is fetching/providing raw data; CountryExplorer's job is holding and operating on a working set of Country objects for the application to use — different responsibilities</label>
+        <label class="quiz-option" data-val="c">CountryRepository is only used for testing</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must always be built from a CountryRepository</label>
+        <div class="explanation">These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 16.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why organize tests into a separate tests/ directory instead of mixing test files in with application code?</p>
-        <label class="quiz-option" data-val="a">pytest requires this exact structure to function at all</label>
-        <label class="quiz-option" data-val="b">It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 06</label>
-        <label class="quiz-option" data-val="c">Tests placed outside tests/ run twice as slowly</label>
-        <label class="quiz-option" data-val="d">There is no benefit; it is arbitrary</label>
-        <div class="explanation">Just like Session 06's module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.</div>
+        <p>Why does this separation make future testing (Layer 5) easier?</p>
+        <label class="quiz-option" data-val="a">It has no effect on testing</label>
+        <label class="quiz-option" data-val="b">A test can construct a repository around a small, controlled fake dataset instead of a real (or even the standard mock) data source, testing application logic in complete isolation</label>
+        <label class="quiz-option" data-val="c">Testing requires deleting the repository entirely</label>
+        <label class="quiz-option" data-val="d">Repositories automatically generate their own tests</label>
+        <div class="explanation">Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 35 (testing the data layer) will do.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is the pytest equivalent of Session 27's manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?</p>
-        <label class="quiz-option" data-val="a">assert grow_population(-5) == False</label>
-        <label class="quiz-option" data-val="b">Using pytest.raises(ValueError): as a context manager around the call, e.g. with pytest.raises(ValueError): k.grow_population(-5)</label>
-        <label class="quiz-option" data-val="c">pytest cannot test for raised exceptions</label>
-        <label class="quiz-option" data-val="d">try/except is no longer needed with pytest</label>
-        <div class="explanation"><code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 27's manual try/except/assert False pattern with something more concise and pytest-native.</div>
+        <p>Which method belongs on CountryRepository rather than CountryExplorer, given the separation of concerns described in this session?</p>
+        <label class="quiz-option" data-val="a">total_population — a computed property over a working set of countries</label>
+        <label class="quiz-option" data-val="b">get_all() — fetching the full raw list of country records from wherever they are stored</label>
+        <label class="quiz-option" data-val="c">add_country() — mutating a working, in-memory collection</label>
+        <label class="quiz-option" data-val="d">summaries() — formatting each country for display</label>
+        <div class="explanation">get_all() is about FETCHING data from its source — the repository's job. The others are about operating on an already-fetched, in-memory working set — the explorer's job, as established in Session 16 and 22.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,62 +141,58 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — pytest Fundamentals</h2>
-
-    <h3>Installing pytest</h3>
-    <p>pytest is installed like any third-party package, typically with pip.</p>
-    <pre><code># In your terminal (not in a .py file):
-# pip install pytest</code></pre>
-
-    <h3>Test discovery conventions</h3>
-    <p>pytest automatically finds and runs tests that follow its naming conventions — no manual registration required, unlike Session 27's hand-called test functions.</p>
-    <pre><code># tests/test_country.py  — file name starts with test_
-from country import Country  # importing the real application module
-
-def test_summary_format():   # function name starts with test_
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    assert k.summary() == "Kenya (Africa): pop. 54,000,000"</code></pre>
-
-    <h3>Running the suite</h3>
-    <p>A single command runs every discovered test and reports a summary — pass/fail counts and details on any failures.</p>
-    <pre><code># In your terminal:
-# pytest
-#
-# Example output:
-# ===== test session starts =====
-# collected 3 items
-#
-# tests/test_country.py ...                                    [100%]
-#
-# ===== 3 passed in 0.02s =====</code></pre>
-
-    <h3>Readable failure output</h3>
-    <p>When a plain assert fails inside a pytest test, pytest shows you the actual values on both sides — far more informative than a bare AssertionError.</p>
-    <pre><code>def test_grow_population_increases_value():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    k.grow_population(1000000)
-    assert k.population == 56000000  # deliberately wrong, to see pytest's failure output
-
-# pytest shows something like:
-#     assert 55000000 == 56000000
-# — pytest introspected the actual values automatically, no manual message needed</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">bare assert</span>AssertionError
-(no detail)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">pytest assert</span>assert 55000000
-== 56000000</div>
-      <div class="diagram-caption">A bare assert just says "failed." pytest shows you the actual values on both sides, automatically.</div>
+    <h2>3. The Concept — A Data Access Layer</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">APPLICATION CODE</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">repo.get_all()</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">COUNTRYREPOSITORY</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">hides the source</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">SOURCE (SWAPPABLE)</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="474" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">mock, JSON,</text><text x="474" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">real API...</text>
+      </svg>
+      <p class="diagram-caption-text">Application code depends only on the repository's methods — never directly on where the data actually lives.</p>
     </div>
 
-    <h3>Testing for raised exceptions with pytest.raises</h3>
-    <p>pytest provides a dedicated, cleaner way to assert that code raises a specific exception, replacing Session 27's manual try/except/assert False.</p>
-    <pre><code>import pytest
 
-def test_grow_population_rejects_negative():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    with pytest.raises(ValueError):
-        k.grow_population(-5)
-    # if grow_population does NOT raise ValueError, this test fails automatically</code></pre>
+    <h3>Wrapping a data source behind an interface</h3>
+    <p>A repository is a small class whose only job is providing access to data — hiding exactly where and how that data is stored behind a clean set of methods.</p>
+    <pre><code>from mock_countries import MOCK_COUNTRIES
+
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]
+
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+all_countries = repo.get_all()
+print(len(all_countries))</code></pre>
+
+    <h3>Swapping the source without touching callers</h3>
+    <p>As long as get_all() keeps returning the same shape (a list of Country instances), the repository's internals can change completely, and nothing that calls repo.get_all() needs to know or care.</p>
+    <pre><code>class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+# Today: built around mock data
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+
+# Later (Session 29/42): built around a completely different source —
+# but repo.get_all() everywhere else in the app doesn't change at all
+# repo = CountryRepository(raw_data=load_from_json_file("countries.json"))
+# repo = CountryRepository(raw_data=fetch_from_real_api())</code></pre>
+
+    <h3>Repository vs Explorer — two different responsibilities</h3>
+    <p>CountryRepository fetches raw data and hands back Country instances. CountryExplorer (Session 16) takes an already-fetched working set and offers operations over it. Keeping these responsibilities separate mirrors Session 16's "small, focused classes" principle.</p>
+    <pre><code>repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+explorer = CountryExplorer(countries=repo.get_all())  # repository FETCHES, explorer OPERATES
+
+print(explorer.total_population)         # explorer's job
+print(repo.find_by_region("Africa"))     # repository's job — a different kind of query</code></pre>
 
 
 
@@ -204,20 +200,22 @@ def test_grow_population_rejects_negative():
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Set up a proper project structure with a tests/ directory, convert Session 27's manual tests to pytest, and run the suite.
+      <strong>Lab objective:</strong> Build a CountryRepository wrapping the mock data from Session 27, and connect it to a CountryExplorer built entirely through the repository's interface.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>country.py</code> (the real module) and <code>tests/test_country.py</code>.</p>
+    <p>A file called <code>repository_lab.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create country.py as a real, importable module</strong></p>
+        <p><strong>Create the file with Country and the mock import</strong></p>
 
-        <pre><code># country.py
+        <pre><code># repository_lab.py
+from mock_countries import MOCK_COUNTRIES
+
 class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -227,69 +225,68 @@ class Country:
     def summary(self):
         return f"{self.name} ({self.region}): pop. {self.population:,}"
 
-    def set_population(self, value):
-        if value &lt; 0:
-            raise ValueError(f"population must be non-negative, got {value}")
-        self.population = value
-
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount</code></pre>
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Create the tests/ directory and test_country.py</strong></p>
+        <p><strong>Build CountryRepository with get_all() and find_by_region()</strong></p>
 
-        <pre><code># tests/test_country.py
-import pytest
-from country import Country
+        <pre><code>class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
 
-def test_summary_format():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    assert k.summary() == "Kenya (Africa): pop. 54,000,000"
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
 
-def test_grow_population_increases_value():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    k.grow_population(1000000)
-    assert k.population == 55000000</code></pre>
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]
+
+repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+print(len(repo.get_all()))
+print([c.name for c in repo.find_by_region("Africa")])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add exception tests using pytest.raises</strong></p>
+        <p><strong>Build CountryExplorer and construct it FROM the repository</strong></p>
 
-        <pre><code>def test_grow_population_rejects_negative():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    with pytest.raises(ValueError):
-        k.grow_population(-5)
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
 
-def test_set_population_rejects_negative():
-    k = Country(name="Kenya", region="Africa", population=54000000)
-    with pytest.raises(ValueError):
-        k.set_population(-1)</code></pre>
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+explorer = CountryExplorer(countries=repo.get_all())
+print(explorer.total_population)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Run pytest from the project root and confirm all tests pass</strong></p>
-        <p>Run the pytest command and read the summary output.</p>
-        <pre><code># pytest</code></pre>
+        <p><strong>Prove the repository can be swapped without touching CountryExplorer</strong></p>
+        <p>Build a second, smaller repository from a hand-typed list and construct a second explorer from it — CountryExplorer's code never changes.</p>
+        <pre><code>tiny_data = [{"name": "Fiji", "region": "Oceania", "population": 900000}]
+tiny_repo = CountryRepository(raw_data=tiny_data)
+tiny_explorer = CountryExplorer(countries=tiny_repo.get_all())
+print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, different source</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Deliberately break one test to see pytest's failure output, then fix it</strong></p>
-        <p>Change an expected value to something wrong, run pytest again, read the detailed failure output, then revert it.</p>
+        <p><strong>Write a comment identifying which methods belong to the repository vs the explorer, and why</strong></p>
+
 
       </div>
     </div>
@@ -304,14 +301,9 @@ def test_set_population_rejects_negative():
         </thead>
         <tbody>
           <tr>
-            <td><code>country.py</code></td>
+            <td><code>repository_lab.py</code></td>
             <td>Created</td>
-            <td>The real, importable Country module (no longer duplicated inline in a lab script).</td>
-          </tr>
-          <tr>
-            <td><code>tests/test_country.py</code></td>
-            <td>Created</td>
-            <td>A proper pytest test suite for Country, organized in a dedicated tests/ directory.</td>
+            <td>A CountryRepository wrapping mock data, connected to a CountryExplorer.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-28/index.html</code></td>
@@ -323,18 +315,18 @@ def test_set_population_rejects_negative():
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country.py tests/test_country.py docs/sessions/session-28/index.html
-git commit -m "session-28: set up pytest with a real tests/ directory"</code></pre>
+    <pre><code>git add repository_lab.py docs/sessions/session-28/index.html
+git commit -m "session-28: build a CountryRepository data-access layer around the mock data"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What naming convention did I follow to make pytest automatically discover these tests without any manual registration?"
+      Do not commit until you can answer out loud: "Why did CountryExplorer not need any changes when I swapped in a completely different repository?"
     </div>
 
     <hr class="section-divider" />
@@ -345,23 +337,23 @@ git commit -m "session-28: set up pytest with a real tests/ directory"</code></p
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">country.py exists as a standalone, importable module (Session 06 discipline)</label>
+        <label for="c1">CountryRepository exposes get_all() and find_by_region(), both returning Country instances</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">tests/test_country.py follows pytest's file and function naming conventions</label>
+        <label for="c2">CountryExplorer is constructed by calling repo.get_all(), never by importing MOCK_COUNTRIES directly</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">At least two tests use pytest.raises() instead of manual try/except</label>
+        <label for="c3">A second, differently-sourced repository is built and shown to work with the same, unmodified CountryExplorer class</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Running pytest from the project root discovers and passes all tests</label>
+        <label for="c4">A written comment correctly separates repository responsibilities from explorer responsibilities</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A deliberately broken test was run once to observe pytest's detailed failure output, then fixed</label>
+        <label for="c5">No code outside CountryRepository reads self._raw_data directly</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -381,52 +373,52 @@ git commit -m "session-28: set up pytest with a real tests/ directory"</code></p
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>For pytest to automatically discover a test function without any extra configuration, what must be true about its name and the file it lives in?</p>
-        <label class="quiz-option" data-val="a">The file and function can be named anything at all</label>
-        <label class="quiz-option" data-val="b">The file name should start or end with test_ (e.g. test_country.py) and the function name should start with test_ (e.g. def test_summary_format())</label>
-        <label class="quiz-option" data-val="c">Only the file name matters; function names are irrelevant</label>
-        <label class="quiz-option" data-val="d">Test functions must be inside a class named TestSuite</label>
-        <div class="explanation">pytest's default discovery convention looks for files matching <code>test_*.py</code> or <code>*_test.py</code>, and within them, functions starting with <code>test_</code>. Following this convention means you never need to manually register a test.</div>
+        <p>A CountryRepository class wraps MOCK_COUNTRIES and exposes get_all() and find_by_region(region). Why not just let every part of the application import MOCK_COUNTRIES directly?</p>
+        <label class="quiz-option" data-val="a">There is no difference — direct import is equally good</label>
+        <label class="quiz-option" data-val="b">Wrapping it behind a repository means the rest of the application depends only on the repository's interface, not on where or how the data is actually stored — that detail can change freely later</label>
+        <label class="quiz-option" data-val="c">Python does not allow importing the same variable in two places</label>
+        <label class="quiz-option" data-val="d">MOCK_COUNTRIES cannot be imported more than once</label>
+        <div class="explanation">This is separation of concerns: the repository owns the detail of HOW data is fetched (a mock list today, a JSON file or real API tomorrow); everything else only needs to know WHAT methods the repository offers, not how they work internally.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>How do you actually run the discovered tests from the command line?</p>
-        <label class="quiz-option" data-val="a">python test_country.py</label>
-        <label class="quiz-option" data-val="b">pytest</label>
-        <label class="quiz-option" data-val="c">pip install test_country</label>
-        <label class="quiz-option" data-val="d">python -m unittest test_country</label>
-        <div class="explanation">Simply running <code>pytest</code> in the project directory automatically discovers and runs every test file/function matching its naming convention — no manual listing required.</div>
+        <p>If CountryRepository.get_all() currently reads from MOCK_COUNTRIES, and later you change it to read from a JSON file instead, what code outside the repository needs to change?</p>
+        <label class="quiz-option" data-val="a">Every place in the application that calls repository.get_all()</label>
+        <label class="quiz-option" data-val="b">Nothing outside CountryRepository itself — callers only depend on the method's existence and its return shape, not its internal implementation</label>
+        <label class="quiz-option" data-val="c">All the Country and CountryExplorer classes</label>
+        <label class="quiz-option" data-val="d">The whole application must be rewritten</label>
+        <div class="explanation">This is the entire point of the abstraction: as long as get_all() keeps returning the same shape of data, its INTERNAL implementation can change freely (mock list, JSON file, real API) without touching a single line of code anywhere else.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest's output show you that a bare Python assert (Session 27) does not?</p>
-        <label class="quiz-option" data-val="a">Nothing extra — the output is identical either way</label>
-        <label class="quiz-option" data-val="b">pytest shows the actual values on both sides of the comparison (e.g. "assert 54000000 == 55000000") automatically, without you writing a custom message</label>
-        <label class="quiz-option" data-val="c">pytest only tells you which file failed, never which line</label>
-        <label class="quiz-option" data-val="d">pytest requires you to manually format every failure message</label>
-        <div class="explanation">This is one of pytest's most useful features: it introspects a failing <code>assert</code> and shows you the actual runtime values involved, giving a much clearer picture of what went wrong than a bare assert's generic AssertionError.</div>
+        <p>What is the difference between CountryRepository (this session) and CountryExplorer (Session 16)?</p>
+        <label class="quiz-option" data-val="a">They are the same thing with different names</label>
+        <label class="quiz-option" data-val="b">CountryRepository's job is fetching/providing raw data; CountryExplorer's job is holding and operating on a working set of Country objects for the application to use — different responsibilities</label>
+        <label class="quiz-option" data-val="c">CountryRepository is only used for testing</label>
+        <label class="quiz-option" data-val="d">CountryExplorer must always be built from a CountryRepository</label>
+        <div class="explanation">These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 16.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why organize tests into a separate tests/ directory instead of mixing test files in with application code?</p>
-        <label class="quiz-option" data-val="a">pytest requires this exact structure to function at all</label>
-        <label class="quiz-option" data-val="b">It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 06</label>
-        <label class="quiz-option" data-val="c">Tests placed outside tests/ run twice as slowly</label>
-        <label class="quiz-option" data-val="d">There is no benefit; it is arbitrary</label>
-        <div class="explanation">Just like Session 06's module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.</div>
+        <p>Why does this separation make future testing (Layer 5) easier?</p>
+        <label class="quiz-option" data-val="a">It has no effect on testing</label>
+        <label class="quiz-option" data-val="b">A test can construct a repository around a small, controlled fake dataset instead of a real (or even the standard mock) data source, testing application logic in complete isolation</label>
+        <label class="quiz-option" data-val="c">Testing requires deleting the repository entirely</label>
+        <label class="quiz-option" data-val="d">Repositories automatically generate their own tests</label>
+        <div class="explanation">Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 35 (testing the data layer) will do.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is the pytest equivalent of Session 27's manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?</p>
-        <label class="quiz-option" data-val="a">assert grow_population(-5) == False</label>
-        <label class="quiz-option" data-val="b">Using pytest.raises(ValueError): as a context manager around the call, e.g. with pytest.raises(ValueError): k.grow_population(-5)</label>
-        <label class="quiz-option" data-val="c">pytest cannot test for raised exceptions</label>
-        <label class="quiz-option" data-val="d">try/except is no longer needed with pytest</label>
-        <div class="explanation"><code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 27's manual try/except/assert False pattern with something more concise and pytest-native.</div>
+        <p>Which method belongs on CountryRepository rather than CountryExplorer, given the separation of concerns described in this session?</p>
+        <label class="quiz-option" data-val="a">total_population — a computed property over a working set of countries</label>
+        <label class="quiz-option" data-val="b">get_all() — fetching the full raw list of country records from wherever they are stored</label>
+        <label class="quiz-option" data-val="c">add_country() — mutating a working, in-memory collection</label>
+        <label class="quiz-option" data-val="d">summaries() — formatting each country for display</label>
+        <div class="explanation">get_all() is about FETCHING data from its source — the repository's job. The others are about operating on an already-fetched, in-memory working set — the explorer's job, as established in Session 16 and 22.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -439,10 +431,10 @@ git commit -m "session-28: set up pytest with a real tests/ directory"</code></p
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Compare the effort of writing test_grow_population_rejects_negative() with pytest.raises() versus Session 27's manual try/except/assert False version. Which communicates intent more clearly to a reader?</li>
-        <li>Why does pytest need file and function names to follow a convention, instead of you manually telling it which functions are tests?</li>
-        <li>What did the deliberately-broken test's failure output show you that made it easy to identify the problem?</li>
-        <li>How does organizing tests/ separately from country.py reflect the same reasoning as splitting country_data.py from explorer.py back in Session 06?</li>
+        <li>Why does CountryExplorer never import mock_countries directly? What would be lost if it did?</li>
+        <li>What would you need to change in CountryRepository (and ONLY in CountryRepository) to eventually read from a real file on disk instead of an in-memory list?</li>
+        <li>How does this repository pattern relate to the "contract" concept introduced in Session 27?</li>
+        <li>Can you think of a method that seems ambiguous — could reasonably belong to either the repository or the explorer? How would you decide?</li>
       </ol>
     </div>
 
@@ -451,9 +443,9 @@ git commit -m "session-28: set up pytest with a real tests/ directory"</code></p
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Forgetting to run tests:</strong> Even a good test suite is useless if no one remembers to run it before shipping a change — this is a process discipline this session sets up the tooling for, but does not solve by itself (CI automation solves it, but is out of scope for this curriculum).</li>
-        <li><strong>Testing props/output specifically (Session 29):</strong> This session set up the tooling; the next two sessions dive into what specifically to assert on — return values and object state — building real test coverage across the whole project.</li>
-        <li><strong>Confident refactoring (Layer 6):</strong> A real, runnable pytest suite is the safety net that makes Layer 6's architecture refactoring sessions safe to do boldly instead of nervously.</li>
+        <li><strong>Data-source lock-in:</strong> Without this separation, every part of the application that needs country data would import MOCK_COUNTRIES directly — meaning switching to a real API later would require hunting down and rewriting every single one of those import sites instead of changing one class.</li>
+        <li><strong>Working with real files (Session 29):</strong> The next session teaches reading actual JSON files from disk — that new data source slots directly into CountryRepository's constructor, exactly because of the separation built this session.</li>
+        <li><strong>Testing in isolation (Layer 5):</strong> Session 35 tests the data layer by building a CountryRepository around a small, controlled fake dataset — only possible because the repository's constructor accepts any data source, a direct consequence of this session's design.</li>
       </ul>
     </div>
 
@@ -461,9 +453,9 @@ git commit -m "session-28: set up pytest with a real tests/ directory"</code></p
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> pytest fundamentals — installation, test discovery conventions, running the suite, readable failure output, and pytest.raises for exception testing.</p>
-      <p><strong>Unlocks:</strong> The project now has a real, professional testing setup — the foundation for every remaining test-writing session in Layer 5.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 29 — Testing Functions and Return Values</a>. We dig into what specifically to assert on for functions and methods that return values, covering edge cases systematically.</p>
+      <p><strong>Python concept mastered:</strong> A data-access layer (repository) that hides the true source of data behind a stable interface, cleanly separated from the application logic that uses it.</p>
+      <p><strong>Unlocks:</strong> The application's data source can now change completely — mock, file, real API — without touching any of the code that consumes it.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 29 — Working with JSON Files</a>. We give the repository a genuinely different, real source to read from: an actual JSON file on disk.</p>
     </div>
 
 

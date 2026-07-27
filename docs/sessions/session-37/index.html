@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 37 — File I/O Deep Dive — Python Learning</title>
+  <title>Session 37 — Reusable Functions and Modules — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-layer">Layer 6</span>
       <span class="badge badge-current">Session 37</span>
-      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
     </div>
-    <h1>File I/O Deep Dive</h1>
-    <p class="subtitle">Layer 7 begins. We go deeper on file handling than Session 25's introduction — proper resource management, different file modes, and safely reading large files.</p>
+    <h1>Reusable Functions and Modules</h1>
+    <p class="subtitle">With a clean package structure in place, we identify genuinely reusable logic scattered across the project and extract it into shared, well-tested functions.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Explain why the with statement is the correct way to open a file, versus manual open()/close()</li>
-        <li>Use different file modes: read, write, append</li>
-        <li>Read a file line by line instead of loading it all into memory at once</li>
-        <li>Handle a file encoding issue gracefully</li>
-        <li>Refactor CountryRepository to build itself from a real file path, cleanly, using everything from this session</li>
+        <li>Identify duplicated or near-duplicated logic across different parts of the project</li>
+        <li>Extract that logic into a single, well-named, reusable function</li>
+        <li>Write a docstring that documents a function's parameters, return value, and behavior clearly</li>
+        <li>Add tests for the newly extracted function to close a coverage gap</li>
+        <li>Distinguish "reusable" from "premature abstraction" — extracting too early or unnecessarily</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why is <code>with open(path) as f: ...</code> preferred over manually calling <code>f = open(path)</code> and <code>f.close()</code> afterward?</p>
-        <label class="quiz-option" data-val="a">There is no real difference between the two approaches</label>
-        <label class="quiz-option" data-val="b">The with statement guarantees the file is closed automatically when the block ends, even if an exception occurs inside it — manual close() calls are easy to skip accidentally, especially when an error happens first</label>
-        <label class="quiz-option" data-val="c">with is required syntax; manual open/close is not valid Python</label>
-        <label class="quiz-option" data-val="d">with only works for reading files, never writing</label>
-        <div class="explanation">This is a specific application of Session 07's error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.</div>
+        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
+        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
+        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
+        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
+        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
+        <div class="explanation">This is Session 10's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the difference between opening a file with mode "w" versus mode "a"?</p>
-        <label class="quiz-option" data-val="a">They are identical</label>
-        <label class="quiz-option" data-val="b">"w" (write) overwrites the file's entire existing content; "a" (append) adds new content to the end, preserving what was already there</label>
-        <label class="quiz-option" data-val="c">"w" is for reading only; "a" is for writing only</label>
-        <label class="quiz-option" data-val="d">"a" always creates a brand new file, deleting any old one</label>
-        <div class="explanation">"w" truncates and overwrites — dangerous if you meant to keep existing content. "a" appends to the end of existing content without touching what came before, useful for something like an ongoing log file.</div>
+        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
+        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
+        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
+        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
+        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
+        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why would you read a very large file line by line (with `for line in f:`) instead of `f.read()` all at once?</p>
-        <label class="quiz-option" data-val="a">There is no difference in memory usage between the two approaches</label>
-        <label class="quiz-option" data-val="b">Reading line by line only holds one line in memory at a time, while f.read() loads the ENTIRE file into memory at once — for a very large file, this could exhaust available memory</label>
-        <label class="quiz-option" data-val="c">f.read() is always faster regardless of file size</label>
-        <label class="quiz-option" data-val="d">Line-by-line reading is required for all files, always</label>
-        <div class="explanation">For files far larger than available memory, loading the whole thing with <code>f.read()</code> could crash the program or the machine. Iterating line by line processes the file incrementally, using a small, constant amount of memory regardless of the file's total size.</div>
+        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
+        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
+        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
+        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
+        <div class="explanation">A focused, direct test of the extracted function (following Session 33's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 07?</p>
-        <label class="quiz-option" data-val="a">Python automatically detects and handles any encoding correctly</label>
-        <label class="quiz-option" data-val="b">A UnicodeDecodeError is raised; wrapping the read in a try/except UnicodeDecodeError (or specifying the correct encoding explicitly) handles this gracefully</label>
-        <label class="quiz-option" data-val="c">The file silently reads as an empty string</label>
-        <label class="quiz-option" data-val="d">This can never happen in Python 3</label>
-        <div class="explanation">Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 07's try/except, or for specifying the correct encoding explicitly if it is known.</div>
+        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
+        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
+        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
+        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
+        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
+        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 24's original design?</p>
-        <label class="quiz-option" data-val="a">It requires rewriting get_all() and find_by_region() entirely from scratch</label>
-        <label class="quiz-option" data-val="b">It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository's own methods remain completely unchanged, exactly as Session 24 promised</label>
-        <label class="quiz-option" data-val="c">CountryExplorer must also be rewritten</label>
-        <label class="quiz-option" data-val="d">This refactor is not actually possible given the current design</label>
-        <div class="explanation">This is Session 24's payoff, delivered a third time (after the mock data and the simple JSON file in Session 25): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.</div>
+        <p>Where is the most sensible place, given Session 36's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
+        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
+        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 36</label>
+        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
+        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
+        <div class="explanation">This follows directly from Session 36's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,61 +141,63 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Robust File Handling</h2>
-
-    <h3>with — guaranteed cleanup, even on error</h3>
-    <p>The with statement (a "context manager") guarantees a file is properly closed when the block ends, whether it ends normally or because of an exception — directly connecting to Session 07's finally block concept, but automated and less error-prone.</p>
-    <pre><code># Risky — if something raises an exception between open() and close(), the file leaks open
-f = open("countries.json")
-data = f.read()
-f.close()  # this line is skipped entirely if the read() line raised an exception!
-
-# Safe — the file is guaranteed to close, no matter what happens inside the block
-with open("countries.json") as f:
-    data = f.read()
-# f is already closed here, even if an exception occurred inside the block</code></pre>
-
-    <h3>File modes</h3>
-    <p>The second argument to open() controls how the file is accessed: "r" (read, default), "w" (write, overwrites), "a" (append, preserves existing content).</p>
-    <pre><code># Read (default) — file must already exist
-with open("countries.json", "r") as f:
-    content = f.read()
-
-# Write — creates the file if missing, OVERWRITES if it exists
-with open("log.txt", "w") as f:
-    f.write("First line\n")
-
-# Append — creates the file if missing, adds to the END if it exists
-with open("log.txt", "a") as f:
-    f.write("Another line, added without erasing what was there\n")</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">mode "w"</span>old content
-replaced</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">mode "a"</span>old content kept,
-new appended</div>
-      <div class="diagram-caption">"w" replaces everything; "a" preserves existing content and adds to the end.</div>
+    <h2>3. The Concept — Extracting Reusable Logic</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">SUMMARY()</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">f"{pop:,}"</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">REPORT LINE</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">f"{pop:,}"</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">FORMAT_POPULATION()</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="474" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">one shared function</text>
+      </svg>
+      <p class="diagram-caption-text">Two near-identical formatting expressions collapse into one shared, tested, documented function.</p>
     </div>
 
-    <h3>Reading large files incrementally</h3>
-    <p>Iterating a file object directly reads it one line at a time, using a small, constant amount of memory — essential for files too large to comfortably fit in memory all at once.</p>
-    <pre><code># Loads the ENTIRE file into memory at once — risky for very large files
-with open("huge_log.txt") as f:
-    content = f.read()
 
-# Processes one line at a time — memory usage stays small regardless of file size
-with open("huge_log.txt") as f:
-    for line in f:
-        if "ERROR" in line:
-            print(line.strip())</code></pre>
+    <h3>Spotting duplicated logic</h3>
+    <p>As a project grows, similar formatting or calculation logic tends to appear in more than one place. The first step is noticing it — comparing what several pieces of code are actually doing, not just how they look on the surface.</p>
+    <pre><code># Duplication scattered across the project:
 
-    <h3>Handling encoding issues</h3>
-    <p>Text files can be encoded differently. Specifying the encoding explicitly, or handling a decode error gracefully, prevents a crash on unexpected file content.</p>
-    <pre><code>try:
-    with open("countries.json", encoding="utf-8") as f:
-        content = f.read()
-except UnicodeDecodeError as e:
-    print(f"File is not valid UTF-8: {e}")
-    content = None</code></pre>
+# models.py
+def summary(self):
+    return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+# some future report-generation code, formatting the same kind of number again
+def population_report_line(name, population):
+    return f"{name}: {population:,} people"</code></pre>
+
+    <h3>Extracting one shared function</h3>
+    <p>Once genuine, ongoing duplication is identified, extract it into one well-named function, and update every call site to use it — exactly the "one place to change" principle from Session 10.</p>
+    <pre><code># country_explorer/formatting.py
+def format_population(value):
+    """Format a population count with comma separators.
+
+    Args:
+        value: the population as an int.
+    Returns:
+        A string like "54,000,000".
+    """
+    return f"{value:,}"
+
+# models.py
+from .formatting import format_population
+
+def summary(self):
+    return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
+
+    <h3>Documenting the extracted function with a docstring</h3>
+    <p>A function meant to be reused across the project deserves clear documentation of what it takes and what it returns, directly alongside the code — readable via help() and by anyone reading the source.</p>
+
+    <h3>Testing the extracted function directly</h3>
+    <p>A focused test of the standalone function is simpler than relying on it being indirectly exercised through summary() or other larger tests.</p>
+    <pre><code># tests/test_formatting.py
+from country_explorer.formatting import format_population
+
+def test_format_population_adds_commas():
+    assert format_population(54000000) == "54,000,000"
+
+def test_format_population_small_number():
+    assert format_population(5) == "5"</code></pre>
+
+    <h3>When NOT to extract — premature abstraction</h3>
+    <p>If two pieces of code happen to look similar right now, but represent genuinely different concepts likely to change independently, forcing them into a shared function adds coupling without a real benefit. Extraction should follow real, ongoing duplication of one actual idea — not surface-level resemblance.</p>
 
 
 
@@ -203,86 +205,78 @@ except UnicodeDecodeError as e:
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Rebuild CountryRepository to read from a real file path using with, correct modes, and encoding-aware error handling, with zero changes to its existing methods.
+      <strong>Lab objective:</strong> Extract a shared, documented, tested format_population function, and identify (without necessarily extracting) a case of premature abstraction.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>file_io_lab.py</code>, extending the country_explorer package.</p>
+    <p>A new module <code>country_explorer/formatting.py</code> plus <code>tests/test_formatting.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and write a robust load_json_file function</strong></p>
+        <p><strong>Create formatting.py with format_population and a clear docstring</strong></p>
 
-        <pre><code># file_io_lab.py
-import json
+        <pre><code># country_explorer/formatting.py
+def format_population(value):
+    """Format a population count with comma separators.
 
-def load_json_file(path):
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f"{path} does not exist — using an empty dataset")
-        return []
-    except json.JSONDecodeError as e:
-        print(f"{path} contains invalid JSON: {e}")
-        return []
-    except UnicodeDecodeError as e:
-        print(f"{path} is not valid UTF-8: {e}")
-        return []</code></pre>
+    Args:
+        value: the population as an int.
+    Returns:
+        A string like "54,000,000".
+    """
+    return f"{value:,}"</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Add an append-mode logging function using mode "a"</strong></p>
+        <p><strong>Update models.py's summary() to use the extracted function</strong></p>
 
-        <pre><code>def log_load_attempt(path, success):
-    with open("load_log.txt", "a") as f:
-        status = "SUCCESS" if success else "FAILED"
-        f.write(f"{status}: {path}\n")</code></pre>
+        <pre><code># country_explorer/models.py
+from .formatting import format_population
+
+class Country:
+    # ... existing code ...
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Combine both into a robust repository-building function</strong></p>
+        <p><strong>Write direct tests for format_population</strong></p>
 
-        <pre><code>from country_explorer import CountryRepository
+        <pre><code># tests/test_formatting.py
+from country_explorer.formatting import format_population
 
-def build_repository_from_file(path):
-    data = load_json_file(path)
-    log_load_attempt(path, success=bool(data))
-    return CountryRepository(raw_data=data)
+def test_format_population_adds_commas():
+    assert format_population(54000000) == "54,000,000"
 
-repo = build_repository_from_file("countries.json")
-print(len(repo.get_all()))</code></pre>
+def test_format_population_small_number():
+    assert format_population(0) == "0"</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Test the failure paths explicitly</strong></p>
-        <p>Try a missing file and confirm both the graceful fallback and the log entry.</p>
-        <pre><code>missing_repo = build_repository_from_file("does_not_exist.json")
-print(len(missing_repo.get_all()))  # 0 — graceful, no crash</code></pre>
+        <p><strong>Run the full test suite, confirming summary()'s existing tests still pass unchanged</strong></p>
+        <p>This proves the extraction was behavior-preserving.</p>
+        <pre><code># pytest -v</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Read load_log.txt line by line and print only FAILED entries</strong></p>
-        <p>Practice the line-by-line iteration pattern on the log file you just created.</p>
-        <pre><code>with open("load_log.txt") as f:
-    for line in f:
-        if line.startswith("FAILED"):
-            print(line.strip())</code></pre>
+        <p><strong>Write a short comment describing a case of near-identical-looking code you deliberately did NOT merge, and why</strong></p>
+        <p>This exercises the "premature abstraction" judgment call — invent a plausible example if needed, e.g. two functions that both happen to check "value > 0" but for conceptually different reasons.</p>
+
       </div>
     </div>
 
@@ -296,14 +290,19 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>file_io_lab.py</code></td>
+            <td><code>country_explorer/formatting.py</code></td>
             <td>Created</td>
-            <td>Robust file loading with with, modes, encoding handling, and repository construction.</td>
+            <td>A shared, documented, reusable population formatting function.</td>
           </tr>
           <tr>
-            <td><code>load_log.txt</code></td>
-            <td>Generated</td>
-            <td>An append-only log of file load attempts.</td>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Modified</td>
+            <td>summary() now uses the extracted, shared function.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_formatting.py</code></td>
+            <td>Created</td>
+            <td>Direct, focused tests for the extracted function.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-37/index.html</code></td>
@@ -315,18 +314,18 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash</code></pre>
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+      If you find yourself editing any other file, stop. This session touches exactly 4 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add file_io_lab.py load_log.txt docs/sessions/session-37/index.html
-git commit -m "session-37: robust file I/O with proper resource management and encoding handling"</code></pre>
+    <pre><code>git add country_explorer/formatting.py country_explorer/models.py tests/test_formatting.py docs/sessions/session-37/index.html
+git commit -m "session-37: extract and test a reusable format_population function"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does with open(...) as f: guarantee the file closes even if json.load(f) raises an exception inside the block?"
+      Do not commit until you can answer out loud: "How did I confirm this extraction was purely a refactor and did not change summary()'s existing observable behavior?"
     </div>
 
     <hr class="section-divider" />
@@ -337,23 +336,23 @@ git commit -m "session-37: robust file I/O with proper resource management and e
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">load_json_file uses with, not manual open()/close()</label>
+        <label for="c1">format_population has a clear docstring describing its argument and return value</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">FileNotFoundError, json.JSONDecodeError, and UnicodeDecodeError are each caught separately with clear messages</label>
+        <label for="c2">models.py's summary() calls the extracted function instead of duplicating the formatting inline</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">log_load_attempt uses append mode ("a") and does not overwrite previous log entries</label>
+        <label for="c3">test_formatting.py directly and independently tests format_population</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">build_repository_from_file successfully constructs a working CountryRepository with zero changes to CountryRepository itself</label>
+        <label for="c4">The full pre-existing test suite (Sessions 31-36) still passes after this change</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">load_log.txt is read back line by line, filtering for FAILED entries only</label>
+        <label for="c5">A written comment identifies a plausible case of premature abstraction that was deliberately NOT merged</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -373,52 +372,52 @@ git commit -m "session-37: robust file I/O with proper resource management and e
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why is <code>with open(path) as f: ...</code> preferred over manually calling <code>f = open(path)</code> and <code>f.close()</code> afterward?</p>
-        <label class="quiz-option" data-val="a">There is no real difference between the two approaches</label>
-        <label class="quiz-option" data-val="b">The with statement guarantees the file is closed automatically when the block ends, even if an exception occurs inside it — manual close() calls are easy to skip accidentally, especially when an error happens first</label>
-        <label class="quiz-option" data-val="c">with is required syntax; manual open/close is not valid Python</label>
-        <label class="quiz-option" data-val="d">with only works for reading files, never writing</label>
-        <div class="explanation">This is a specific application of Session 07's error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.</div>
+        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
+        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
+        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
+        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
+        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
+        <div class="explanation">This is Session 10's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the difference between opening a file with mode "w" versus mode "a"?</p>
-        <label class="quiz-option" data-val="a">They are identical</label>
-        <label class="quiz-option" data-val="b">"w" (write) overwrites the file's entire existing content; "a" (append) adds new content to the end, preserving what was already there</label>
-        <label class="quiz-option" data-val="c">"w" is for reading only; "a" is for writing only</label>
-        <label class="quiz-option" data-val="d">"a" always creates a brand new file, deleting any old one</label>
-        <div class="explanation">"w" truncates and overwrites — dangerous if you meant to keep existing content. "a" appends to the end of existing content without touching what came before, useful for something like an ongoing log file.</div>
+        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
+        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
+        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
+        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
+        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
+        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why would you read a very large file line by line (with `for line in f:`) instead of `f.read()` all at once?</p>
-        <label class="quiz-option" data-val="a">There is no difference in memory usage between the two approaches</label>
-        <label class="quiz-option" data-val="b">Reading line by line only holds one line in memory at a time, while f.read() loads the ENTIRE file into memory at once — for a very large file, this could exhaust available memory</label>
-        <label class="quiz-option" data-val="c">f.read() is always faster regardless of file size</label>
-        <label class="quiz-option" data-val="d">Line-by-line reading is required for all files, always</label>
-        <div class="explanation">For files far larger than available memory, loading the whole thing with <code>f.read()</code> could crash the program or the machine. Iterating line by line processes the file incrementally, using a small, constant amount of memory regardless of the file's total size.</div>
+        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
+        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
+        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
+        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
+        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
+        <div class="explanation">A focused, direct test of the extracted function (following Session 33's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 07?</p>
-        <label class="quiz-option" data-val="a">Python automatically detects and handles any encoding correctly</label>
-        <label class="quiz-option" data-val="b">A UnicodeDecodeError is raised; wrapping the read in a try/except UnicodeDecodeError (or specifying the correct encoding explicitly) handles this gracefully</label>
-        <label class="quiz-option" data-val="c">The file silently reads as an empty string</label>
-        <label class="quiz-option" data-val="d">This can never happen in Python 3</label>
-        <div class="explanation">Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 07's try/except, or for specifying the correct encoding explicitly if it is known.</div>
+        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
+        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
+        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
+        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
+        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
+        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 24's original design?</p>
-        <label class="quiz-option" data-val="a">It requires rewriting get_all() and find_by_region() entirely from scratch</label>
-        <label class="quiz-option" data-val="b">It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository's own methods remain completely unchanged, exactly as Session 24 promised</label>
-        <label class="quiz-option" data-val="c">CountryExplorer must also be rewritten</label>
-        <label class="quiz-option" data-val="d">This refactor is not actually possible given the current design</label>
-        <div class="explanation">This is Session 24's payoff, delivered a third time (after the mock data and the simple JSON file in Session 25): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.</div>
+        <p>Where is the most sensible place, given Session 36's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
+        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
+        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 36</label>
+        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
+        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
+        <div class="explanation">This follows directly from Session 36's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -431,10 +430,10 @@ git commit -m "session-37: robust file I/O with proper resource management and e
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why would using mode "w" instead of "a" for log_load_attempt be a serious bug? What would happen to the log over multiple runs?</li>
-        <li>What would happen if build_repository_from_file used f.read() to load a truly enormous countries.json instead of relying on json.load's own internal handling? Is this a realistic concern for this specific project?</li>
-        <li>How does this session's with statement connect back to Session 07's finally block — are they solving a similar problem in a different way?</li>
-        <li>Why did CountryRepository itself need zero changes for this session's new, more robust file-loading logic to work?</li>
+        <li>Before this session, summary()'s formatting logic was only tested indirectly through summary()'s own tests. Why is a direct test of format_population still valuable now that it exists?</li>
+        <li>Can you find another piece of logic anywhere in the project (Sessions 1-32) that is duplicated and could benefit from this same extraction treatment?</li>
+        <li>What is the cost of extracting something too early, before a second real use case actually exists? Contrast that with the cost of NOT extracting genuinely duplicated logic.</li>
+        <li>How does docstring documentation differ in purpose from the reflection comments you've written throughout this curriculum?</li>
       </ol>
     </div>
 
@@ -443,9 +442,9 @@ git commit -m "session-37: robust file I/O with proper resource management and e
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Leaked file handles:</strong> Without with, an exception between opening and closing a file leaves it open indefinitely — in a long-running program handling many files, this can exhaust the operating system's limit on open file handles, causing mysterious failures far from the actual bug.</li>
-        <li><strong>Overwritten logs:</strong> Using mode "w" instead of "a" for an ongoing log file would silently erase all previous history every time the program restarts — a data-loss bug that is easy to make and often goes unnoticed until the history is actually needed.</li>
-        <li><strong>Real API responses (Session 38):</strong> The next session introduces genuinely unpredictable external data over the network — the same resource-management and error-handling discipline from this session (with, specific exception handling) applies directly to handling an HTTP connection safely.</li>
+        <li><strong>Silent formatting drift:</strong> Without extracting shared formatting logic, a future change to how numbers should display (e.g. adding a currency symbol) risks being applied in one place and forgotten in another, producing visibly inconsistent output across the application.</li>
+        <li><strong>Utility modules (Session 38):</strong> The next session builds on this exact pattern, extracting more substantial, cross-cutting utility logic into its own dedicated module — formatting.py is the first, smallest example of that broader pattern.</li>
+        <li><strong>Recognizing coupling problems (Session 39):</strong> Learning to correctly judge WHEN to extract (and when NOT to, per premature abstraction) is a prerequisite for Session 39's harder judgment call: recognizing when a class has taken on too much responsibility.</li>
       </ul>
     </div>
 
@@ -453,9 +452,9 @@ git commit -m "session-37: robust file I/O with proper resource management and e
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Robust file I/O — the with statement for guaranteed cleanup, file modes, line-by-line reading for large files, and encoding-aware error handling.</p>
-      <p><strong>Unlocks:</strong> The project can now safely and robustly read from real files on disk, handling every realistic failure mode gracefully — the foundation for the real API work in the next session.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 38 — Calling a Real API with requests</a>. We connect to a real, live network API for the first time — the REST Countries API — replacing our JSON file with genuinely external, unpredictable data.</p>
+      <p><strong>Python concept mastered:</strong> Identifying genuine duplication, extracting it into a documented, tested, reusable function, and recognizing premature abstraction as a real risk to avoid.</p>
+      <p><strong>Unlocks:</strong> You can now confidently spot and safely extract reusable logic from a growing codebase, backed by tests that prove the extraction changed nothing about behavior.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 38 — Building Utility Modules</a>. We build a more substantial, standalone utility module — logic that supports the whole application without being tied to any one class.</p>
     </div>
 
 

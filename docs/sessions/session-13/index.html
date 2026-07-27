@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 13 — Conditional Logic in Methods — Python Learning</title>
+  <title>Session 13 — Class Anatomy — __init__ and Attributes — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -58,8 +58,8 @@
       <span class="badge badge-current">Session 13</span>
       <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>Conditional Logic in Methods</h1>
-    <p class="subtitle">Real data has gaps. A method needs to behave sensibly when the collection is empty, a value is missing, or a search finds nothing at all.</p>
+    <h1>Class Anatomy — __init__ and Attributes</h1>
+    <p class="subtitle">An empty class is not useful. This session gives every Country instance its own data, using the constructor method __init__ and instance attributes.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Write a method that branches based on the state of the instance</li>
-        <li>Use a ternary (conditional) expression for a short either/or value</li>
-        <li>Handle an empty list gracefully without a crash or a misleading result</li>
-        <li>Use the "truthy" nature of empty lists/strings in an if condition</li>
-        <li>Explain the difference between "no result found" and "an actual error"</li>
+        <li>Define __init__ with parameters and assign them to self attributes</li>
+        <li>Explain what self refers to and why every method needs it as the first parameter</li>
+        <li>Create multiple instances with different attribute values and confirm they do not interfere with each other</li>
+        <li>Read and update an instance attribute from outside the class</li>
+        <li>Compare attribute access (dot notation) to the dictionary bracket access from Session 05</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def total_population(self):\n    return sum(c.population for c in self.countries)</code>, what does this return if self.countries is an empty list?</p>
-        <label class="quiz-option" data-val="a">A TypeError — sum() cannot handle an empty generator</label>
-        <label class="quiz-option" data-val="b">0 — sum() of nothing is 0, no crash</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">It raises an IndexError</label>
-        <div class="explanation"><code>sum()</code> of an empty sequence returns <code>0</code> by definition — no special handling is needed here. This is worth confirming explicitly rather than assuming.</div>
+        <p>Given <code>class Country:\n    def __init__(self, name):\n        self.name = name</code>, what does <code>self.name = name</code> do?</p>
+        <label class="quiz-option" data-val="a">It creates a local variable called name that disappears when __init__ ends</label>
+        <label class="quiz-option" data-val="b">It stores the value on the specific instance being constructed, as an attribute accessible via dot notation afterward</label>
+        <label class="quiz-option" data-val="c">It defines a class-wide default shared by every instance</label>
+        <label class="quiz-option" data-val="d">It is invalid — self cannot be assigned to</label>
+        <div class="explanation"><code>self</code> refers to the specific instance currently being built. Assigning to <code>self.name</code> stores the value ON that instance, so it persists and is readable as <code>instance.name</code> after construction finishes.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>if self.countries:</code> check, given that self.countries is a list?</p>
-        <label class="quiz-option" data-val="a">Whether self.countries is exactly the value True</label>
-        <label class="quiz-option" data-val="b">Whether the list has at least one item — an empty list is "falsy", a non-empty one is "truthy"</label>
-        <label class="quiz-option" data-val="c">Whether self.countries is not None, but ignores emptiness</label>
-        <label class="quiz-option" data-val="d">It is a syntax error — you must write if len(self.countries) > 0</label>
-        <div class="explanation">In Python, empty collections (list, dict, string) are falsy, and non-empty ones are truthy. <code>if self.countries:</code> is idiomatic for "does this list have anything in it?" — equivalent to but more idiomatic than checking length explicitly.</div>
+        <p>Why does every method inside a class, including __init__, take self as its first parameter?</p>
+        <label class="quiz-option" data-val="a">It is just a stylistic convention with no real effect and could be omitted</label>
+        <label class="quiz-option" data-val="b">Python automatically passes the instance the method was called on as the first argument, and self is how the method refers to it</label>
+        <label class="quiz-option" data-val="c">self holds the class name as a string</label>
+        <label class="quiz-option" data-val="d">It is required only for __init__, not other methods</label>
+        <div class="explanation">When you call <code>c.some_method()</code>, Python automatically passes <code>c</code> itself as the first argument. By convention we name that parameter <code>self</code>, and it is how the method accesses that specific instance's data.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>label = "Africa" if country.region == "Africa" else "Other"</code>, what kind of expression is this?</p>
-        <label class="quiz-option" data-val="a">A regular if statement written on one line</label>
-        <label class="quiz-option" data-val="b">A ternary (conditional) expression — it evaluates to one of two values inline</label>
-        <label class="quiz-option" data-val="c">A syntax error — Python has no ternary operator</label>
-        <label class="quiz-option" data-val="d">A lambda function</label>
-        <div class="explanation">Python's ternary form is <code>value_if_true if condition else value_if_false</code>. It is an expression (it produces a value) rather than a statement, useful for short either/or assignments.</div>
+        <p>Given <code>k = Country("Kenya")</code> and <code>g = Country("Ghana")</code>, what is <code>k.name</code>?</p>
+        <label class="quiz-option" data-val="a">"Ghana" — the most recently created instance wins</label>
+        <label class="quiz-option" data-val="b">"Kenya" — each instance holds its own independent name attribute</label>
+        <label class="quiz-option" data-val="c">An error — name was never defined outside __init__</label>
+        <label class="quiz-option" data-val="d">None, until you manually set k.name</label>
+        <div class="explanation">Each call to <code>Country(...)</code> runs <code>__init__</code> fresh, with its own <code>self</code>. <code>k</code> and <code>g</code> are separate instances, each with their own independent <code>name</code> attribute.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A method find_by_region(region) returns [] when no country matches. Is returning an empty list the same kind of situation as raising an exception?</p>
-        <label class="quiz-option" data-val="a">Yes — both represent a failure and should be handled identically</label>
-        <label class="quiz-option" data-val="b">No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 07)</label>
-        <label class="quiz-option" data-val="c">Yes, an empty list should always be converted to a raised exception</label>
-        <label class="quiz-option" data-val="d">There is no meaningful distinction in Python</label>
-        <div class="explanation">A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 07) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.</div>
+        <p>How do you read an instance attribute from outside the class, e.g. on a variable <code>k</code>?</p>
+        <label class="quiz-option" data-val="a"><code>k["name"]</code> — same as a dictionary</label>
+        <label class="quiz-option" data-val="b"><code>k.name</code> — dot notation</label>
+        <label class="quiz-option" data-val="c"><code>k.get("name")</code></label>
+        <label class="quiz-option" data-val="d"><code>Country.name</code></label>
+        <div class="explanation">Instance attributes are read with dot notation, not bracket access — this is the key syntactic difference from the dictionaries in Session 05, even though the underlying idea (a named slot holding a value) is conceptually similar.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Given a method that must show a message when there are no countries, which is more idiomatic Python?</p>
-        <label class="quiz-option" data-val="a"><code>if len(self.countries) == 0:</code></label>
-        <label class="quiz-option" data-val="b"><code>if not self.countries:</code></label>
-        <label class="quiz-option" data-val="c"><code>if self.countries == []:</code></label>
-        <label class="quiz-option" data-val="d">All three are equally un-idiomatic</label>
-        <div class="explanation"><code>if not self.countries:</code> relies on the truthy/falsy behaviour from this session and is the idiomatic Python style. The other two work but are unnecessarily verbose for the same check.</div>
+        <p>Can you change an instance attribute after construction, e.g. <code>k.name = "Kenya (updated)"</code>?</p>
+        <label class="quiz-option" data-val="a">No — attributes set in __init__ are permanently locked</label>
+        <label class="quiz-option" data-val="b">Yes — instance attributes are mutable by default, just like dictionary values were</label>
+        <label class="quiz-option" data-val="c">Only if you redefine the whole class</label>
+        <label class="quiz-option" data-val="d">Only inside another method, never from outside</label>
+        <div class="explanation">Unless a class deliberately prevents it (a topic for later), instance attributes can be reassigned freely from anywhere with access to the instance, exactly like a dictionary value.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,179 +141,134 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Conditional Logic in Methods</h2>
-
-    <h3>Branching based on instance state</h3>
-    <p>A method can look at self's current attributes and behave differently depending on what it finds — exactly like the plain if-statements from earlier sessions, just now reading self instead of a passed-in argument.</p>
-    <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    def status_message(self):
-        if not self.countries:
-            return "No countries loaded yet."
-        return f"{len(self.countries)} countries loaded."
-
-empty_explorer = CountryExplorer(countries=[])
-print(empty_explorer.status_message())  # "No countries loaded yet."</code></pre>
-
-    <h3>Truthy and falsy collections</h3>
-    <p>Python treats an empty list, empty string, empty dict, 0, and None as falsy in a boolean context. A non-empty version of any of them is truthy. This lets you write <code>if not self.countries:</code> instead of the more verbose <code>if len(self.countries) == 0:</code>.</p>
-    <pre><code>countries = []
-print(bool(countries))  # False — empty list is falsy
-
-countries = [1]
-print(bool(countries))  # True — non-empty list is truthy
-
-# Idiomatic style
-if not countries:
-    print("empty")
-else:
-    print("has items")</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">[]</span>falsy</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">[x]</span>truthy</div>
-      <div class="diagram-caption">Empty collections are falsy; anything with at least one item is truthy.</div>
+    <h2>3. The Concept — __init__ and Instance Attributes</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">YOU WRITE</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Country("Kenya")</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PYTHON RUNS</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">__init__(self,</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">"Kenya")</text>
+      </svg>
+      <p class="diagram-caption-text">Country("Kenya") silently becomes __init__(new_blank_instance, "Kenya") — self IS that new instance.</p>
     </div>
 
-    <h3>The ternary expression for short either/or values</h3>
-    <p>When a value simply needs to be one of two things based on a condition, a ternary expression is more compact than a full if/else block, and it produces a value directly rather than a side effect.</p>
-    <pre><code>def region_or_unknown(country):
-    return country.region if country.region else "Unknown"
 
-# equivalent longhand
-def region_or_unknown_longhand(country):
-    if country.region:
-        return country.region
-    else:
-        return "Unknown"</code></pre>
+    <h3>The constructor: __init__</h3>
+    <p>A class gains real data through a special method called <code>__init__</code>, which Python calls automatically every time you construct a new instance. Its job is to set up that instance's starting attributes.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
 
-    <h3>"Not found" is not the same as "broken"</h3>
-    <p>Recall Session 07: exceptions are for genuinely invalid states. A search that legitimately finds nothing should return an empty, valid result — not raise an exception. Confusing the two forces every caller to wrap normal searches in try/except unnecessarily.</p>
-    <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+k = Country("Kenya", "Africa", 54000000)
+print(k.name)         # "Kenya"
+print(k.region)       # "Africa"
+print(k.population)   # 54000000</code></pre>
 
-    def find_by_region(self, region):
-        # Zero matches is a NORMAL outcome — return an empty list, don't raise
-        return [c for c in self.countries if c.region == region]
+    <h3>self — a reference to the specific instance</h3>
+    <p>When Python runs <code>Country("Kenya", "Africa", 54000000)</code>, it first creates a blank instance, then calls <code>__init__(that_instance, "Kenya", "Africa", 54000000)</code> — the instance itself is silently passed as the first argument. We name that parameter <code>self</code> by convention, and use it to attach data to that specific instance.</p>
+    <pre><code>class Country:
+    def __init__(self, name):
+        print("self is:", self)   # the instance being built
+        self.name = name           # attach data to THIS instance
 
-explorer = CountryExplorer(countries=[])
-result = explorer.find_by_region("Antarctica")
-print(result)  # [] — a valid, empty answer, no crash, no exception</code></pre>
+k = Country("Kenya")
+# self is: &lt;__main__.Country object at 0x...&gt;</code></pre>
+
+    <h3>Every instance holds its own independent data</h3>
+    <p>Because <code>__init__</code> runs fresh for each instance, with a different <code>self</code> each time, instances never share attribute values by default — exactly like two separate dictionaries never share keys.</p>
+    <pre><code>k = Country("Kenya")
+g = Country("Ghana")
+
+print(k.name)  # "Kenya"
+print(g.name)  # "Ghana" — completely independent of k.name</code></pre>
+
+    <h3>Dot notation vs Session 05's bracket notation</h3>
+    <p>Recall reading a dictionary value: <code>country["name"]</code>. An instance attribute is read the same conceptual way, but with dot notation instead of brackets, and no risk of a KeyError — accessing an attribute that truly doesn't exist raises AttributeError instead, which we'll handle the same way we handled KeyError in Session 11.</p>
+    <pre><code>country_dict = {"name": "Kenya"}
+print(country_dict["name"])   # dict — bracket access
+
+k = Country("Kenya", "Africa", 54000000)
+print(k.name)                  # instance — dot access
+
+# Attributes are mutable, just like dict values
+k.name = "Kenya (updated)"
+print(k.name)</code></pre>
 
 
+    <p>Country now genuinely holds data of its own. Next session we give it behavior — methods that operate on that data without needing it passed in as an argument.</p>
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Add conditional logic to CountryExplorer that handles an empty collection gracefully, using truthy checks and a ternary expression.
+      <strong>Lab objective:</strong> Give Country a real constructor with name, region, and population, create multiple independent instances, and prove attributes are mutable.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>conditional_lab.py</code>, building on Session 12's CountryExplorer.</p>
+    <p>A file called <code>country_init.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country and CountryExplorer</strong></p>
+        <p><strong>Create the file and define __init__</strong></p>
 
-        <pre><code># conditional_lab.py
+        <pre><code># country_init.py
 class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
-        self.population = population
-
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries</code></pre>
+        self.population = population</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Add a status_message() method using not self.countries</strong></p>
+        <p><strong>Create two instances with different data</strong></p>
 
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+        <pre><code>kenya = Country("Kenya", "Africa", 54000000)
+peru = Country("Peru", "Americas", 33000000)
 
-    def status_message(self):
-        if not self.countries:
-            return "No countries loaded yet."
-        return f"{len(self.countries)} countries loaded."
-
-empty = CountryExplorer(countries=[])
-loaded = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
-print(empty.status_message())
-print(loaded.status_message())</code></pre>
+print(kenya.name, kenya.region, kenya.population)
+print(peru.name, peru.region, peru.population)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add find_by_region() and confirm zero matches returns [] without a crash</strong></p>
-
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    def status_message(self):
-        if not self.countries:
-            return "No countries loaded yet."
-        return f"{len(self.countries)} countries loaded."
-
-    def find_by_region(self, region):
-        return [c for c in self.countries if c.region == region]
-
-explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
-result = explorer.find_by_region("Antarctica")
-print(result)          # []
-print(type(result))    # &lt;class 'list'&gt; — never None, never an exception</code></pre>
+        <p><strong>Prove the instances are independent</strong></p>
+        <p>Change one instance's attribute and confirm the other is untouched.</p>
+        <pre><code>kenya.population = 55000000
+print("kenya.population:", kenya.population)  # 55000000
+print("peru.population:", peru.population)    # still 33000000 — unaffected</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Add a ternary-based method for a country's display capital</strong></p>
-        <p>Give Country an optional capital, defaulting to None, and add a method that returns it or "Unknown".</p>
-        <pre><code>class Country:
-    def __init__(self, name, region, population, capital=None):
+        <p><strong>Print self inside __init__ for both instances</strong></p>
+        <p>Add a temporary print(self) line inside __init__ to see the two different instance addresses.</p>
+        <pre><code>class CountryDebug:
+    def __init__(self, name):
+        print("Building instance:", self, "with name", name)
         self.name = name
-        self.region = region
-        self.population = population
-        self.capital = capital
 
-    def display_capital(self):
-        return self.capital if self.capital else "Unknown"
-
-k = Country(name="Kenya", region="Africa", population=54000000, capital="Nairobi")
-u = Country(name="Unclaimed", region="Antarctica", population=0)
-print(k.display_capital())  # "Nairobi"
-print(u.display_capital())  # "Unknown"</code></pre>
+CountryDebug("Kenya")
+CountryDebug("Peru")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Confirm status_message on an explorer with one country added after construction</strong></p>
+        <p><strong>Read one attribute with dot notation and compare it to Session 05's dict syntax in a comment</strong></p>
 
-        <pre><code>explorer = CountryExplorer(countries=[])
-print(explorer.status_message())  # "No countries loaded yet."
-explorer.countries.append(k)
-print(explorer.status_message())  # "1 countries loaded." — note the grammar, discuss in reflection</code></pre>
+        <pre><code>print(kenya.name)
+# Compare to Session 05: country_dict["name"] — same idea, different syntax</code></pre>
       </div>
     </div>
 
@@ -327,9 +282,9 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
         </thead>
         <tbody>
           <tr>
-            <td><code>conditional_lab.py</code></td>
+            <td><code>country_init.py</code></td>
             <td>Created</td>
-            <td>Adds conditional branching, truthy checks, and a ternary display method.</td>
+            <td>A real Country class with __init__ and instance attributes.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-13/index.html</code></td>
@@ -348,11 +303,11 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add conditional_lab.py docs/sessions/session-13/index.html
-git commit -m "session-13: handle empty collections and missing values with conditional logic"</code></pre>
+    <pre><code>git add country_init.py docs/sessions/session-13/index.html
+git commit -m "session-13: give Country real attributes via __init__"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does find_by_region return an empty list instead of raising an exception when nothing matches?"
+      Do not commit until you can answer out loud: "What does self actually refer to inside __init__, and why does mutating kenya.population not affect peru.population?"
     </div>
 
     <hr class="section-divider" />
@@ -363,23 +318,23 @@ git commit -m "session-13: handle empty collections and missing values with cond
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">status_message() uses not self.countries, not len(self.countries) == 0</label>
+        <label for="c1">__init__ takes name, region, and population as parameters, all assigned to self</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">find_by_region() returns an empty list (never raises, never returns None) when nothing matches</label>
+        <label for="c2">Two instances are created with different data</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">display_capital() uses a ternary expression, not a full if/else block</label>
+        <label for="c3">One instance's attribute is mutated and the other is proven unaffected</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Both an empty and a non-empty explorer are tested against status_message()</label>
+        <label for="c4">self is printed at least once to observe it is the instance itself</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A comment or reflection note addresses the "1 countries loaded" grammar issue noticed in step 5</label>
+        <label for="c5">Dot notation is used consistently to read attributes, never bracket access</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -399,52 +354,52 @@ git commit -m "session-13: handle empty collections and missing values with cond
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def total_population(self):\n    return sum(c.population for c in self.countries)</code>, what does this return if self.countries is an empty list?</p>
-        <label class="quiz-option" data-val="a">A TypeError — sum() cannot handle an empty generator</label>
-        <label class="quiz-option" data-val="b">0 — sum() of nothing is 0, no crash</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">It raises an IndexError</label>
-        <div class="explanation"><code>sum()</code> of an empty sequence returns <code>0</code> by definition — no special handling is needed here. This is worth confirming explicitly rather than assuming.</div>
+        <p>Given <code>class Country:\n    def __init__(self, name):\n        self.name = name</code>, what does <code>self.name = name</code> do?</p>
+        <label class="quiz-option" data-val="a">It creates a local variable called name that disappears when __init__ ends</label>
+        <label class="quiz-option" data-val="b">It stores the value on the specific instance being constructed, as an attribute accessible via dot notation afterward</label>
+        <label class="quiz-option" data-val="c">It defines a class-wide default shared by every instance</label>
+        <label class="quiz-option" data-val="d">It is invalid — self cannot be assigned to</label>
+        <div class="explanation"><code>self</code> refers to the specific instance currently being built. Assigning to <code>self.name</code> stores the value ON that instance, so it persists and is readable as <code>instance.name</code> after construction finishes.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>if self.countries:</code> check, given that self.countries is a list?</p>
-        <label class="quiz-option" data-val="a">Whether self.countries is exactly the value True</label>
-        <label class="quiz-option" data-val="b">Whether the list has at least one item — an empty list is "falsy", a non-empty one is "truthy"</label>
-        <label class="quiz-option" data-val="c">Whether self.countries is not None, but ignores emptiness</label>
-        <label class="quiz-option" data-val="d">It is a syntax error — you must write if len(self.countries) > 0</label>
-        <div class="explanation">In Python, empty collections (list, dict, string) are falsy, and non-empty ones are truthy. <code>if self.countries:</code> is idiomatic for "does this list have anything in it?" — equivalent to but more idiomatic than checking length explicitly.</div>
+        <p>Why does every method inside a class, including __init__, take self as its first parameter?</p>
+        <label class="quiz-option" data-val="a">It is just a stylistic convention with no real effect and could be omitted</label>
+        <label class="quiz-option" data-val="b">Python automatically passes the instance the method was called on as the first argument, and self is how the method refers to it</label>
+        <label class="quiz-option" data-val="c">self holds the class name as a string</label>
+        <label class="quiz-option" data-val="d">It is required only for __init__, not other methods</label>
+        <div class="explanation">When you call <code>c.some_method()</code>, Python automatically passes <code>c</code> itself as the first argument. By convention we name that parameter <code>self</code>, and it is how the method accesses that specific instance's data.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>label = "Africa" if country.region == "Africa" else "Other"</code>, what kind of expression is this?</p>
-        <label class="quiz-option" data-val="a">A regular if statement written on one line</label>
-        <label class="quiz-option" data-val="b">A ternary (conditional) expression — it evaluates to one of two values inline</label>
-        <label class="quiz-option" data-val="c">A syntax error — Python has no ternary operator</label>
-        <label class="quiz-option" data-val="d">A lambda function</label>
-        <div class="explanation">Python's ternary form is <code>value_if_true if condition else value_if_false</code>. It is an expression (it produces a value) rather than a statement, useful for short either/or assignments.</div>
+        <p>Given <code>k = Country("Kenya")</code> and <code>g = Country("Ghana")</code>, what is <code>k.name</code>?</p>
+        <label class="quiz-option" data-val="a">"Ghana" — the most recently created instance wins</label>
+        <label class="quiz-option" data-val="b">"Kenya" — each instance holds its own independent name attribute</label>
+        <label class="quiz-option" data-val="c">An error — name was never defined outside __init__</label>
+        <label class="quiz-option" data-val="d">None, until you manually set k.name</label>
+        <div class="explanation">Each call to <code>Country(...)</code> runs <code>__init__</code> fresh, with its own <code>self</code>. <code>k</code> and <code>g</code> are separate instances, each with their own independent <code>name</code> attribute.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>A method find_by_region(region) returns [] when no country matches. Is returning an empty list the same kind of situation as raising an exception?</p>
-        <label class="quiz-option" data-val="a">Yes — both represent a failure and should be handled identically</label>
-        <label class="quiz-option" data-val="b">No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 07)</label>
-        <label class="quiz-option" data-val="c">Yes, an empty list should always be converted to a raised exception</label>
-        <label class="quiz-option" data-val="d">There is no meaningful distinction in Python</label>
-        <div class="explanation">A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 07) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.</div>
+        <p>How do you read an instance attribute from outside the class, e.g. on a variable <code>k</code>?</p>
+        <label class="quiz-option" data-val="a"><code>k["name"]</code> — same as a dictionary</label>
+        <label class="quiz-option" data-val="b"><code>k.name</code> — dot notation</label>
+        <label class="quiz-option" data-val="c"><code>k.get("name")</code></label>
+        <label class="quiz-option" data-val="d"><code>Country.name</code></label>
+        <div class="explanation">Instance attributes are read with dot notation, not bracket access — this is the key syntactic difference from the dictionaries in Session 05, even though the underlying idea (a named slot holding a value) is conceptually similar.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Given a method that must show a message when there are no countries, which is more idiomatic Python?</p>
-        <label class="quiz-option" data-val="a"><code>if len(self.countries) == 0:</code></label>
-        <label class="quiz-option" data-val="b"><code>if not self.countries:</code></label>
-        <label class="quiz-option" data-val="c"><code>if self.countries == []:</code></label>
-        <label class="quiz-option" data-val="d">All three are equally un-idiomatic</label>
-        <div class="explanation"><code>if not self.countries:</code> relies on the truthy/falsy behaviour from this session and is the idiomatic Python style. The other two work but are unnecessarily verbose for the same check.</div>
+        <p>Can you change an instance attribute after construction, e.g. <code>k.name = "Kenya (updated)"</code>?</p>
+        <label class="quiz-option" data-val="a">No — attributes set in __init__ are permanently locked</label>
+        <label class="quiz-option" data-val="b">Yes — instance attributes are mutable by default, just like dictionary values were</label>
+        <label class="quiz-option" data-val="c">Only if you redefine the whole class</label>
+        <label class="quiz-option" data-val="d">Only inside another method, never from outside</label>
+        <div class="explanation">Unless a class deliberately prevents it (a topic for later), instance attributes can be reassigned freely from anywhere with access to the instance, exactly like a dictionary value.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -457,10 +412,10 @@ git commit -m "session-13: handle empty collections and missing values with cond
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Step 5 printed "1 countries loaded." — grammatically wrong. How would you fix this with a ternary expression? Try writing it.</li>
-        <li>Why is returning an empty list from find_by_region a better design than returning None when nothing is found?</li>
-        <li>Can you think of a case in this lab where using an exception (Session 07) WOULD have been the right choice instead of a normal empty return?</li>
-        <li>How does the truthy/falsy behaviour of empty lists connect to what you learned about mutability and identity in Session 01 and 02?</li>
+        <li>If you forgot to write <code>self.name = name</code> and just wrote <code>name = name</code> inside __init__, what do you predict would happen when you tried <code>kenya.name</code> afterward? Try it.</li>
+        <li>Why does Python require self to be listed explicitly as the first parameter instead of making it implicit like some other languages do?</li>
+        <li>What is the practical difference between a dictionary's keys and a class instance's attributes, now that you've used both?</li>
+        <li>Can you think of a rule (like Session 11's population validation) that __init__ should probably enforce, that it does not yet?</li>
       </ol>
     </div>
 
@@ -469,9 +424,9 @@ git commit -m "session-13: handle empty collections and missing values with cond
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>None-checking chaos:</strong> If find_by_region sometimes returned None instead of an empty list, every single caller would need an extra None-check before it could safely loop over the result — multiplying defensive code throughout the whole project for no benefit.</li>
-        <li><strong>Building lists of objects (Session 14):</strong> The next session focuses on constructing many Country instances at once, often from raw data that may have missing fields. This session's conditional patterns are what keep that construction from crashing on incomplete records.</li>
-        <li><strong>UI-equivalent states (parallel to the original React course):</strong> This is directly analogous to Session 13 of the source React course ("Conditional Rendering") — handling an empty search result gracefully is the same problem whether you are printing to a console or rendering to a screen.</li>
+        <li><strong>The self.x = x omission bug:</strong> Forgetting <code>self.</code> in an assignment inside __init__ is an extremely common beginner mistake — the value is assigned to a local variable that vanishes when the method returns, and the instance ends up with no such attribute at all, causing an AttributeError later when you try to read it.</li>
+        <li><strong>Methods (Session 14):</strong> Every method you write from the next session forward relies on the exact same self mechanism you just learned. If self is not solid now, method definitions will look like unexplained boilerplate.</li>
+        <li><strong>Constructor validation (Layer 4 data contracts):</strong> In Session 30 we will formalize what a "valid" Country looks like using type hints and dataclasses — that entire session assumes you deeply understand what __init__ is actually doing today.</li>
       </ul>
     </div>
 
@@ -479,9 +434,9 @@ git commit -m "session-13: handle empty collections and missing values with cond
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Conditional logic inside methods — truthy/falsy checks on collections, ternary expressions, and treating "not found" as a normal outcome rather than an error.</p>
-      <p><strong>Unlocks:</strong> CountryExplorer now handles the messy, incomplete cases real data throws at it, without crashing or producing misleading results.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 14 — Building Lists of Objects</a>. We build lists of Country objects from raw data at scale, and formalize the pattern for converting many dicts into many instances.</p>
+      <p><strong>Python concept mastered:</strong> __init__ as the constructor, self as the reference to the instance being built, and instance attributes as independent per-instance data.</p>
+      <p><strong>Unlocks:</strong> Country instances can now hold real, independent data — the foundation every remaining session in the project builds on.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 14 — Instance Methods</a>. We give Country behavior — methods that operate on its own data without needing that data passed in as an argument every time.</p>
     </div>
 
 

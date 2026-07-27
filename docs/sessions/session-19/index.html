@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 19 — Tracing State Changes — Python Learning</title>
+  <title>Session 19 — Object Identity and Equality — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 3</span>
-      <span class="badge badge-current">Session 19</span>
-      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-gate">Session 19 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>Tracing State Changes</h1>
-    <p class="subtitle">Now that state can only change through controlled methods, we can add visibility into every change — turning "why is this value wrong" from a mystery into a readable trace.</p>
+    <h1>Object Identity and Equality</h1>
+    <p class="subtitle">This is the Layer 2 gate. Two Country instances can hold identical data yet not be "the same" — understanding why is essential before we start tracking objects by identity in collections.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Add a print-based trace to a controlled state-change method</li>
-        <li>Use Python's logging module for a more structured trace than print()</li>
-        <li>Explain the difference between a debug-level and a warning-level log message</li>
-        <li>Track how many times a state-change method has been called, as a simple instrumentation pattern</li>
-        <li>Explain why this is only possible because state changes are funneled through methods (Session 17)</li>
+        <li>Explain the difference between is (identity) and == (equality)</li>
+        <li>Predict the default behaviour of == on a plain class with no __eq__ defined</li>
+        <li>Implement __eq__ so two instances with the same data compare equal</li>
+        <li>Explain why id() returns a different value for two distinct instances, even with identical attributes</li>
+        <li>Recognise when identity comparison (is) is actually the correct tool, e.g. is None</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
-        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
-        <label class="quiz-option" data-val="b">Because Session 17 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
-        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
-        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
-        <div class="explanation">This is the payoff of Session 17's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
+        <p>Given <code>a = Country(name="Kenya", region="Africa", population=54000000)</code> and <code>b = Country(name="Kenya", region="Africa", population=54000000)</code> with NO __eq__ defined, what does <code>a == b</code> return?</p>
+        <label class="quiz-option" data-val="a">True — because all their attribute values match</label>
+        <label class="quiz-option" data-val="b">False — by default, == falls back to identity comparison (is), and a and b are two separate instances</label>
+        <label class="quiz-option" data-val="c">A TypeError — you cannot compare instances</label>
+        <label class="quiz-option" data-val="d">It depends on the order the instances were created</label>
+        <div class="explanation">Without a custom <code>__eq__</code>, Python's default equality check for objects is identical to <code>is</code> — same object in memory, not same data. Two separately constructed instances are never == by default, no matter how identical their attributes look.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
-        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
-        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
-        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
-        <label class="quiz-option" data-val="d">warning always stops the program</label>
-        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
+        <p>What does <code>a is b</code> check, as opposed to <code>a == b</code>?</p>
+        <label class="quiz-option" data-val="a">They check exactly the same thing in Python</label>
+        <label class="quiz-option" data-val="b"><code>is</code> checks whether a and b refer to the exact same object in memory; <code>==</code> checks value equality (which can be customized)</label>
+        <label class="quiz-option" data-val="c"><code>is</code> is only valid for strings and numbers</label>
+        <label class="quiz-option" data-val="d"><code>is</code> checks attribute equality; == checks memory address</label>
+        <div class="explanation"><code>is</code> is identity comparison — are these literally the same object? <code>==</code> is equality comparison — by default the same as <code>is</code> for custom classes, but overridable via <code>__eq__</code> to compare by value instead.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
-        <label class="quiz-option" data-val="a">The current population value</label>
-        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
-        <label class="quiz-option" data-val="c">The total population across all countries</label>
-        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
-        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
+        <p>After adding <code>def __eq__(self, other):\n    return self.name == other.name and self.region == other.region and self.population == other.population</code> to Country, what does a == b return for the a, b from question 1?</p>
+        <label class="quiz-option" data-val="a">Still False — __eq__ has no effect on ==</label>
+        <label class="quiz-option" data-val="b">True — == now uses your custom comparison, and every field matches</label>
+        <label class="quiz-option" data-val="c">A TypeError, because __eq__ cannot be defined for classes</label>
+        <label class="quiz-option" data-val="d">True only if a is b is also True</label>
+        <div class="explanation">Defining <code>__eq__</code> overrides the default identity-based comparison. Python calls your method whenever <code>==</code> is used between two Country instances, and since every field matches, it returns True.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 16's uncontrolled-mutation version?</p>
-        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
-        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
-        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
-        <label class="quiz-option" data-val="d">print() did not exist before Session 17</label>
-        <div class="explanation">This is the direct payoff connecting Session 16 (the risk), Session 17 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
+        <p>After defining __eq__ as above, is a is b now True as well?</p>
+        <label class="quiz-option" data-val="a">Yes — __eq__ also changes what is checks</label>
+        <label class="quiz-option" data-val="b">No — is is unaffected by __eq__ and still checks memory identity; a and b remain two distinct objects</label>
+        <label class="quiz-option" data-val="c">It becomes undefined behaviour</label>
+        <label class="quiz-option" data-val="d">Only if population also happens to be 0</label>
+        <div class="explanation"><code>__eq__</code> only customizes <code>==</code>. <code>is</code> always checks raw identity and cannot be overridden by a class — a and b are still two separate objects in memory, regardless of how you define equality.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
-        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
-        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
-        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
-        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
-        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
+        <p>Why is x is None considered more correct/idiomatic than x == None in Python?</p>
+        <label class="quiz-option" data-val="a">They behave identically, it is pure style</label>
+        <label class="quiz-option" data-val="b">None is a true singleton — there is only ever one None object — so identity comparison is the semantically precise and conventional check</label>
+        <label class="quiz-option" data-val="c">== None always raises an error</label>
+        <label class="quiz-option" data-val="d">is None is faster but semantically identical, so it never matters</label>
+        <div class="explanation">Python guarantees there is exactly one <code>None</code> object in the entire program. Checking identity against it is both the idiomatic style and avoids any surprises from a class that might override <code>__eq__</code> in an unexpected way.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,163 +141,159 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Tracing State Changes</h2>
-
-    <h3>Why a controlled entry point makes tracing trivial</h3>
-    <p>Because Session 17 forced every population change through set_population and grow_population, adding a trace to those two methods gives complete visibility into every change, anywhere in the program, with no missed call sites.</p>
-    <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def set_population(self, value):
-        if value &lt; 0:
-            raise ValueError(f"population must be non-negative, got {value}")
-        old = self.population
-        self.population = value
-        print(f"[trace] {self.name}.population: {old} -&gt; {value}")</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">many callers</span>menu, tests,
-other code</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">one method</span>set_population
-[trace]</div>
-      <div class="diagram-caption">Every change funnels through one checkpoint — one trace line there sees every single change made anywhere in the program.</div>
+    <h2>3. The Concept — Identity vs Equality</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">A</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">id: 1001</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">name: "Kenya"</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">B</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">id: 1002</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">name: "Kenya"</text>
+      </svg>
+      <p class="diagram-caption-text">a and b are separate objects with separate identities, even though their contents happen to match.</p>
     </div>
 
-    <h3>A more structured trace with logging</h3>
-    <p>print() works, but Python's built-in logging module gives you severity levels and a consistent format, letting you turn tracing verbosity up or down without touching the code that produces it.</p>
-    <pre><code>import logging
 
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
-
-class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def set_population(self, value):
-        if value &lt; 0:
-            logging.warning(f"rejected population {value} for {self.name}")
-            raise ValueError(f"population must be non-negative, got {value}")
-        old = self.population
-        self.population = value
-        logging.debug(f"{self.name}.population: {old} -&gt; {value}")</code></pre>
-
-    <h3>debug vs warning severity</h3>
-    <p>debug is for fine-grained detail you usually don't want cluttering normal output. warning flags something worth noticing — like a rejected change — without stopping the program the way an unhandled exception would.</p>
-    <pre><code>logging.basicConfig(level=logging.WARNING)  # debug messages now silenced
-
-# This debug call produces no visible output at WARNING level:
-logging.debug("population changed")
-
-# This warning still shows, because it meets the configured threshold:
-logging.warning("rejected an invalid population value")</code></pre>
-
-    <h3>Counting calls as lightweight instrumentation</h3>
-    <p>A simple counter attribute, incremented inside the controlled method, tells you how often a state change has actually occurred — useful for spotting unexpectedly frequent (or absent) updates while debugging.</p>
+    <h3>Two instances with identical data are not automatically equal</h3>
+    <p>This surprises many people coming from other backgrounds. By default, comparing two custom-class instances with == checks whether they are the exact same object — not whether their data matches.</p>
     <pre><code>class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
         self.population = population
-        self._update_count = 0
 
-    def set_population(self, value):
-        if value &lt; 0:
-            raise ValueError(f"population must be non-negative, got {value}")
-        self.population = value
-        self._update_count += 1
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
 
-k = Country(name="Kenya", region="Africa", population=54000000)
-k.set_population(55000000)
-k.set_population(56000000)
-print(k._update_count)  # 2</code></pre>
+print(a == b)  # False! Same data, but no __eq__ defined
+print(a is b)  # False — definitely two separate objects
+print(a is a)  # True — an object is always identical to itself</code></pre>
 
+    <h3>id() reveals the underlying memory identity</h3>
+    <p>Every object has a unique identity while it exists, which id() reveals as a number (conceptually, its memory address). This is what is actually compares.</p>
+    <pre><code>print(id(a))  # some large number, e.g. 140234...
+print(id(b))  # a DIFFERENT large number
+print(id(a) == id(b))  # False
+print(a is b)           # False — is is really just id(a) == id(b)</code></pre>
+
+    <h3>Defining __eq__ to compare by value</h3>
+    <p>If you want == to mean "same data" instead of "same object", define __eq__ yourself. This is a dunder method — a special, double-underscore method Python calls automatically for a specific operator, similar in spirit to __init__.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name
+            and self.region == other.region
+            and self.population == other.population
+        )
+
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+
+print(a == b)  # True now — __eq__ compares field by field
+print(a is b)  # Still False — is is never affected by __eq__</code></pre>
+
+    <h3>When identity (is) is actually the right tool</h3>
+    <p>is is not "wrong" — it is the correct choice when you specifically care about object identity, most commonly when comparing against the None singleton.</p>
+    <pre><code>capital = None
+
+if capital is None:      # idiomatic — checking identity against the None singleton
+    print("No capital on file")
+
+# vs. == which would also work here, but is not the conventional style
+if capital == None:      # works, but not idiomatic Python
+    print("No capital on file")</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>Layer 2 gate:</strong> This is the last Layer 2 session. Every remaining layer assumes you can correctly reason about whether two objects are "the same" versus merely "equal" — this distinction underlies testing assertions in Layer 5 and data deduplication in Layer 4.
+    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Add print-based and logging-based traces to set_population, plus an update counter, and observe both in action.
+      <strong>Lab objective:</strong> Prove the default identity-based equality, implement a custom __eq__, and demonstrate is None as the idiomatic check.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>tracing_lab.py</code>.</p>
+    <p>A file called <code>identity_lab.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with logging configured</strong></p>
+        <p><strong>Create the file with a Country class and NO __eq__ yet</strong></p>
 
-        <pre><code># tracing_lab.py
-import logging
-
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
-
+        <pre><code># identity_lab.py
 class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
-        self.population = population
-        self._update_count = 0</code></pre>
+        self.population = population</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Add set_population with both a print trace and a logging.debug trace</strong></p>
+        <p><strong>Create two instances with identical data and compare them</strong></p>
+        <p>Before running: predict what a == b will print, and why.</p>
+        <pre><code>a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
 
-        <pre><code>    def set_population(self, value):
-        if value &lt; 0:
-            logging.warning(f"rejected population {value} for {self.name}")
-            raise ValueError(f"population must be non-negative, got {value}")
-        old = self.population
-        self.population = value
-        self._update_count += 1
-        print(f"[trace] {self.name}.population: {old} -&gt; {value}")
-        logging.debug(f"{self.name} update #{self._update_count}")</code></pre>
+print("a == b:", a == b)  # what do you expect?
+print("a is b:", a is b)
+print("id(a):", id(a))
+print("id(b):", id(b))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Make several valid changes and observe both trace channels</strong></p>
+        <p><strong>Add __eq__ to compare by value and re-run the comparison</strong></p>
 
-        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
-k.set_population(55000000)
-k.set_population(56000000)
-k.set_population(57000000)
-print("Total updates:", k._update_count)</code></pre>
+        <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def __eq__(self, other):
+        return (
+            self.name == other.name
+            and self.region == other.region
+            and self.population == other.population
+        )
+
+a = Country(name="Kenya", region="Africa", population=54000000)
+b = Country(name="Kenya", region="Africa", population=54000000)
+print("a == b now:", a == b)  # True
+print("a is b still:", a is b)  # still False</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Trigger the warning trace with an invalid change</strong></p>
+        <p><strong>Prove __eq__ correctly returns False for genuinely different data</strong></p>
 
-        <pre><code>try:
-    k.set_population(-1)
-except ValueError as e:
-    print("Caught:", e)
-print("Total updates still:", k._update_count)  # unchanged — rejected update did not count</code></pre>
+        <pre><code>c = Country(name="Peru", region="Americas", population=33000000)
+print("a == c:", a == c)  # False — different data, correctly not equal</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Raise the logging level to WARNING and confirm debug traces go silent</strong></p>
-        <p>Change the level and re-run a valid update — the print trace still shows, but the debug log line does not.</p>
-        <pre><code>logging.getLogger().setLevel(logging.WARNING)
-k.set_population(58000000)  # print trace still visible; debug log line is now silenced</code></pre>
+        <p><strong>Demonstrate is None as the idiomatic missing-value check</strong></p>
+        <p>Give Country an optional capital and check it both ways, noting which is idiomatic.</p>
+        <pre><code>capital = None
+print(capital is None)   # idiomatic
+print(capital == None)   # works, but not the conventional style — explain why in a comment</code></pre>
       </div>
     </div>
 
@@ -311,14 +307,14 @@ k.set_population(58000000)  # print trace still visible; debug log line is now s
         </thead>
         <tbody>
           <tr>
-            <td><code>tracing_lab.py</code></td>
+            <td><code>identity_lab.py</code></td>
             <td>Created</td>
-            <td>Adds print and logging traces plus an update counter to the controlled set_population method.</td>
+            <td>Demonstrates default identity-based equality, a custom __eq__, and is None.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-19/index.html</code></td>
             <td>Created</td>
-            <td>This session document.</td>
+            <td>This session document — Layer 2 gate.</td>
           </tr>
         </tbody>
       </table>
@@ -332,11 +328,11 @@ k.set_population(58000000)  # print trace still visible; debug log line is now s
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add tracing_lab.py docs/sessions/session-19/index.html
-git commit -m "session-19: trace state changes with print, logging, and a call counter"</code></pre>
+    <pre><code>git add identity_lab.py docs/sessions/session-19/index.html
+git commit -m "session-19: implement value-based __eq__ and distinguish it from identity"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does one trace statement inside set_population see every population change in the whole program?"
+      Do not commit until you can answer out loud: "Why does a is b stay False even after I defined __eq__ to make a == b return True?"
     </div>
 
     <hr class="section-divider" />
@@ -347,23 +343,23 @@ git commit -m "session-19: trace state changes with print, logging, and a call c
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">set_population prints a before/after trace and logs a debug message on every valid change</label>
+        <label for="c1">a == b is printed and observed to be False BEFORE __eq__ is added</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">A rejected (invalid) update logs a warning instead, and does not increment _update_count</label>
+        <label for="c2">__eq__ is implemented comparing every relevant field</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">_update_count correctly reflects only successful updates</label>
+        <label for="c3">a == b is proven True after __eq__ is added, using two separately constructed instances with identical data</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Raising the logging level to WARNING is shown to silence debug messages while print statements remain unaffected</label>
+        <label for="c4">a is b is proven to remain False throughout, unaffected by __eq__</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No tracing code changes the actual return values or control flow of the program</label>
+        <label for="c5">is None is used and preferred over == None with a comment explaining why</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -383,52 +379,52 @@ git commit -m "session-19: trace state changes with print, logging, and a call c
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
-        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
-        <label class="quiz-option" data-val="b">Because Session 17 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
-        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
-        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
-        <div class="explanation">This is the payoff of Session 17's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
+        <p>Given <code>a = Country(name="Kenya", region="Africa", population=54000000)</code> and <code>b = Country(name="Kenya", region="Africa", population=54000000)</code> with NO __eq__ defined, what does <code>a == b</code> return?</p>
+        <label class="quiz-option" data-val="a">True — because all their attribute values match</label>
+        <label class="quiz-option" data-val="b">False — by default, == falls back to identity comparison (is), and a and b are two separate instances</label>
+        <label class="quiz-option" data-val="c">A TypeError — you cannot compare instances</label>
+        <label class="quiz-option" data-val="d">It depends on the order the instances were created</label>
+        <div class="explanation">Without a custom <code>__eq__</code>, Python's default equality check for objects is identical to <code>is</code> — same object in memory, not same data. Two separately constructed instances are never == by default, no matter how identical their attributes look.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
-        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
-        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
-        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
-        <label class="quiz-option" data-val="d">warning always stops the program</label>
-        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
+        <p>What does <code>a is b</code> check, as opposed to <code>a == b</code>?</p>
+        <label class="quiz-option" data-val="a">They check exactly the same thing in Python</label>
+        <label class="quiz-option" data-val="b"><code>is</code> checks whether a and b refer to the exact same object in memory; <code>==</code> checks value equality (which can be customized)</label>
+        <label class="quiz-option" data-val="c"><code>is</code> is only valid for strings and numbers</label>
+        <label class="quiz-option" data-val="d"><code>is</code> checks attribute equality; == checks memory address</label>
+        <div class="explanation"><code>is</code> is identity comparison — are these literally the same object? <code>==</code> is equality comparison — by default the same as <code>is</code> for custom classes, but overridable via <code>__eq__</code> to compare by value instead.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
-        <label class="quiz-option" data-val="a">The current population value</label>
-        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
-        <label class="quiz-option" data-val="c">The total population across all countries</label>
-        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
-        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
+        <p>After adding <code>def __eq__(self, other):\n    return self.name == other.name and self.region == other.region and self.population == other.population</code> to Country, what does a == b return for the a, b from question 1?</p>
+        <label class="quiz-option" data-val="a">Still False — __eq__ has no effect on ==</label>
+        <label class="quiz-option" data-val="b">True — == now uses your custom comparison, and every field matches</label>
+        <label class="quiz-option" data-val="c">A TypeError, because __eq__ cannot be defined for classes</label>
+        <label class="quiz-option" data-val="d">True only if a is b is also True</label>
+        <div class="explanation">Defining <code>__eq__</code> overrides the default identity-based comparison. Python calls your method whenever <code>==</code> is used between two Country instances, and since every field matches, it returns True.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 16's uncontrolled-mutation version?</p>
-        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
-        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
-        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
-        <label class="quiz-option" data-val="d">print() did not exist before Session 17</label>
-        <div class="explanation">This is the direct payoff connecting Session 16 (the risk), Session 17 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
+        <p>After defining __eq__ as above, is a is b now True as well?</p>
+        <label class="quiz-option" data-val="a">Yes — __eq__ also changes what is checks</label>
+        <label class="quiz-option" data-val="b">No — is is unaffected by __eq__ and still checks memory identity; a and b remain two distinct objects</label>
+        <label class="quiz-option" data-val="c">It becomes undefined behaviour</label>
+        <label class="quiz-option" data-val="d">Only if population also happens to be 0</label>
+        <div class="explanation"><code>__eq__</code> only customizes <code>==</code>. <code>is</code> always checks raw identity and cannot be overridden by a class — a and b are still two separate objects in memory, regardless of how you define equality.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
-        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
-        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
-        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
-        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
-        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
+        <p>Why is x is None considered more correct/idiomatic than x == None in Python?</p>
+        <label class="quiz-option" data-val="a">They behave identically, it is pure style</label>
+        <label class="quiz-option" data-val="b">None is a true singleton — there is only ever one None object — so identity comparison is the semantically precise and conventional check</label>
+        <label class="quiz-option" data-val="c">== None always raises an error</label>
+        <label class="quiz-option" data-val="d">is None is faster but semantically identical, so it never matters</label>
+        <div class="explanation">Python guarantees there is exactly one <code>None</code> object in the entire program. Checking identity against it is both the idiomatic style and avoids any surprises from a class that might override <code>__eq__</code> in an unexpected way.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -441,10 +437,10 @@ git commit -m "session-19: trace state changes with print, logging, and a call c
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does raising the logging level silence debug() calls but not your plain print() calls? What does that tell you about how the two mechanisms are separate?</li>
-        <li>If you needed to trace every state change across the WHOLE program (not just Country), what would you need to be true about how ALL your classes handle state, based on Session 17?</li>
-        <li>What is the tradeoff of leaving debug-level tracing permanently in the code (as opposed to removing it after debugging is done)?</li>
-        <li>How would you use _update_count to detect a bug where population is being changed far more often than expected?</li>
+        <li>Before running the lab, did you correctly predict that a == b would be False without __eq__? If not, what was your mental model, and how has it changed?</li>
+        <li>Why does Python NOT give every class value-based equality by default? Can you think of a reason that would be a bad default?</li>
+        <li>If you were writing a test in Layer 5 that checks "did this function return the right Country?", would you use == or is? Why?</li>
+        <li>How does the id()-based explanation of is connect back to the shared-reference behaviour of dictionaries from Session 05?</li>
       </ol>
     </div>
 
@@ -453,9 +449,9 @@ git commit -m "session-19: trace state changes with print, logging, and a call c
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Debugging without visibility:</strong> Without any tracing, tracking down "why did this value change unexpectedly" requires manually stepping through code with a debugger every single time — tracing built into the controlled entry point gives you a permanent, always-available record instead.</li>
-        <li><strong>Validated input (Session 20):</strong> The next session tightens validation on the input side. Having tracing already in place means you will be able to directly observe the effect of stricter validation instead of guessing.</li>
-        <li><strong>Testing failures (Layer 5):</strong> When a test fails in Session 30 because state didn't update as expected, the debugging techniques from this session — trace prints, logging, counters — are exactly what you'll reach for to understand why.</li>
+        <li><strong>False negatives in comparisons:</strong> Code that assumes two identically-built objects are automatically == (without a custom __eq__) will silently fail comparisons that should have succeeded — a subtle bug that only appears when you actually try to compare two objects and get a surprising False.</li>
+        <li><strong>Testing assertions (Layer 5):</strong> Test frameworks in Session 33 rely heavily on == to check "did the function return what I expected?" If a class does not implement __eq__, every such test will need clumsy, error-prone field-by-field comparisons instead of a clean assertEqual.</li>
+        <li><strong>Deduplicating data (Layer 4):</strong> When we design data contracts and work with real data sources in Layer 4, detecting duplicate records requires exactly the value-based equality this session teaches — the default identity comparison would treat every record as unique, even genuine duplicates.</li>
       </ul>
     </div>
 
@@ -463,9 +459,9 @@ git commit -m "session-19: trace state changes with print, logging, and a call c
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Tracing state changes with print and the logging module's severity levels, plus lightweight call-counting instrumentation.</p>
-      <p><strong>Unlocks:</strong> You can now observe exactly when, how often, and why any piece of controlled state changes — turning invisible bugs into readable traces.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 20 — Validating Input</a>. We tighten validation further, handling edge cases in user-supplied input more thoroughly than Session 18 did.</p>
+      <p><strong>Python concept mastered:</strong> Identity (is) vs equality (==) — the default identity-based comparison for custom classes, overriding it with __eq__, and when is is still the right tool.</p>
+      <p><strong>Unlocks:</strong> You can now reason precisely about whether two objects are literally the same or merely hold the same data — required for every comparison-heavy session ahead.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 20 — What Is State in a Program?</a>. Layer 3 begins. We start tracking data that changes over the lifetime of a running program — state.</p>
     </div>
 
 

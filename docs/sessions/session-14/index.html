@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 14 — Building Lists of Objects — Python Learning</title>
+  <title>Session 14 — Instance Methods — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -58,8 +58,8 @@
       <span class="badge badge-current">Session 14</span>
       <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>Building Lists of Objects</h1>
-    <p class="subtitle">Real data rarely arrives as neatly hand-typed Country(...) calls. This session formalizes converting a list of raw dicts into a list of proper Country instances, at any scale.</p>
+    <h1>Instance Methods</h1>
+    <p class="subtitle">A class with only attributes is still just a fancier dictionary. Methods are functions that live on the class and operate on an instance's own data through self.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Convert a list of raw dictionaries into a list of class instances using a comprehension</li>
-        <li>Write a classmethod that constructs an instance from a dictionary</li>
-        <li>Explain what @classmethod does and how cls differs from self</li>
-        <li>Handle a malformed record in the raw data without crashing the whole batch</li>
-        <li>Combine everything from Layer 1 (comprehensions) and Layer 2 (classes) into one operation</li>
+        <li>Define an instance method that reads self attributes</li>
+        <li>Call a method on an instance using dot notation</li>
+        <li>Write a method that both reads and updates self attributes</li>
+        <li>Explain why a method does not need its data passed in as an argument, unlike the standalone functions from Layer 1</li>
+        <li>Compare a method call to the equivalent standalone-function call from Session 08</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given raw = [{"name": "Kenya", "region": "Africa", "population": 54000000}, ...], which builds a list of Country instances from it?</p>
-        <label class="quiz-option" data-val="a"><code>[Country(r) for r in raw]</code></label>
-        <label class="quiz-option" data-val="b"><code>[Country(**r) for r in raw]</code></label>
-        <label class="quiz-option" data-val="c"><code>Country(raw)</code></label>
-        <label class="quiz-option" data-val="d"><code>[Country[r] for r in raw]</code></label>
-        <div class="explanation">Recall Session 05: <code>**r</code> spreads each dictionary's key-value pairs as keyword arguments into the Country constructor — exactly matching __init__'s parameter names.</div>
+        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
+        <label class="quiz-option" data-val="a">"Country: population"</label>
+        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
+        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
+        <label class="quiz-option" data-val="d">None, because summary only prints</label>
+        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>@classmethod</code> do to a method like <code>from_dict</code>?</p>
-        <label class="quiz-option" data-val="a">Nothing — it is purely documentation</label>
-        <label class="quiz-option" data-val="b">It makes the method receive the class itself (conventionally named cls) as its first argument instead of an instance (self)</label>
-        <label class="quiz-option" data-val="c">It makes the method run automatically at import time</label>
-        <label class="quiz-option" data-val="d">It prevents the method from being called on an instance</label>
-        <div class="explanation">A classmethod is bound to the class, not a specific instance. Its first parameter, <code>cls</code>, refers to the class itself — useful for alternate constructors, since you don't have an instance yet at the point you're trying to build one.</div>
+        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
+        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
+        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
+        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
+        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
+        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 13 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>@classmethod\ndef from_dict(cls, data):\n    return cls(**data)</code>, what does Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000}) return?</p>
-        <label class="quiz-option" data-val="a">A TypeError — cls cannot be called like a function</label>
-        <label class="quiz-option" data-val="b">A new Country instance built from the dict's values</label>
-        <label class="quiz-option" data-val="c">The dict itself, unchanged</label>
-        <label class="quiz-option" data-val="d">None</label>
-        <div class="explanation">Inside a classmethod, <code>cls</code> IS the class (Country), so <code>cls(**data)</code> is equivalent to calling <code>Country(**data)</code> — constructing a new instance from the dictionary's keys and values.</div>
+        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
+        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
+        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
+        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
+        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
+        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why prefer a from_dict classmethod over just calling Country(**d) directly everywhere you need to convert a dict?</p>
-        <label class="quiz-option" data-val="a">There is no real benefit — they behave identically in every case</label>
-        <label class="quiz-option" data-val="b">from_dict gives you one central place to add validation or handle missing/renamed keys later, without changing every call site</label>
-        <label class="quiz-option" data-val="c">Country(**d) does not actually work for this purpose</label>
-        <label class="quiz-option" data-val="d">classmethods run faster than regular constructor calls</label>
-        <div class="explanation">If the raw data's shape changes later (a renamed key, a new required default), you only need to update <code>from_dict</code> once, instead of hunting down every place <code>Country(**d)</code> was called directly.</div>
+        <p>Compare method calls to the Layer 1 approach: In Session 08 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
+        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
+        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
+        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
+        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
+        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>One raw record is missing the "population" key entirely. Using [Country.from_dict(r) for r in raw] with no error handling, what happens when that record is processed, assuming population has no default in __init__?</p>
-        <label class="quiz-option" data-val="a">It silently skips that record and continues</label>
-        <label class="quiz-option" data-val="b">A TypeError is raised (missing required argument) and the whole comprehension stops, unless you catch it</label>
-        <label class="quiz-option" data-val="c">population is automatically set to 0</label>
-        <label class="quiz-option" data-val="d">It is set to the string "population"</label>
-        <div class="explanation">Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 07 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.</div>
+        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
+        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
+        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
+        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
+        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
+        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,10 +141,18 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Building Object Lists from Raw Data</h2>
+    <h2>3. The Concept — Instance Methods</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">YOU WRITE</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">k.summary()</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PYTHON RUNS</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Country.summary(k)</text>
+      </svg>
+      <p class="diagram-caption-text">The dot-call is shorthand: k.summary() and Country.summary(k) are the same call.</p>
+    </div>
 
-    <h3>From raw dicts to instances, using what you already know</h3>
-    <p>This session combines Session 03's comprehensions with Session 05's ** spreading and Session 09's constructors — nothing new syntactically, just a new combination.</p>
+
+    <h3>A method is a function defined inside a class</h3>
+    <p>Like __init__, every method takes self as its first parameter, giving it access to that instance's own attributes — no need to pass the data in as an argument, because the method already lives on the object that owns it.</p>
     <pre><code>class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -154,61 +162,47 @@
     def summary(self):
         return f"{self.name} ({self.region}): pop. {self.population:,}"
 
-raw = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-]
+k = Country("Kenya", "Africa", 54000000)
+print(k.summary())  # "Kenya (Africa): pop. 54,000,000"</code></pre>
 
-countries = [Country(**r) for r in raw]
-print(countries[0].summary())  # "Kenya (Africa): pop. 54,000,000"</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">raw dicts</span>{...}, {...}</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">Country(**r)</span>per item</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">instances</span>Country, Country</div>
-      <div class="diagram-caption">Each raw dict is spread with ** into a fresh Country() call, one per item — the comprehension pattern from Session 03, now building instances instead of values.</div>
-    </div>
+    <h3>What the dot-call actually does</h3>
+    <p>When you write <code>k.summary()</code>, Python translates this into <code>Country.summary(k)</code> behind the scenes — <code>k</code> is automatically supplied as <code>self</code>. This is the exact same mechanism from Session 13's __init__, just used for a different method.</p>
+    <pre><code>print(k.summary())            # normal way
+print(Country.summary(k))     # exactly equivalent — proves it</code></pre>
 
-    <h3>A classmethod as an alternate constructor</h3>
-    <p>Repeating <code>Country(**r)</code> everywhere you convert a dict works, but centralizing that logic in one place on the class itself is more maintainable. A classmethod is a method bound to the class rather than an instance — useful precisely because you don't have an instance yet.</p>
+    <h3>A method that mutates the instance</h3>
+    <p>Methods can update self's attributes just like the standalone functions from Layer 1 updated dict keys — except now the mutation logic lives with the data it protects.</p>
     <pre><code>class Country:
-    def __init__(self, name, region, population):
+    def __init__(self, name, population):
         self.name = name
-        self.region = region
         self.population = population
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)  # cls IS the Country class here
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError("amount must be non-negative")
+        self.population += amount
 
-kenya = Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})
-print(kenya.name)  # "Kenya"</code></pre>
+k = Country("Kenya", 54000000)
+k.grow_population(1000000)
+print(k.population)  # 55000000 — mutated in place, no reassignment needed</code></pre>
 
-    <h3>cls vs self</h3>
-    <p>self (regular methods) refers to a specific instance. cls (classmethods) refers to the class itself — the blueprint, not a built thing. This mirrors the class-vs-instance distinction from Session 08.</p>
-    <pre><code>class Country:
-    @classmethod
-    def from_dict(cls, data):
-        print("cls is:", cls)          # &lt;class '__main__.Country'&gt; — the class itself
-        return cls(**data)
+    <h3>Standalone function (Layer 1) vs method (Layer 2) — side by side</h3>
+    <p>This is the entire conceptual leap of Layer 2: the data moved inside the object, so the function moved with it.</p>
+    <pre><code># Layer 1 style — Session 08
+def get_population(country_dict):
+    return country_dict["population"]
 
-    def summary(self):
-        print("self is:", self)        # a specific Country instance</code></pre>
+print(get_population({"population": 54000000}))
 
-    <h3>Handling a bad record without losing the whole batch</h3>
-    <p>Session 07's try/except lets us skip malformed records individually instead of letting one bad record crash the entire conversion.</p>
-    <pre><code>raw = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghost Nation"},  # missing region and population!
-]
+# Layer 2 style — this session
+class Country:
+    def __init__(self, population):
+        self.population = population
+    def get_population(self):
+        return self.population
 
-countries = []
-for r in raw:
-    try:
-        countries.append(Country.from_dict(r))
-    except TypeError as e:
-        print(f"Skipping malformed record {r!r}: {e}")
-
-print(len(countries))  # 1 — only the valid record made it in</code></pre>
+k = Country(54000000)
+print(k.get_population())  # no argument needed — self already has it</code></pre>
 
 
 
@@ -216,21 +210,56 @@ print(len(countries))  # 1 — only the valid record made it in</code></pre>
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Build a from_dict classmethod on Country, convert a batch of raw records with a comprehension, and gracefully skip a malformed one.
+      <strong>Lab objective:</strong> Add a summary method and a mutating grow_population method to Country, then prove the dot-call is equivalent to calling through the class directly.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>build_list_lab.py</code>.</p>
+    <p>A file called <code>country_methods.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country and a from_dict classmethod</strong></p>
+        <p><strong>Create the file with __init__ and a summary method</strong></p>
 
-        <pre><code># build_list_lab.py
+        <pre><code># country_methods.py
 class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Create an instance and call summary()</strong></p>
+
+        <pre><code>kenya = Country("Kenya", "Africa", 54000000)
+print(kenya.summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Prove k.summary() and Country.summary(k) are the same call</strong></p>
+
+        <pre><code>print(kenya.summary() == Country.summary(kenya))  # True</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add a mutating grow_population method with validation</strong></p>
+        <p>Reuse the ValueError pattern from Session 11.</p>
+        <pre><code>class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
@@ -239,68 +268,26 @@ class Country:
     def summary(self):
         return f"{self.name} ({self.region}): pop. {self.population:,}"
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)</code></pre>
-      </div>
-    </div>
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
 
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <p><strong>Build 4 valid raw records and convert them with a comprehension</strong></p>
-
-        <pre><code>raw = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-    {"name": "Japan", "region": "Asia", "population": 125000000},
-]
-
-countries = [Country.from_dict(r) for r in raw]
-for c in countries:
-    print(c.summary())</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <p><strong>Add one malformed record (missing a required key)</strong></p>
-
-        <pre><code>raw_with_bad_record = raw + [{"name": "Ghost Nation"}]  # missing region, population</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <p><strong>Convert with a for-loop and try/except, skipping the bad one</strong></p>
-
-        <pre><code>good_countries = []
-for r in raw_with_bad_record:
-    try:
-        good_countries.append(Country.from_dict(r))
-    except TypeError as e:
-        print(f"Skipping malformed record {r!r}: {e}")
-
-print("Converted successfully:", len(good_countries))
-print("Total attempted:", len(raw_with_bad_record))</code></pre>
+kenya = Country("Kenya", "Africa", 54000000)
+kenya.grow_population(1000000)
+print(kenya.summary())</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Print cls inside from_dict temporarily to see it is the class, not an instance</strong></p>
-
-        <pre><code>class CountryDebug(Country):
-    @classmethod
-    def from_dict(cls, data):
-        print("cls is:", cls)
-        return cls(**data)
-
-CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})</code></pre>
+        <p><strong>Call grow_population with a negative amount inside try/except</strong></p>
+        <p>Reuse the try/except pattern from Session 11 — confirm the exception is raised and caught.</p>
+        <pre><code>try:
+    kenya.grow_population(-500)
+except ValueError as e:
+    print("Rejected:", e)</code></pre>
       </div>
     </div>
 
@@ -314,9 +301,9 @@ CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000
         </thead>
         <tbody>
           <tr>
-            <td><code>build_list_lab.py</code></td>
+            <td><code>country_methods.py</code></td>
             <td>Created</td>
-            <td>Converts raw dicts into Country instances at scale using a classmethod and comprehension.</td>
+            <td>Adds summary() and grow_population() instance methods to Country.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-14/index.html</code></td>
@@ -335,11 +322,11 @@ CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add build_list_lab.py docs/sessions/session-14/index.html
-git commit -m "session-14: build Country instances in bulk with a from_dict classmethod"</code></pre>
+    <pre><code>git add country_methods.py docs/sessions/session-14/index.html
+git commit -m "session-14: add summary and grow_population instance methods"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does from_dict use cls(**data) instead of Country(**data) directly?"
+      Do not commit until you can answer out loud: "Why does grow_population not need the country passed in as an argument the way Session 08's functions did?"
     </div>
 
     <hr class="section-divider" />
@@ -350,23 +337,23 @@ git commit -m "session-14: build Country instances in bulk with a from_dict clas
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">from_dict is decorated with @classmethod and takes cls as its first parameter</label>
+        <label for="c1">summary() reads only self attributes and returns a formatted string</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">A list comprehension converts multiple raw dicts into Country instances</label>
+        <label for="c2">kenya.summary() is proven equal to Country.summary(kenya)</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">A malformed record is included and handled with try/except without crashing the batch</label>
+        <label for="c3">grow_population() mutates self.population in place</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">The count of successfully converted records is printed and is less than the total attempted</label>
+        <label for="c4">grow_population() raises ValueError on a negative amount, reusing Session 11's pattern</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">cls is printed at least once to confirm it refers to the class, not an instance</label>
+        <label for="c5">The raised exception is caught with try/except elsewhere in the file</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -386,52 +373,52 @@ git commit -m "session-14: build Country instances in bulk with a from_dict clas
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given raw = [{"name": "Kenya", "region": "Africa", "population": 54000000}, ...], which builds a list of Country instances from it?</p>
-        <label class="quiz-option" data-val="a"><code>[Country(r) for r in raw]</code></label>
-        <label class="quiz-option" data-val="b"><code>[Country(**r) for r in raw]</code></label>
-        <label class="quiz-option" data-val="c"><code>Country(raw)</code></label>
-        <label class="quiz-option" data-val="d"><code>[Country[r] for r in raw]</code></label>
-        <div class="explanation">Recall Session 05: <code>**r</code> spreads each dictionary's key-value pairs as keyword arguments into the Country constructor — exactly matching __init__'s parameter names.</div>
+        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
+        <label class="quiz-option" data-val="a">"Country: population"</label>
+        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
+        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
+        <label class="quiz-option" data-val="d">None, because summary only prints</label>
+        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>@classmethod</code> do to a method like <code>from_dict</code>?</p>
-        <label class="quiz-option" data-val="a">Nothing — it is purely documentation</label>
-        <label class="quiz-option" data-val="b">It makes the method receive the class itself (conventionally named cls) as its first argument instead of an instance (self)</label>
-        <label class="quiz-option" data-val="c">It makes the method run automatically at import time</label>
-        <label class="quiz-option" data-val="d">It prevents the method from being called on an instance</label>
-        <div class="explanation">A classmethod is bound to the class, not a specific instance. Its first parameter, <code>cls</code>, refers to the class itself — useful for alternate constructors, since you don't have an instance yet at the point you're trying to build one.</div>
+        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
+        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
+        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
+        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
+        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
+        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 13 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>@classmethod\ndef from_dict(cls, data):\n    return cls(**data)</code>, what does Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000}) return?</p>
-        <label class="quiz-option" data-val="a">A TypeError — cls cannot be called like a function</label>
-        <label class="quiz-option" data-val="b">A new Country instance built from the dict's values</label>
-        <label class="quiz-option" data-val="c">The dict itself, unchanged</label>
-        <label class="quiz-option" data-val="d">None</label>
-        <div class="explanation">Inside a classmethod, <code>cls</code> IS the class (Country), so <code>cls(**data)</code> is equivalent to calling <code>Country(**data)</code> — constructing a new instance from the dictionary's keys and values.</div>
+        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
+        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
+        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
+        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
+        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
+        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why prefer a from_dict classmethod over just calling Country(**d) directly everywhere you need to convert a dict?</p>
-        <label class="quiz-option" data-val="a">There is no real benefit — they behave identically in every case</label>
-        <label class="quiz-option" data-val="b">from_dict gives you one central place to add validation or handle missing/renamed keys later, without changing every call site</label>
-        <label class="quiz-option" data-val="c">Country(**d) does not actually work for this purpose</label>
-        <label class="quiz-option" data-val="d">classmethods run faster than regular constructor calls</label>
-        <div class="explanation">If the raw data's shape changes later (a renamed key, a new required default), you only need to update <code>from_dict</code> once, instead of hunting down every place <code>Country(**d)</code> was called directly.</div>
+        <p>Compare method calls to the Layer 1 approach: In Session 08 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
+        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
+        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
+        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
+        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
+        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>One raw record is missing the "population" key entirely. Using [Country.from_dict(r) for r in raw] with no error handling, what happens when that record is processed, assuming population has no default in __init__?</p>
-        <label class="quiz-option" data-val="a">It silently skips that record and continues</label>
-        <label class="quiz-option" data-val="b">A TypeError is raised (missing required argument) and the whole comprehension stops, unless you catch it</label>
-        <label class="quiz-option" data-val="c">population is automatically set to 0</label>
-        <label class="quiz-option" data-val="d">It is set to the string "population"</label>
-        <div class="explanation">Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 07 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.</div>
+        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
+        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
+        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
+        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
+        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
+        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -444,10 +431,10 @@ git commit -m "session-14: build Country instances in bulk with a from_dict clas
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does cls(**data) still work correctly even if this classmethod were inherited by a subclass of Country (which we have not covered, but can you reason about it)?</li>
-        <li>What would have happened if you used Country(**data) directly inside from_dict instead of cls(**data)? In this specific case, is there a difference?</li>
-        <li>How does skipping one bad record instead of crashing the whole batch compare to the all-or-nothing behavior you might expect from a stricter language?</li>
-        <li>Where in a real application would silently skipping bad records be dangerous instead of helpful? What would you do differently there?</li>
+        <li>Rewrite grow_population as a Layer-1-style standalone function taking a dict. How many more characters does the caller have to type versus the method version?</li>
+        <li>Why does putting validation logic (the ValueError check) inside the method make it harder to accidentally bypass than a separate validation function would?</li>
+        <li>What would happen if you defined grow_population without self as the first parameter? Try it and read the error message carefully.</li>
+        <li>Can every standalone function from Layer 1 become a method? Can you think of one that could not?</li>
       </ol>
     </div>
 
@@ -456,9 +443,9 @@ git commit -m "session-14: build Country instances in bulk with a from_dict clas
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>One bad record, whole batch lost:</strong> Without the try/except pattern from this session, a single malformed record anywhere in a large dataset would crash the entire conversion — unacceptable for any real data source, which is never perfectly clean.</li>
-        <li><strong>Object identity confusion (Session 15):</strong> The next session (the Layer 2 gate) asks whether two Country instances built from identical data are "the same" — a question you can only reason about clearly once you are comfortable constructing many instances from data, as this session taught.</li>
-        <li><strong>The mock data layer (Layer 4):</strong> Session 24's data-access layer is built almost entirely from the from_dict pattern in this session, applied to a whole file of mock JSON records.</li>
+        <li><strong>Missing self bugs:</strong> Forgetting <code>self</code> as a method's first parameter produces a confusing TypeError about argument counts when the method is called normally — a very common early mistake that this session should immunize you against.</li>
+        <li><strong>Passing data (Session 15):</strong> Right now every instance is built by passing all fields directly to __init__. In the next session, we formalize this as "props" flowing into an object at construction time, drawing an explicit line back to the original React course's prop pattern.</li>
+        <li><strong>Testing methods (Layer 5):</strong> Every unit test you write from Session 33 onward calls methods on instances exactly the way this lab does. If method calls are not second nature, reading test code will be much harder.</li>
       </ul>
     </div>
 
@@ -466,9 +453,9 @@ git commit -m "session-14: build Country instances in bulk with a from_dict clas
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Bulk-converting raw dicts into class instances with a from_dict classmethod, and skipping malformed records individually with try/except.</p>
-      <p><strong>Unlocks:</strong> You can now turn any batch of raw dict-shaped data into a real list of working objects — the exact operation every future data source will require.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 15 — Object Identity and Equality</a>. Layer 2 gate. We ask a subtle question: what does it mean for two objects to be "the same" — identity vs equality.</p>
+      <p><strong>Python concept mastered:</strong> Instance methods — self-bound functions that read and mutate an instance's own data without needing it passed in explicitly.</p>
+      <p><strong>Unlocks:</strong> Country is now a genuine object: data plus the behavior that belongs with it. This is the last piece needed before we start composing objects together.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 15 — Passing Data via the Constructor</a>. We formalize how data flows into an object at construction time, and start passing whole objects (not just primitive values) into other objects.</p>
     </div>
 
 

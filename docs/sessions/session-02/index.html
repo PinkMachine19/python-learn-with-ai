@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 02 — Lists and Iteration — Python Learning</title>
+  <title>Session 02 — Operators, Strings & Type Conversion — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,26 +54,26 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 1</span>
+      <span class="badge badge-layer">Layer 0</span>
       <span class="badge badge-current">Session 02</span>
-      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Basics</span>
     </div>
-    <h1>Lists and Iteration</h1>
-    <p class="subtitle">A single country dictionary is not a country explorer. We need to hold many of them — that means lists, indexing, and loops.</p>
+    <h1>Operators, Strings & Type Conversion</h1>
+    <p class="subtitle">Variables that just sit there are not very useful. This session is about doing things with them: arithmetic, combining text, and deliberately converting between types.</p>
 
     <div class="alert alert-info">
-      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+      Estimated time: 30–35 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>
 
     <h2>1. Learning Objective</h2>
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Create a list using literal syntax and understand that it is ordered and mutable</li>
-        <li>Access items by index, including negative indexing</li>
-        <li>Use len() and iterate with a for loop</li>
-        <li>Explain the difference between mutating methods (.append, .sort) and non-mutating operations</li>
-        <li>Store a list of dictionaries — the shape our whole project will use</li>
+        <li>Use the arithmetic operators +, -, *, /, // and % and explain the difference between / and //</li>
+        <li>Combine strings with + and with f-strings</li>
+        <li>Convert between types explicitly with int(), float(), and str()</li>
+        <li>Explain why 1 + "1" raises an error instead of producing 2 or "11"</li>
+        <li>Use comparison operators (==, !=, <, >, <=, >=) to produce a bool</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
-        <label class="quiz-option" data-val="a">"Kenya"</label>
-        <label class="quiz-option" data-val="b">"Ghana"</label>
-        <label class="quiz-option" data-val="c">"Peru"</label>
-        <label class="quiz-option" data-val="d">An IndexError</label>
-        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
+        <p>What does <code>7 // 2</code> return, as opposed to <code>7 / 2</code>?</p>
+        <label class="quiz-option" data-val="a">Both return 3.5</label>
+        <label class="quiz-option" data-val="b">7 / 2 returns 3.5 (regular division); 7 // 2 returns 3 (floor division — the whole-number part only)</label>
+        <label class="quiz-option" data-val="c">7 // 2 returns 3.5; 7 / 2 returns 3</label>
+        <label class="quiz-option" data-val="d">// is invalid syntax in Python</label>
+        <div class="explanation"><code>/</code> always produces a float result. <code>//</code> ("floor division") divides and throws away the remainder, giving you a whole number — useful when you specifically want the whole-number part of a division.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="c">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>countries[-1]</code> return for the same list?</p>
-        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
-        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
-        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
-        <label class="quiz-option" data-val="d">None</label>
-        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
+        <p>What does <code>"Population: " + str(54000000)</code> produce?</p>
+        <label class="quiz-option" data-val="a">A TypeError, because you cannot add a string and a number</label>
+        <label class="quiz-option" data-val="b">The string "Population: 54000000"</label>
+        <label class="quiz-option" data-val="c">The number 54000054000000</label>
+        <label class="quiz-option" data-val="d">The string "Population: " repeated 54000000 times</label>
+        <div class="explanation"><code>str()</code> explicitly converts the number to text first, so <code>+</code> is now combining two strings (called "concatenation"), producing one longer string.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
-        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
-        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
-        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
-        <label class="quiz-option" data-val="d">A TypeError</label>
-        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
+        <p>What happens if you write <code>"Population: " + 54000000</code> WITHOUT calling str() first?</p>
+        <label class="quiz-option" data-val="a">It silently converts the number to text and works fine</label>
+        <label class="quiz-option" data-val="b">It raises a TypeError — Python refuses to implicitly combine a string and a number with +</label>
+        <label class="quiz-option" data-val="c">It returns 54000000 as a number, ignoring the text</label>
+        <label class="quiz-option" data-val="d">It prints "Population: " and then a separate line with the number</label>
+        <div class="explanation">Python does not automatically guess what you meant by mixing a string and a number with <code>+</code> — it raises a <code>TypeError</code> rather than silently doing something that might not be what you intended. This is deliberate: implicit, silent type mixing causes more bugs than it saves keystrokes.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="c">
+      <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
-        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
-        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
-        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
-        <label class="quiz-option" data-val="d">A copy of the whole list</label>
-        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
+        <p>Given <code>population = "54000000"</code> (a string), how do you get it as an actual number you could do math with?</p>
+        <label class="quiz-option" data-val="a"><code>str(population)</code></label>
+        <label class="quiz-option" data-val="b"><code>int(population)</code></label>
+        <label class="quiz-option" data-val="c"><code>population.number()</code></label>
+        <label class="quiz-option" data-val="d">It is already a number because it contains only digits</label>
+        <div class="explanation"><code>int()</code> converts a string of digits into an actual integer. Containing only digit CHARACTERS does not make something a number — it is still text until you explicitly convert it.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="c">
+      <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
-        <label class="quiz-option" data-val="a">A list of strings</label>
-        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
-        <label class="quiz-option" data-val="c">A list of dictionaries</label>
-        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
-        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
+        <p>What does <code>population > 50000000</code> evaluate to, given <code>population = 54000000</code>?</p>
+        <label class="quiz-option" data-val="a">The number 54000000</label>
+        <label class="quiz-option" data-val="b">The bool True</label>
+        <label class="quiz-option" data-val="c">The string "True"</label>
+        <label class="quiz-option" data-val="d">A SyntaxError — > only works on strings</label>
+        <div class="explanation">Comparison operators (<code>&gt;</code>, <code>&lt;</code>, <code>==</code>, etc.) always produce a <code>bool</code> — exactly <code>True</code> or <code>False</code> — which is what makes them usable in the conditionals we cover next session.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,163 +141,140 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Python Lists and Iteration</h2>
-
-    <h3>What is a list?</h3>
-    <p>A list is an ordered, mutable sequence of values. Unlike a dictionary, items are accessed by position (index), not by name.</p>
-    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
-
-print(countries[0])   # "Kenya"  — first item, index 0
-print(countries[1])   # "Ghana"
-print(countries[-1])  # "Peru"   — last item, negative index
-print(len(countries)) # 3</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">index 0</span>"Kenya"</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">index 1</span>"Ghana"</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">index 2 / -1</span>"Peru"</div>
-      <div class="diagram-caption">Index counts up from 0 on the left, and down from -1 on the right — both point into the same list.</div>
+    <h2>3. The Concept — Operators, Strings, and Explicit Conversion</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">10 / 3</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">3.333...</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">10 // 3</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">3 (floor)</text>
+      </svg>
+      <p class="diagram-caption-text">/ always gives you a precise float; // gives you the floor (whole-number) result of the same division.</p>
     </div>
 
-    <h3>Iterating with a for loop</h3>
-    <p>The most common way to process every item in a list is a <code>for ... in</code> loop. No manual index counting required.</p>
-    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
 
-for country in countries:
-    print(country)
-# Kenya
-# Ghana
-# Peru
+    <h3>Arithmetic operators</h3>
+    <p>Python supports the operators you would expect from a calculator, plus two less obvious ones: // (floor division) and % (modulo, the remainder after division).</p>
+    <pre><code>print(10 + 3)   # 13
+print(10 - 3)   # 7
+print(10 * 3)   # 30
+print(10 / 3)   # 3.3333333333333335 — always a float
+print(10 // 3)  # 3   — floor division, whole number part only
+print(10 % 3)   # 1   — modulo, the remainder</code></pre>
 
-# When you need the index too, use enumerate()
-for i, country in enumerate(countries):
-    print(i, country)
-# 0 Kenya
-# 1 Ghana
-# 2 Peru</code></pre>
+    <h3>Combining strings</h3>
+    <p>Strings can be joined with +, but only with other strings — and Python offers a cleaner way for mixing text and values: f-strings.</p>
+    <pre><code>name = "Kenya"
+population = 54000000
 
-    <h3>Mutating vs non-mutating operations</h3>
-    <p>Some list methods change the list in place and return <code>None</code>. Others return a new value and leave the original untouched. Confusing the two is a very common bug.</p>
-    <pre><code>nums = [3, 1, 2]
+# + concatenation — every piece must already be a string
+message = "Country: " + name + ", Population: " + str(population)
+print(message)
 
-nums.append(9)     # mutates in place -&gt; [3, 1, 2, 9]
-nums.sort()         # mutates in place -&gt; [1, 2, 3, 9]
+# f-string — cleaner, and handles the conversion for you
+message = f"Country: {name}, Population: {population}"
+print(message)  # identical result, much easier to read and write</code></pre>
 
-# sorted() is non-mutating — it returns a NEW list
-original = [3, 1, 2]
-result = sorted(original)
-print(original)  # [3, 1, 2] — unchanged
-print(result)    # [1, 2, 3] — new list</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">.sort()</span>nums → [1, 2, 3, 9]
-(same object)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">sorted()</span>original unchanged
-result = new list</div>
-      <div class="diagram-caption">.sort() mutates the original object; sorted() leaves it alone and hands back a new list.</div>
-    </div>
+    <h3>Explicit conversion: int(), float(), str()</h3>
+    <p>Python never silently guesses how to convert between types. You always convert deliberately, using a conversion function — this is a safety feature, not an inconvenience: it forces you to notice when a conversion is happening.</p>
+    <pre><code>population_text = "54000000"
+population_number = int(population_text)   # str -&gt; int
+print(population_number + 1000000)          # 55000000 — now real math works
 
-    <h3>A list of dictionaries — our project's core data shape</h3>
-    <p>Combining what we learned in Session 01 with lists gives us exactly what a real application needs: a collection of structured records.</p>
-    <pre><code>countries = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru",  "region": "Americas", "population": 33000000},
-]
+rate_text = "2.3"
+rate_number = float(rate_text)               # str -&gt; float
 
-for country in countries:
-    print(country["name"], "-", country["region"])
-# Kenya - Africa
-# Ghana - Africa
-# Peru - Americas</code></pre>
+count = 42
+count_text = str(count)                      # int -&gt; str, for combining with other text</code></pre>
 
-    <div class="alert alert-warning">
-      <strong>Why this matters for the project:</strong> Every screen of our Country Explorer app — search, filtering, display — starts from exactly this shape: a list of dictionaries. Everything from here forward operates on this structure.
-    </div>
+    <h3>Why mixing types with + is an error, not a guess</h3>
+    <p>Adding a string and a number has no single obvious meaning — should it produce a number, or glue the number onto the end as text? Rather than silently picking one (and possibly surprising you), Python raises an error and makes you decide explicitly.</p>
+    <pre><code># population = "Population: " + 54000000
+# TypeError: can only concatenate str (not "int") to str
+
+# You decide what you meant:
+population = "Population: " + str(54000000)   # -&gt; "Population: 54000000"</code></pre>
+
+    <h3>Comparison operators produce a bool</h3>
+    <p>Comparing two values always gives you back exactly True or False — this is the building block the next session's if-statements are built on.</p>
+    <pre><code>population = 54000000
+
+print(population &gt; 50000000)   # True
+print(population == 54000000)  # True
+print(population &lt; 1000)        # False
+print(population != 0)          # True</code></pre>
+
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Store three countries as a list of dictionaries, iterate over it, and prove the mutating vs non-mutating distinction.
+      <strong>Lab objective:</strong> Practice arithmetic, string combination with f-strings, explicit conversions, and comparisons that produce booleans.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>countries.py</code> that builds on Session 01's single dictionary.</p>
+    <p>A file called <code>operators.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file</strong></p>
+        <p><strong>Create the file and do basic arithmetic</strong></p>
 
-        <pre><code># countries.py</code></pre>
+        <pre><code># operators.py
+population = 54000000
+neighbors = 3
+
+print(population + 1000000)
+print(population / neighbors)
+print(population // neighbors)
+print(population % neighbors)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Build a list of at least 3 country dictionaries</strong></p>
-        <p>Reuse the shape from Session 01 — each item needs at least name, region, and population.</p>
-        <pre><code>countries = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru",  "region": "Americas", "population": 33000000},
-]</code></pre>
+        <p><strong>Combine strings with + and then with an f-string</strong></p>
+        <p>Compare how much easier the f-string version is to read.</p>
+        <pre><code>name = "Kenya"
+message_plus = "Country: " + name + ", population: " + str(population)
+message_fstring = f"Country: {name}, population: {population}"
+print(message_plus)
+print(message_fstring)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Iterate and print each country's name</strong></p>
-        <p>Use a plain for loop, no enumerate yet.</p>
-        <pre><code>for country in countries:
-    print(country["name"])</code></pre>
+        <p><strong>Convert a text number into a real number and do math with it</strong></p>
+
+        <pre><code>population_from_form = "54000000"   # imagine this came from a text input
+population_number = int(population_from_form)
+print(population_number + 1000000)  # only works because we converted first</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Iterate with enumerate() to also print position</strong></p>
-
-        <pre><code>for i, country in enumerate(countries):
-    print(f"{i}: {country['name']}")</code></pre>
+        <p><strong>Trigger and read the TypeError from mixing types, then fix it</strong></p>
+        <p>Comment the broken line out after reading the error, and keep the fixed version.</p>
+        <pre><code># broken = "Population: " + population   # uncomment to see the TypeError
+fixed = "Population: " + str(population)
+print(fixed)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Add a country with .append()</strong></p>
-        <p>Print the list before and after to confirm it mutated in place.</p>
-        <pre><code>print("Before:", len(countries))
-countries.append({"name": "Japan", "region": "Asia", "population": 125000000})
-print("After:", len(countries))</code></pre>
-      </div>
-    </div>
+        <p><strong>Write three comparisons and print their boolean results</strong></p>
 
-    <div class="step">
-      <div class="step-num">6</div>
-      <div class="step-body">
-        <p><strong>Prove sorted() does not mutate</strong></p>
-        <p>Sort the country names alphabetically without touching the original list.</p>
-        <pre><code>names = [c["name"] for c in countries] if False else None  # ignore, next session
-name_list = ["Peru", "Ghana", "Kenya", "Japan"]
-sorted_names = sorted(name_list)
-print("Original order:", name_list)
-print("Sorted copy:", sorted_names)</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">7</div>
-      <div class="step-body">
-        <p><strong>Access the last item with negative indexing</strong></p>
-
-        <pre><code>print("Last country added:", countries[-1]["name"])</code></pre>
+        <pre><code>print(population &gt; 50000000)
+print(population == 54000000)
+print(neighbors &lt;= 2)</code></pre>
       </div>
     </div>
 
@@ -311,9 +288,9 @@ print("Sorted copy:", sorted_names)</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>countries.py</code></td>
+            <td><code>operators.py</code></td>
             <td>Created</td>
-            <td>Builds a list of dictionaries and demonstrates iteration.</td>
+            <td>Demonstrates arithmetic, string combination, explicit conversion, and comparisons.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-02/index.html</code></td>
@@ -332,11 +309,11 @@ print("Sorted copy:", sorted_names)</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add countries.py docs/sessions/session-02/index.html
-git commit -m "session-02: store countries in a list, iterate, and separate mutating from non-mutating ops"</code></pre>
+    <pre><code>git add operators.py docs/sessions/session-02/index.html
+git commit -m "session-02: arithmetic, f-strings, explicit type conversion, and comparisons"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What is the difference between .sort() and sorted(), and why does it matter?"
+      Do not commit until you can answer out loud: "Why does Python raise an error instead of guessing what "Population: " + 54000000 should mean?"
     </div>
 
     <hr class="section-divider" />
@@ -347,31 +324,27 @@ git commit -m "session-02: store countries in a list, iterate, and separate muta
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">The list is declared with <code>[]</code> literal syntax containing at least 3 dictionaries</label>
+        <label for="c1">All six arithmetic operators (+, -, *, /, //, %) are demonstrated</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">A plain <code>for ... in</code> loop is used and prints correctly</label>
+        <label for="c2">Both + concatenation and an f-string are used to build the same message</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3"><code>enumerate()</code> is used at least once with both index and value</label>
+        <label for="c3">int() is used to convert a string to a number before doing arithmetic with it</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4"><code>.append()</code> is demonstrated and shown to mutate in place</label>
+        <label for="c4">The TypeError from mixing a string and a number is triggered once, read, and understood</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5"><code>sorted()</code> is demonstrated and shown to NOT mutate the original</label>
+        <label for="c5">At least three comparison operators are used and their boolean results printed</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
-        <label for="c6">Negative indexing is used at least once</label>
-      </div>
-      <div class="checklist-item">
-        <input type="checkbox" id="c7" />
-        <label for="c7">I can explain every line without looking at the concept section</label>
+        <label for="c6">I can explain every line without looking at the concept section</label>
       </div>
     </div>
 
@@ -387,52 +360,52 @@ git commit -m "session-02: store countries in a list, iterate, and separate muta
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>You have <code>countries = ["Kenya", "Ghana", "Peru"]</code>. What does <code>countries[1]</code> return?</p>
-        <label class="quiz-option" data-val="a">"Kenya"</label>
-        <label class="quiz-option" data-val="b">"Ghana"</label>
-        <label class="quiz-option" data-val="c">"Peru"</label>
-        <label class="quiz-option" data-val="d">An IndexError</label>
-        <div class="explanation">Python lists are zero-indexed. Index 0 is "Kenya", index 1 is "Ghana", index 2 is "Peru".</div>
+        <p>What does <code>7 // 2</code> return, as opposed to <code>7 / 2</code>?</p>
+        <label class="quiz-option" data-val="a">Both return 3.5</label>
+        <label class="quiz-option" data-val="b">7 / 2 returns 3.5 (regular division); 7 // 2 returns 3 (floor division — the whole-number part only)</label>
+        <label class="quiz-option" data-val="c">7 // 2 returns 3.5; 7 / 2 returns 3</label>
+        <label class="quiz-option" data-val="d">// is invalid syntax in Python</label>
+        <div class="explanation"><code>/</code> always produces a float result. <code>//</code> ("floor division") divides and throws away the remainder, giving you a whole number — useful when you specifically want the whole-number part of a division.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="c">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>countries[-1]</code> return for the same list?</p>
-        <label class="quiz-option" data-val="a">An IndexError — negative numbers are invalid</label>
-        <label class="quiz-option" data-val="b">"Kenya" — the first item</label>
-        <label class="quiz-option" data-val="c">"Peru" — the last item</label>
-        <label class="quiz-option" data-val="d">None</label>
-        <div class="explanation">Negative indices count from the end. <code>-1</code> is always the last item, <code>-2</code> the second-to-last, and so on. This avoids writing <code>countries[len(countries) - 1]</code>.</div>
+        <p>What does <code>"Population: " + str(54000000)</code> produce?</p>
+        <label class="quiz-option" data-val="a">A TypeError, because you cannot add a string and a number</label>
+        <label class="quiz-option" data-val="b">The string "Population: 54000000"</label>
+        <label class="quiz-option" data-val="c">The number 54000054000000</label>
+        <label class="quiz-option" data-val="d">The string "Population: " repeated 54000000 times</label>
+        <div class="explanation"><code>str()</code> explicitly converts the number to text first, so <code>+</code> is now combining two strings (called "concatenation"), producing one longer string.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is printed by:<br/><code>nums = [3, 1, 2]<br/>nums.append(9)<br/>print(nums)</code></p>
-        <label class="quiz-option" data-val="a">[3, 1, 2] — append() returns a new list and the original is unchanged</label>
-        <label class="quiz-option" data-val="b">[3, 1, 2, 9] — append() mutates the list in place</label>
-        <label class="quiz-option" data-val="c">[9, 3, 1, 2]</label>
-        <label class="quiz-option" data-val="d">A TypeError</label>
-        <div class="explanation"><code>.append()</code> is a mutating method — it adds to the existing list object and returns <code>None</code>. It does not create a new list.</div>
+        <p>What happens if you write <code>"Population: " + 54000000</code> WITHOUT calling str() first?</p>
+        <label class="quiz-option" data-val="a">It silently converts the number to text and works fine</label>
+        <label class="quiz-option" data-val="b">It raises a TypeError — Python refuses to implicitly combine a string and a number with +</label>
+        <label class="quiz-option" data-val="c">It returns 54000000 as a number, ignoring the text</label>
+        <label class="quiz-option" data-val="d">It prints "Population: " and then a separate line with the number</label>
+        <div class="explanation">Python does not automatically guess what you meant by mixing a string and a number with <code>+</code> — it raises a <code>TypeError</code> rather than silently doing something that might not be what you intended. This is deliberate: implicit, silent type mixing causes more bugs than it saves keystrokes.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="c">
+      <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>You loop with <code>for country in countries:</code>. On each iteration, what does <code>country</code> refer to?</p>
-        <label class="quiz-option" data-val="a">The index of the current item, starting at 0</label>
-        <label class="quiz-option" data-val="b">The entire list, unchanged each time</label>
-        <label class="quiz-option" data-val="c">The value of the current item in the list</label>
-        <label class="quiz-option" data-val="d">A copy of the whole list</label>
-        <div class="explanation">A <code>for ... in</code> loop over a list binds the loop variable to each element's value in turn — not the index. Use <code>enumerate()</code> when you need both the index and the value.</div>
+        <p>Given <code>population = "54000000"</code> (a string), how do you get it as an actual number you could do math with?</p>
+        <label class="quiz-option" data-val="a"><code>str(population)</code></label>
+        <label class="quiz-option" data-val="b"><code>int(population)</code></label>
+        <label class="quiz-option" data-val="c"><code>population.number()</code></label>
+        <label class="quiz-option" data-val="d">It is already a number because it contains only digits</label>
+        <div class="explanation"><code>int()</code> converts a string of digits into an actual integer. Containing only digit CHARACTERS does not make something a number — it is still text until you explicitly convert it.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="c">
+      <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You want each item in the loop to be a dictionary you can read fields from, e.g. <code>country["name"]</code>. What must <code>countries</code> be?</p>
-        <label class="quiz-option" data-val="a">A list of strings</label>
-        <label class="quiz-option" data-val="b">A dictionary of dictionaries</label>
-        <label class="quiz-option" data-val="c">A list of dictionaries</label>
-        <label class="quiz-option" data-val="d">It does not matter, Python infers it automatically</label>
-        <div class="explanation">For <code>country["name"]</code> to work inside the loop, each element yielded by the loop must itself be a dict. That means <code>countries</code> is a list whose elements are dicts — exactly the shape we build in this session's lab.</div>
+        <p>What does <code>population > 50000000</code> evaluate to, given <code>population = 54000000</code>?</p>
+        <label class="quiz-option" data-val="a">The number 54000000</label>
+        <label class="quiz-option" data-val="b">The bool True</label>
+        <label class="quiz-option" data-val="c">The string "True"</label>
+        <label class="quiz-option" data-val="d">A SyntaxError — > only works on strings</label>
+        <div class="explanation">Comparison operators (<code>&gt;</code>, <code>&lt;</code>, <code>==</code>, etc.) always produce a <code>bool</code> — exactly <code>True</code> or <code>False</code> — which is what makes them usable in the conditionals we cover next session.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -445,10 +418,10 @@ git commit -m "session-02: store countries in a list, iterate, and separate muta
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why do you think Python chose zero-based indexing instead of starting at 1?</li>
-        <li>If <code>.append()</code> mutates in place and returns <code>None</code>, what would <code>countries = countries.append(x)</code> incorrectly leave <code>countries</code> as? Try it.</li>
-        <li>When would negative indexing actually save you from an error-prone calculation?</li>
-        <li>Why is "a list of dictionaries" a more useful shape than three separate parallel lists (names, regions, populations)?</li>
+        <li>Why might a language that silently converted "5" + 5 into either 10 or "55" actually cause MORE bugs than Python's explicit-error approach?</li>
+        <li>When would floor division (//) actually be the right tool, instead of an inconvenience compared to regular division?</li>
+        <li>Rewrite one of your f-strings using + concatenation instead. How many extra str() calls did you need?</li>
+        <li>What real-world value might arrive as text that you would need to convert before doing math with it? (Think about anything typed into a search box or form.)</li>
       </ol>
     </div>
 
@@ -457,9 +430,8 @@ git commit -m "session-02: store countries in a list, iterate, and separate muta
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>The append-return bug:</strong> A very common beginner mistake is writing <code>x = some_list.append(item)</code>, expecting <code>x</code> to be the updated list. It is actually <code>None</code>, because mutating methods return nothing. This trips people up for years if never explained explicitly.</li>
-        <li><strong>List comprehensions (Session 03):</strong> The next session builds directly on for-loop iteration. If you cannot trace what a for loop does step by step, list comprehensions will look like meaningless syntax instead of a shorthand for something you already understand.</li>
-        <li><strong>Testing (Layer 5):</strong> Later, you will write tests that assert on list contents and order. Without understanding indexing and iteration, you cannot reason about what a test assertion is actually checking.</li>
+        <li><strong>The classic string-vs-number bug:</strong> Forgetting to convert a value before doing arithmetic on it (or before combining it with text) is one of the most common bugs at every experience level, not just for beginners — this session is designed to make the error message instantly recognisable.</li>
+        <li><strong>Conditionals (next session):</strong> Every if-statement in the next session is built directly on the comparison operators from this session. If <code>population > 50000000</code> does not clearly evaluate to a bool in your head, conditionals will feel like unexplained magic.</li>
       </ul>
     </div>
 
@@ -467,9 +439,9 @@ git commit -m "session-02: store countries in a list, iterate, and separate muta
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Lists — indexing (including negative), len(), for-loop iteration, enumerate(), mutating vs non-mutating operations.</p>
-      <p><strong>Unlocks:</strong> You can now hold and process a real collection of records — the shape our whole Country Explorer project uses.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 03 — List Comprehensions</a>. We will learn to transform and filter this list without a manual for-loop, using list comprehensions.</p>
+      <p><strong>Python concept mastered:</strong> Arithmetic and comparison operators, string concatenation and f-strings, and explicit type conversion with int()/float()/str().</p>
+      <p><strong>Unlocks:</strong> You can now compute, combine, and convert values — and every comparison you write produces the exact ingredient conditionals need.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 03 — Conditionals</a>. We use the True/False results from comparisons to make a program actually branch and decide.</p>
     </div>
 
 

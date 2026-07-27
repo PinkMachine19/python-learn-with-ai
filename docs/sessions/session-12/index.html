@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 12 — Composition — Objects Containing Objects — Python Learning</title>
+  <title>Session 12 — What Classes Are and Why — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -58,8 +58,8 @@
       <span class="badge badge-current">Session 12</span>
       <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>Composition — Objects Containing Objects</h1>
-    <p class="subtitle">Real applications are built from many small, focused classes working together, not one giant class doing everything. We build a CountryExplorer that holds a list of Country objects.</p>
+    <h1>What Classes Are and Why</h1>
+    <p class="subtitle">Layer 2 begins. A dictionary describes data. A class describes a kind of thing — data plus the behavior that belongs with it. This is why we are switching.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Store a list of class instances as an attribute of another class</li>
-        <li>Write a method on the outer class that loops over and delegates to the inner instances' own methods</li>
-        <li>Explain the difference between composition (has-a) and the inheritance relationship we have not covered yet</li>
-        <li>Add an instance to a composed collection after construction</li>
-        <li>Trace a method call from the outer object down into an inner object's own method</li>
+        <li>Explain the difference between a dictionary and a class conceptually</li>
+        <li>Define an empty class and create an instance of it</li>
+        <li>Explain what an instance is, versus the class itself</li>
+        <li>Explain why grouping data with the behavior that operates on it reduces bugs</li>
+        <li>Recognise that this session is concept-only — no meaningful code is written yet</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
-        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
-        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
-        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
-        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
-        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
+        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
+        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
+        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
+        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
+        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
+        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
-        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
-        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
-        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
-        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
-        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 10), and just collects the results.</div>
+        <p>What does <code>class Country: pass</code> define?</p>
+        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
+        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
+        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
+        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
+        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="b">
+      <div class="quiz-question" data-question="2" data-answer="c">
         <div class="question-num">Question 3 of 5</div>
-        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
-        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
-        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
-        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
-        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
-        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 02's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
+        <p>What is c in <code>c = Country()</code>?</p>
+        <label class="quiz-option" data-val="a">The class itself</label>
+        <label class="quiz-option" data-val="b">A function call that returns None</label>
+        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
+        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
+        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
-        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
-        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
-        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
-        <label class="quiz-option" data-val="d">It depends on the population values</label>
-        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 02, just now calling a method instead of reading a dict key.</div>
+        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
+        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
+        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
+        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
+        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
+        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
-        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
-        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
-        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
-        <label class="quiz-option" data-val="d">There is no real difference</label>
-        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 06.</div>
+        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
+        <label class="quiz-option" data-val="a">It is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
+        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
+        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
+        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,174 +141,114 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Composition</h2>
-
-    <h3>One class holding instances of another</h3>
-    <p>Composition means an object's attribute is itself another object (or a collection of them) — a "has-a" relationship, as opposed to the "is-a" relationship of inheritance, which we are deliberately not covering yet.</p>
-    <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries  # a list of Country instances</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">CountryExplorer</span>.countries → [ ]</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">holds</span>Country, Country,
-Country</div>
-      <div class="diagram-caption">CountryExplorer HAS a list of Country instances — it does not become one, it holds references to several.</div>
+    <h2>3. The Concept — Why Classes Exist</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">CLASS</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Country</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(the blueprint)</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">INSTANCE</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">c = Country()</text>
+      </svg>
+      <p class="diagram-caption-text">Country is the blueprint. c is one specific instance built from that blueprint — a second call would build a separate one.</p>
     </div>
 
-    <h3>Delegating to inner objects</h3>
-    <p>The outer class does not need to know HOW to summarize a country — it simply asks each Country instance to summarize itself, using the method that instance already has.</p>
-    <pre><code>explorer = CountryExplorer(countries=[
-    Country(name="Kenya", region="Africa", population=54000000),
-    Country(name="Peru", region="Americas", population=33000000),
-])
 
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+    <h3>What we have been doing so far</h3>
+    <p>For seven sessions, a country has been a dictionary, and every operation on it — formatting, filtering, validating — has been a separate, standalone function that takes the dictionary as an argument. This works, but nothing stops any function anywhere from reading or writing the wrong key, or writing an invalid value.</p>
+    <pre><code>country = {"name": "Kenya", "population": 54000000}
 
-    def summaries(self):
-        return [c.summary() for c in self.countries]  # delegates to each Country
+def set_population(country, value):
+    if value &lt; 0:
+        raise ValueError("population must be positive")
+    country["population"] = value
 
-print(explorer.summaries())
-# ['Kenya (Africa): pop. 54,000,000', 'Peru (Americas): pop. 33,000,000']</code></pre>
+# Nothing stops this — the dict has no memory of the rule above
+country["population"] = -100</code></pre>
 
-    <h3>Growing the collection after construction</h3>
-    <p>Since self.countries is just a list, everything from Session 02 still applies to it.</p>
-    <pre><code>nigeria = Country(name="Nigeria", region="Africa", population=223000000)
-explorer.countries.append(nigeria)
-print(len(explorer.countries))  # one more than before</code></pre>
+    <h3>A class bundles data and behavior together</h3>
+    <p>A class is a blueprint for a kind of thing. It groups the data that thing needs (its attributes) with the operations that belong to it (its methods) into a single definition. We will build this up piece by piece over the next several sessions — today, just the shell.</p>
+    <pre><code>class Country:
+    pass  # placeholder — a class body cannot be empty
 
-    <h3>A method that operates across the whole collection</h3>
-    <p>This is where composition starts to pay off — the outer class can offer operations that make sense at the collection level, built from what each inner object already knows.</p>
-    <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
+c = Country()
+print(type(c))     # &lt;class '__main__.Country'&gt;
+print(isinstance(c, Country))  # True</code></pre>
 
-    def summaries(self):
-        return [c.summary() for c in self.countries]
+    <h3>Class vs instance — a critical distinction</h3>
+    <p>The class is the definition, written once. An instance is a specific object built from that definition — you can build as many as you need, and each one is independent, just like each call to a function produces an independent result.</p>
+    <pre><code>c1 = Country()
+c2 = Country()
+print(c1 is c2)  # False — two separate instances, even though both are Country</code></pre>
 
-    def total_population(self):
-        return sum(c.population for c in self.countries)
+    <h3>What this unlocks</h3>
+    <p>Right now <code>Country</code> is an empty shell — it does nothing a dictionary couldn't already do. Over the next several sessions we will give it attributes (Session 13), methods (Session 14), a proper constructor (Session 15), and eventually a whole tree of related classes (Session 16) — building toward a real Country Explorer application.</p>
 
-    def find_by_region(self, region):
-        return [c for c in self.countries if c.region == region]</code></pre>
-
+    <div class="alert alert-warning">
+      <strong>Concept-only session:</strong> There is intentionally very little code today. The goal is to genuinely understand WHY we are switching from dictionaries to classes before writing the class itself in the next session.
+    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Build a CountryExplorer class that composes a list of Country instances and offers collection-level operations by delegating to each one.
+      <strong>Lab objective:</strong> Define an empty Country class, create two separate instances, and prove they are independent objects — no meaningful behavior yet.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>explorer_composed.py</code>.</p>
+    <p>A file called <code>country_class.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country and an empty CountryExplorer</strong></p>
+        <p><strong>Create the file and define an empty class</strong></p>
 
-        <pre><code># explorer_composed.py
+        <pre><code># country_class.py
 class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries</code></pre>
+    pass</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Construct an explorer with 3 countries</strong></p>
+        <p><strong>Create two separate instances</strong></p>
 
-        <pre><code>explorer = CountryExplorer(countries=[
-    Country(name="Kenya", region="Africa", population=54000000),
-    Country(name="Ghana", region="Africa", population=31000000),
-    Country(name="Peru", region="Americas", population=33000000),
-])
-print(len(explorer.countries))</code></pre>
+        <pre><code>c1 = Country()
+c2 = Country()
+
+print(c1)
+print(c2)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add a summaries() method that delegates to each Country</strong></p>
+        <p><strong>Confirm both are instances of Country</strong></p>
 
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    def summaries(self):
-        return [c.summary() for c in self.countries]
-
-explorer = CountryExplorer(countries=[
-    Country(name="Kenya", region="Africa", population=54000000),
-    Country(name="Peru", region="Americas", population=33000000),
-])
-for line in explorer.summaries():
-    print(line)</code></pre>
+        <pre><code>print(isinstance(c1, Country))  # True
+print(isinstance(c2, Country))  # True</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Add total_population() and find_by_region() methods</strong></p>
-
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    def summaries(self):
-        return [c.summary() for c in self.countries]
-
-    def total_population(self):
-        return sum(c.population for c in self.countries)
-
-    def find_by_region(self, region):
-        return [c for c in self.countries if c.region == region]
-
-explorer = CountryExplorer(countries=[
-    Country(name="Kenya", region="Africa", population=54000000),
-    Country(name="Ghana", region="Africa", population=31000000),
-    Country(name="Peru", region="Americas", population=33000000),
-])
-print(explorer.total_population())
-print([c.name for c in explorer.find_by_region("Africa")])</code></pre>
+        <p><strong>Prove they are two distinct objects, not the same one</strong></p>
+        <p>Before running: predict what c1 is c2 will print, and why.</p>
+        <pre><code>print(c1 is c2)  # False — separate objects in memory</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Add a country after construction and confirm total_population updates</strong></p>
-
-        <pre><code>explorer.countries.append(Country(name="Nigeria", region="Africa", population=223000000))
-print(explorer.total_population())  # reflects the new total automatically</code></pre>
+        <p><strong>Write a short comment explaining what problem this will eventually solve</strong></p>
+        <p>No code required here — write a plain-English comment in the file summarising, in your own words, why a class beats a loose dict + loose functions. This is the most important step in the lab.</p>
+        <pre><code># TODO: In your own words — why will bundling country data and
+# country behavior into one class reduce bugs compared to
+# passing a dict to a bunch of separate functions?</code></pre>
       </div>
     </div>
 
@@ -322,9 +262,9 @@ print(explorer.total_population())  # reflects the new total automatically</code
         </thead>
         <tbody>
           <tr>
-            <td><code>explorer_composed.py</code></td>
+            <td><code>country_class.py</code></td>
             <td>Created</td>
-            <td>CountryExplorer composes and delegates to a list of Country instances.</td>
+            <td>An empty Country class and proof that instances are independent.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-12/index.html</code></td>
@@ -343,11 +283,11 @@ print(explorer.total_population())  # reflects the new total automatically</code
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add explorer_composed.py docs/sessions/session-12/index.html
-git commit -m "session-12: compose CountryExplorer from a list of Country instances"</code></pre>
+    <pre><code>git add country_class.py docs/sessions/session-12/index.html
+git commit -m "session-12: define an empty Country class and confirm instances are independent"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does total_population() automatically reflect a country added after construction, without any changes to total_population itself?"
+      Do not commit until you can answer out loud: "In my own words, what is the difference between the Country class and a Country instance?"
     </div>
 
     <hr class="section-divider" />
@@ -358,23 +298,23 @@ git commit -m "session-12: compose CountryExplorer from a list of Country instan
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">CountryExplorer stores a list of Country instances as self.countries</label>
+        <label for="c1">The class is defined with class Country: pass</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">summaries() delegates to each Country instance's own summary() method</label>
+        <label for="c2">Two separate instances are created</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">total_population() and find_by_region() both operate across the whole collection</label>
+        <label for="c3">isinstance() is used to confirm both belong to the Country class</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">A country is appended after construction and total_population() is shown to reflect it</label>
+        <label for="c4">c1 is c2 is checked and correctly explained as False</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No logic that belongs on Country (like formatting a summary) is duplicated inside CountryExplorer</label>
+        <label for="c5">A written comment explains, in plain English, why a class beats a loose dict</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -394,52 +334,52 @@ git commit -m "session-12: compose CountryExplorer from a list of Country instan
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
-        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
-        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
-        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
-        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
-        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
+        <p>Given <code>country = {"name": "Kenya"}</code> and <code>class Country: pass</code> then <code>c = Country()</code>, what is the core difference between country and c?</p>
+        <label class="quiz-option" data-val="a">There is no difference — both are just containers for data</label>
+        <label class="quiz-option" data-val="b">country is a plain data container; c is an instance of a class, which can also define its own behavior (methods)</label>
+        <label class="quiz-option" data-val="c">c can only exist inside a function; country can exist anywhere</label>
+        <label class="quiz-option" data-val="d">Dictionaries are faster than classes, that is the only difference</label>
+        <div class="explanation">A dictionary only ever holds data. A class defines both the shape of its data (via attributes) and the operations that belong with it (via methods) — a coherent bundle rather than a bag of values.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
-        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
-        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
-        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
-        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
-        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 10), and just collects the results.</div>
+        <p>What does <code>class Country: pass</code> define?</p>
+        <label class="quiz-option" data-val="a">A function named Country that returns nothing</label>
+        <label class="quiz-option" data-val="b">A new type named Country with no attributes or methods yet</label>
+        <label class="quiz-option" data-val="c">A dictionary with the key "pass"</label>
+        <label class="quiz-option" data-val="d">A syntax error — a class body cannot be empty</label>
+        <div class="explanation"><code>pass</code> is a no-op placeholder statement, used here because a class body cannot be syntactically empty. This defines a minimal, valid class with nothing in it yet.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="b">
+      <div class="quiz-question" data-question="2" data-answer="c">
         <div class="question-num">Question 3 of 5</div>
-        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
-        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
-        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
-        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
-        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
-        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 02's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
+        <p>What is c in <code>c = Country()</code>?</p>
+        <label class="quiz-option" data-val="a">The class itself</label>
+        <label class="quiz-option" data-val="b">A function call that returns None</label>
+        <label class="quiz-option" data-val="c">An instance (a specific object) of the Country class</label>
+        <label class="quiz-option" data-val="d">A copy of the word "Country" as a string</label>
+        <div class="explanation">Calling a class with <code>()</code> constructs a new instance — a specific, individual object that belongs to that class. <code>Country</code> is the blueprint; <code>c</code> is one thing built from it.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
-        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
-        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
-        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
-        <label class="quiz-option" data-val="d">It depends on the population values</label>
-        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 02, just now calling a method instead of reading a dict key.</div>
+        <p>If you defined a second instance <code>c2 = Country()</code>, is c the same object as c2?</p>
+        <label class="quiz-option" data-val="a">Yes — every call to Country() returns the same shared instance</label>
+        <label class="quiz-option" data-val="b">No — each call to Country() creates a distinct new instance in memory</label>
+        <label class="quiz-option" data-val="c">They are the same only if they have identical attributes</label>
+        <label class="quiz-option" data-val="d">It depends on whether Country defines __init__</label>
+        <div class="explanation">Just like calling a function twice runs it twice, calling a class twice constructs two separate, independent instances — even though they came from the same blueprint.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
-        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
-        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
-        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
-        <label class="quiz-option" data-val="d">There is no real difference</label>
-        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 06.</div>
+        <p>Why is bundling data and the functions that operate on it (inside a class) considered better than passing loose dictionaries to loose functions everywhere?</p>
+        <label class="quiz-option" data-val="a">It is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps related logic discoverable in one place and reduces the chance of calling the wrong function on the wrong shape of data</label>
+        <label class="quiz-option" data-val="c">Dictionaries cannot hold numbers, only classes can</label>
+        <label class="quiz-option" data-val="d">There is no real benefit, it is purely stylistic</label>
+        <div class="explanation">When behavior lives on the class itself, anyone reading the code can find "everything a Country can do" in one place, and the class can enforce that its own data stays valid — something a loose dictionary and scattered functions cannot guarantee.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -452,10 +392,10 @@ git commit -m "session-12: compose CountryExplorer from a list of Country instan
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does total_population() automatically pick up the newly appended country without any code change to total_population itself? Trace through what self.countries actually contains at call time.</li>
-        <li>What would go wrong if CountryExplorer tried to reimplement summary formatting itself instead of calling c.summary()?</li>
-        <li>Can you think of a real application where "one object holding a collection of other objects" is the natural shape? (Hint: think of any list-based UI you have used.)</li>
-        <li>How is CountryExplorer.countries similar to and different from the plain list of dictionaries we used in Session 02?</li>
+        <li>Before this session, every "operation" on a country was a standalone function taking a dict. Can you think of a bug you might have written in the labs so far that a class could have prevented?</li>
+        <li>Why do you think Python requires <code>pass</code> for an empty class body instead of allowing nothing at all?</li>
+        <li>What is the relationship between a class and the <code>type()</code> of an instance built from it?</li>
+        <li>If two instances of the same class can hold completely different data, what does that tell you about what a class actually "is" versus what an instance "is"?</li>
       </ol>
     </div>
 
@@ -464,9 +404,8 @@ git commit -m "session-12: compose CountryExplorer from a list of Country instan
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Duplicated logic:</strong> If CountryExplorer reimplemented formatting or validation instead of delegating to Country's own methods, a bug fix would need to happen in two places — and they would inevitably drift out of sync over time.</li>
-        <li><strong>Conditional rendering / logic (Session 13):</strong> The next session adds conditional logic inside methods, such as handling an empty collection. Composition is what makes "no countries yet" a meaningful, testable state to handle.</li>
-        <li><strong>The whole rest of the project:</strong> Every remaining layer — mock data, testing, architecture, real APIs — operates on a composed structure just like CountryExplorer. This is the shape the entire application is built from.</li>
+        <li><strong>Confusing the class with an instance:</strong> If you don't internalize the class/instance distinction now, later sessions (attributes, methods, inheritance) will feel like memorized syntax instead of a coherent mental model — and debugging "why does every instance share this value" bugs becomes very hard.</li>
+        <li><strong>Attribute sessions ahead:</strong> Session 13 immediately builds on this by giving Country actual data via __init__. Without today's "class = blueprint, instance = built thing" model, __init__ will look like arbitrary magic syntax instead of a logical next step.</li>
       </ul>
     </div>
 
@@ -474,9 +413,9 @@ git commit -m "session-12: compose CountryExplorer from a list of Country instan
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Composition — one class holding instances of another, and delegating collection-level work to each inner instance's own methods.</p>
-      <p><strong>Unlocks:</strong> You can now build a real application out of small, focused, cooperating classes instead of one giant class doing everything.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 13 — Conditional Logic in Methods</a>. We handle the cases where things are missing or empty — conditional logic inside methods, like an empty country list or a country with no known capital.</p>
+      <p><strong>Python concept mastered:</strong> The class vs instance distinction, and the motivation for bundling data with behavior instead of using loose dicts and functions.</p>
+      <p><strong>Unlocks:</strong> You have a mental model for what a class is FOR. Every remaining Layer 2 session builds directly on top of this.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 13 — Class Anatomy — __init__ and Attributes</a>. We give Country real data — an __init__ method and instance attributes, so every instance can hold its own name, region, and population.</p>
     </div>
 
 

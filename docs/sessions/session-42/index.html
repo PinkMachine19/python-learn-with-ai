@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 42 — Calling a Real API with requests — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-current">Session 42</span>
+      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+    </div>
+    <h1>Calling a Real API with requests</h1>
+    <p class="subtitle">We finally connect to a live, real network API — the REST Countries API — using the requests library, replacing our local file with genuinely external, unpredictable data.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Install and use the requests library to make an HTTP GET request</li>
+        <li>Read a JSON response body and convert it to Python data structures</li>
+        <li>Check an HTTP status code before trusting a response</li>
+        <li>Map a real API's response shape onto our existing Country data contract</li>
+        <li>Swap CountryRepository's data source to a real API with minimal changes, proving Session 28's design once more</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What does <code>requests.get("https://www.apicountries.com/countries")</code> return?</p>
+        <label class="quiz-option" data-val="a">The raw JSON text as a plain string</label>
+        <label class="quiz-option" data-val="b">A Response object, which has a .status_code and a .json() method to parse the body</label>
+        <label class="quiz-option" data-val="c">A Python list directly</label>
+        <label class="quiz-option" data-val="d">Nothing — you must manually open a socket first</label>
+        <div class="explanation"><code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 29's json.load().</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does an HTTP status code of 200 mean, versus 404?</p>
+        <label class="quiz-option" data-val="a">They mean the same thing</label>
+        <label class="quiz-option" data-val="b">200 means the request succeeded; 404 means the requested resource was not found — checking this before trusting the response body is essential</label>
+        <label class="quiz-option" data-val="c">200 means an error occurred; 404 means success</label>
+        <label class="quiz-option" data-val="d">Status codes are optional and rarely checked in practice</label>
+        <div class="explanation">HTTP status codes communicate the outcome of a request. 200 (and the broader 2xx range) means success. 404 means "not found." Checking the status code before calling .json() prevents trying to parse an error page as if it were valid data.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>A real API record looks like <code>{"name": "Kenya", "region": "Africa", "population": 54000000, "area": 580367, "flag": "...", "capital": [...], "currencies": {...}, ...}</code> — over 20 fields, most of which our Country class does not want. What is needed to use this data with our existing Country class?</p>
+        <label class="quiz-option" data-val="a">Country must be rewritten to accept and store all 20+ fields</label>
+        <label class="quiz-option" data-val="b">A small adapter/mapping function that picks out only the fields our contract needs (Session 30), BEFORE constructing Country instances — Country itself needs no changes</label>
+        <label class="quiz-option" data-val="c">Nothing — Python automatically ignores extra keys when constructing an object</label>
+        <label class="quiz-option" data-val="d">The API's data cannot be used at all unless it matches our contract exactly</label>
+        <div class="explanation">This is exactly Session 30's "contract" concept in action: rather than reshaping our whole application around one specific external API's wide, over-provided shape, we write a small adapter that trims the raw response down to OUR agreed contract, keeping Country and everything downstream of it completely unchanged.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Given Session 28's repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?</p>
+        <label class="quiz-option" data-val="a">CountryRepository's get_all() and find_by_region() methods must be rewritten from scratch</label>
+        <label class="quiz-option" data-val="b">Only how raw_data is obtained before being passed to the constructor — call requests.get(), adapt the shape, then pass the result in exactly like any other data source; the repository's own methods are unchanged</label>
+        <label class="quiz-option" data-val="c">CountryExplorer must be entirely rebuilt</label>
+        <label class="quiz-option" data-val="d">This is not possible without a major rewrite</label>
+        <div class="explanation">This is the fourth and most significant proof of Session 28's design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is directly trusting the API response's data types without validation (skipping Session 30's discipline) risky for a REAL, external API in particular?</p>
+        <label class="quiz-option" data-val="a">It is not risky; real APIs always return perfectly-typed, reliable data</label>
+        <label class="quiz-option" data-val="b">An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 30's validate_country_record even more important here than it was for your own mock/file data</label>
+        <label class="quiz-option" data-val="c">Real APIs cannot return incorrect data by definition</label>
+        <label class="quiz-option" data-val="d">Validation is only needed for locally-generated data</label>
+        <div class="explanation">An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 30's validation discipline more important here than anywhere else in the project so far.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Calling a Real API</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">STATUS 200</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">trust the body</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">STATUS 4XX/5XX</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">do NOT parse</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">as success</text>
+      </svg>
+      <p class="diagram-caption-text">Check the status code before trusting the body — a failed request's "body" might not even be valid JSON at all.</p>
+    </div>
+
+
+    <h3>Making an HTTP request with requests</h3>
+    <p>The requests library (installed via pip) provides a simple interface for making HTTP calls — a GET request fetches data from a URL.</p>
+    <pre><code># pip install requests
+import requests
+
+response = requests.get("https://www.apicountries.com/countries")
+print(response.status_code)  # 200 means success
+
+data = response.json()  # parses the JSON body into Python data structures
+print(type(data))         # &lt;class 'list'&gt;
+print(len(data))          # a few hundred countries</code></pre>
+
+    <h3>Checking the status code before trusting the response</h3>
+    <p>Just like Session 11's validation-before-use discipline, always check that a request actually succeeded before trying to use its data.</p>
+    <pre><code>response = requests.get("https://www.apicountries.com/countries")
+
+if response.status_code == 200:
+    data = response.json()
+else:
+    print(f"API request failed with status {response.status_code}")
+    data = []</code></pre>
+
+    <h3>Adapting the API's shape to our own contract</h3>
+    <p>A real, public API almost never returns exactly the shape you want. This particular API returns over 20 fields per country — area, flags, currencies, calling codes, borders — when our contract only needs three. An adapter function trims the response down to OUR agreed shape, so Country itself never needs to change or grow to accommodate data it does not use.</p>
+    <pre><code>def adapt_api_record(raw):
+    # The real API gives us 20+ fields; our contract only wants 3.
+    # .get() with a default protects us if a field is ever missing.
+    return {
+        "name": raw.get("name", "Unknown"),
+        "region": raw.get("region", "Unknown"),
+        "population": raw.get("population", 0),
+    }
+
+api_records = [
+    {
+        "name": "Kenya", "region": "Africa", "population": 54000000,
+        "area": 580367, "flag": "🇰🇪", "capital": ["Nairobi"],
+        "currencies": {"KES": {"name": "Kenyan shilling"}},
+    },
+]
+adapted = [adapt_api_record(r) for r in api_records]
+print(adapted)  # [{'name': 'Kenya', 'region': 'Africa', 'population': 54000000}]
+# Now this matches OUR contract exactly — area, flag, currencies are simply dropped,
+# and Country.from_dict() works completely unchanged</code></pre>
+
+    <h3>Pointing the repository at the real API</h3>
+    <p>Session 28's design proves itself for the third time: only how raw_data is obtained changes.</p>
+    <pre><code>def fetch_countries_from_api():
+    response = requests.get("https://www.apicountries.com/countries")
+    if response.status_code != 200:
+        return []
+    return [adapt_api_record(r) for r in response.json()]
+
+repo = CountryRepository(raw_data=fetch_countries_from_api())
+print(len(repo.get_all()))  # real, live data — get_all() itself is completely unchanged</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Call the real REST Countries API, adapt its shape to our contract, and construct a working CountryRepository from genuinely live data.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>real_api_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file and make a basic request, checking the status code</strong></p>
+
+        <pre><code># real_api_lab.py
+import requests
+
+response = requests.get("https://www.apicountries.com/countries")
+print("Status code:", response.status_code)
+
+if response.status_code == 200:
+    raw_data = response.json()
+    print("Received", len(raw_data), "records")
+else:
+    raw_data = []
+    print("Request failed")</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Inspect one raw record's actual shape</strong></p>
+        <p>Print the first record's keys and note how many more fields it has than our own contract.</p>
+        <pre><code>if raw_data:
+    print(sorted(raw_data[0].keys()))
+    print(raw_data[0])</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Write adapt_api_record and adapt the whole batch</strong></p>
+
+        <pre><code>def adapt_api_record(raw):
+    return {
+        "name": raw.get("name", "Unknown"),
+        "region": raw.get("region", "Unknown"),
+        "population": raw.get("population", 0),
+    }
+
+adapted_records = [adapt_api_record(r) for r in raw_data]
+print(adapted_records[0])  # now matches our own flat 3-field contract, extras dropped</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Build a CountryRepository from the adapted, real data</strong></p>
+
+        <pre><code>from country_explorer import CountryRepository
+
+repo = CountryRepository(raw_data=adapted_records)
+print(len(repo.get_all()))
+print(repo.get_all()[0].summary())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Wrap the whole fetch in a function with status-code handling, and reuse Session 30's validation on a sample record</strong></p>
+
+        <pre><code>from country_explorer import validate_country_record
+
+def fetch_and_build_repository():
+    response = requests.get("https://www.apicountries.com/countries")
+    if response.status_code != 200:
+        print(f"API request failed with status {response.status_code}")
+        return CountryRepository(raw_data=[])
+    adapted = [adapt_api_record(r) for r in response.json()]
+    return CountryRepository(raw_data=adapted)
+
+repo = fetch_and_build_repository()
+sample = repo._raw_data[0] if repo._raw_data else None
+if sample:
+    validate_country_record(sample)  # confirms the real, adapted data honors our contract
+    print("Sample record honors the contract")</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>real_api_lab.py</code></td>
+            <td>Created</td>
+            <td>Fetches real data from the REST Countries API, adapts its shape, and builds a working repository.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-42/index.html</code></td>
+            <td>Created</td>
+            <td>This session document.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add real_api_lab.py docs/sessions/session-42/index.html
+git commit -m "session-42: fetch real data from the REST Countries API and adapt it to our contract"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "What did adapt_api_record() have to do, and why did Country and CountryRepository not need any changes at all?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">The API response's status_code is checked before parsing its body as JSON</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">adapt_api_record() correctly trims the real API's 20+ fields down to our flat 3-field contract</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">A working CountryRepository is constructed from real, live, adapted API data</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">Session 30's validate_country_record() is run against a real adapted record to confirm the contract is honored</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">Country and CountryRepository required zero code changes for this new real data source</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>What does <code>requests.get("https://www.apicountries.com/countries")</code> return?</p>
+        <label class="quiz-option" data-val="a">The raw JSON text as a plain string</label>
+        <label class="quiz-option" data-val="b">A Response object, which has a .status_code and a .json() method to parse the body</label>
+        <label class="quiz-option" data-val="c">A Python list directly</label>
+        <label class="quiz-option" data-val="d">Nothing — you must manually open a socket first</label>
+        <div class="explanation"><code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 29's json.load().</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="b">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does an HTTP status code of 200 mean, versus 404?</p>
+        <label class="quiz-option" data-val="a">They mean the same thing</label>
+        <label class="quiz-option" data-val="b">200 means the request succeeded; 404 means the requested resource was not found — checking this before trusting the response body is essential</label>
+        <label class="quiz-option" data-val="c">200 means an error occurred; 404 means success</label>
+        <label class="quiz-option" data-val="d">Status codes are optional and rarely checked in practice</label>
+        <div class="explanation">HTTP status codes communicate the outcome of a request. 200 (and the broader 2xx range) means success. 404 means "not found." Checking the status code before calling .json() prevents trying to parse an error page as if it were valid data.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>A real API record looks like <code>{"name": "Kenya", "region": "Africa", "population": 54000000, "area": 580367, "flag": "...", "capital": [...], "currencies": {...}, ...}</code> — over 20 fields, most of which our Country class does not want. What is needed to use this data with our existing Country class?</p>
+        <label class="quiz-option" data-val="a">Country must be rewritten to accept and store all 20+ fields</label>
+        <label class="quiz-option" data-val="b">A small adapter/mapping function that picks out only the fields our contract needs (Session 30), BEFORE constructing Country instances — Country itself needs no changes</label>
+        <label class="quiz-option" data-val="c">Nothing — Python automatically ignores extra keys when constructing an object</label>
+        <label class="quiz-option" data-val="d">The API's data cannot be used at all unless it matches our contract exactly</label>
+        <div class="explanation">This is exactly Session 30's "contract" concept in action: rather than reshaping our whole application around one specific external API's wide, over-provided shape, we write a small adapter that trims the raw response down to OUR agreed contract, keeping Country and everything downstream of it completely unchanged.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="b">
+        <div class="question-num">Question 4 of 5</div>
+        <p>Given Session 28's repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?</p>
+        <label class="quiz-option" data-val="a">CountryRepository's get_all() and find_by_region() methods must be rewritten from scratch</label>
+        <label class="quiz-option" data-val="b">Only how raw_data is obtained before being passed to the constructor — call requests.get(), adapt the shape, then pass the result in exactly like any other data source; the repository's own methods are unchanged</label>
+        <label class="quiz-option" data-val="c">CountryExplorer must be entirely rebuilt</label>
+        <label class="quiz-option" data-val="d">This is not possible without a major rewrite</label>
+        <div class="explanation">This is the fourth and most significant proof of Session 28's design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>Why is directly trusting the API response's data types without validation (skipping Session 30's discipline) risky for a REAL, external API in particular?</p>
+        <label class="quiz-option" data-val="a">It is not risky; real APIs always return perfectly-typed, reliable data</label>
+        <label class="quiz-option" data-val="b">An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 30's validate_country_record even more important here than it was for your own mock/file data</label>
+        <label class="quiz-option" data-val="c">Real APIs cannot return incorrect data by definition</label>
+        <label class="quiz-option" data-val="d">Validation is only needed for locally-generated data</label>
+        <div class="explanation">An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 30's validation discipline more important here than anywhere else in the project so far.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why did the real API's much wider raw shape (20+ fields) not require rewriting Country itself? What design decision from earlier sessions made this possible?</li>
+        <li>What would happen in your current code if the REST Countries API were temporarily down (status code other than 200)? Is that handled gracefully right now?</li>
+        <li>How does adapt_api_record() relate to Session 30's concept of a "contract" — is the adapter enforcing the contract, or something else?</li>
+        <li>This is the third data source CountryRepository has been pointed at (mock, JSON file, real API). What does that consistency tell you about the value of Session 28's original design decision?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>Trusting an untrustworthy response:</strong> Skipping the status-code check means a failed request (e.g. a 500 server error, whose body might not even be valid JSON) could crash the program trying to call .json() on something that was never a successful response in the first place.</li>
+        <li><strong>Graceful degradation (Session 43):</strong> The next session builds proper loading and error states around exactly this kind of network call — right now, a slow or failed API call has no user-facing feedback at all, which the next session addresses.</li>
+        <li><strong>The capstone review (Session 44):</strong> This session is the culmination of Layer 4's entire mock-data philosophy: everything built against fake data throughout the project now works, unmodified, against a real, live, external data source.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Making real HTTP requests with the requests library, checking status codes, and adapting an external API's shape to our own internal data contract.</p>
+      <p><strong>Unlocks:</strong> The Country Explorer can now pull genuinely live, real-world data — proving every layer of the architecture built since Layer 4 was worth the investment.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 43 — Handling Errors and Edge Cases Gracefully</a>. We add proper loading and error feedback around this real network call, instead of a program that just silently hangs or fails.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

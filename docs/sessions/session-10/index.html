@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 10 — Instance Methods — Python Learning</title>
+  <title>Session 10 — Modules and Imports — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 2</span>
+      <span class="badge badge-layer">Layer 1</span>
       <span class="badge badge-current">Session 10</span>
-      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
     </div>
-    <h1>Instance Methods</h1>
-    <p class="subtitle">A class with only attributes is still just a fancier dictionary. Methods are functions that live on the class and operate on an instance's own data through self.</p>
+    <h1>Modules and Imports</h1>
+    <p class="subtitle">Our country data and our logic have been living in one file. Real projects split code into modules — this session is about how Python finds, loads, and shares code across files.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Define an instance method that reads self attributes</li>
-        <li>Call a method on an instance using dot notation</li>
-        <li>Write a method that both reads and updates self attributes</li>
-        <li>Explain why a method does not need its data passed in as an argument, unlike the standalone functions from Layer 1</li>
-        <li>Compare a method call to the equivalent standalone-function call from Session 04</li>
+        <li>Split code across multiple .py files and import between them</li>
+        <li>Use import module and from module import name, and explain the difference</li>
+        <li>Alias an import with as</li>
+        <li>Explain what if __name__ == "__main__": guards and why it matters</li>
+        <li>Understand why a module is only executed once, no matter how many times it is imported</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
-        <label class="quiz-option" data-val="a">"Country: population"</label>
-        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
-        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
-        <label class="quiz-option" data-val="d">None, because summary only prints</label>
-        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
+        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
+        <label class="quiz-option" data-val="a"><code>import data</code></label>
+        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
+        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
+        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
+        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
-        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
-        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
-        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
-        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
-        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 09 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
+        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
+        <label class="quiz-option" data-val="a"><code>countries</code></label>
+        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
+        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
+        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
+        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
-        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
-        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
-        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
-        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
-        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
+        <p>What does <code>import numpy as np</code> do?</p>
+        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
+        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
+        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
+        <label class="quiz-option" data-val="d">Is invalid syntax</label>
+        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Compare method calls to the Layer 1 approach: In Session 04 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
-        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
-        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
-        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
-        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
-        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
+        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
+        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
+        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
+        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
+        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
+        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="b">
+      <div class="quiz-question" data-question="4" data-answer="c">
         <div class="question-num">Question 5 of 5</div>
-        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
-        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
-        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
-        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
-        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
-        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
+        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
+        <label class="quiz-option" data-val="a">Twice — once per import</label>
+        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
+        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
+        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
+        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,65 +141,70 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Instance Methods</h2>
-
-    <h3>A method is a function defined inside a class</h3>
-    <p>Like __init__, every method takes self as its first parameter, giving it access to that instance's own attributes — no need to pass the data in as an argument, because the method already lives on the object that owns it.</p>
-    <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-k = Country("Kenya", "Africa", 54000000)
-print(k.summary())  # "Kenya (Africa): pop. 54,000,000"</code></pre>
-
-    <h3>What the dot-call actually does</h3>
-    <p>When you write <code>k.summary()</code>, Python translates this into <code>Country.summary(k)</code> behind the scenes — <code>k</code> is automatically supplied as <code>self</code>. This is the exact same mechanism from Session 09's __init__, just used for a different method.</p>
-    <pre><code>print(k.summary())            # normal way
-print(Country.summary(k))     # exactly equivalent — proves it</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">you write</span>k.summary()</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">Python runs</span>Country.summary(k)</div>
-      <div class="diagram-caption">The dot-call is shorthand: k.summary() and Country.summary(k) are the same call.</div>
+    <h2>3. The Concept — Modules and Imports</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">IMPORT DATA</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">data.countries</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">data.find_by_region</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">FROM DATA IMPORT</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">countries</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">find_by_region</text>
+      </svg>
+      <p class="diagram-caption-text">import module gives you one namespaced object; from module import name gives you the names directly, unprefixed.</p>
     </div>
 
-    <h3>A method that mutates the instance</h3>
-    <p>Methods can update self's attributes just like the standalone functions from Layer 1 updated dict keys — except now the mutation logic lives with the data it protects.</p>
-    <pre><code>class Country:
-    def __init__(self, name, population):
-        self.name = name
-        self.population = population
 
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError("amount must be non-negative")
-        self.population += amount
+    <h3>A module is just a .py file</h3>
+    <p>Any Python file can be imported by another. The filename (without .py) becomes the module name.</p>
+    <pre><code># data.py
+countries = [
+    {"name": "Kenya", "region": "Africa"},
+    {"name": "Ghana", "region": "Africa"},
+]
 
-k = Country("Kenya", 54000000)
-k.grow_population(1000000)
-print(k.population)  # 55000000 — mutated in place, no reassignment needed</code></pre>
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]</code></pre>
 
-    <h3>Standalone function (Layer 1) vs method (Layer 2) — side by side</h3>
-    <p>This is the entire conceptual leap of Layer 2: the data moved inside the object, so the function moved with it.</p>
-    <pre><code># Layer 1 style — Session 04
-def get_population(country_dict):
-    return country_dict["population"]
+    <h3>import module vs from module import name</h3>
+    <p>Both forms load the same file. They differ in what name(s) end up available in the importing file.</p>
+    <pre><code># main.py — Option 1: import the whole module
+import data
+print(data.countries)
+print(data.find_by_region("Africa"))
 
-print(get_population({"population": 54000000}))
+# main.py — Option 2: import specific names directly
+from data import countries, find_by_region
+print(countries)
+print(find_by_region("Africa"))</code></pre>
 
-# Layer 2 style — this session
-class Country:
-    def __init__(self, population):
-        self.population = population
-    def get_population(self):
-        return self.population
+    <h3>Aliasing with as</h3>
+    <p>You can rename what you import, either to shorten a long name or to avoid a clash with something already defined.</p>
+    <pre><code>import data as d
+print(d.countries)
 
-k = Country(54000000)
-print(k.get_population())  # no argument needed — self already has it</code></pre>
+from data import find_by_region as search
+print(search("Africa"))</code></pre>
+
+    <h3>The if __name__ == "__main__": guard</h3>
+    <p>Every Python file has a built-in variable <code>__name__</code>. When the file is run directly, it equals <code>"__main__"</code>. When the file is imported by another file, it equals the module's own name instead. This guard lets a file define reusable functions AND include a demo that only runs when the file is executed directly.</p>
+    <pre><code># data.py
+countries = [{"name": "Kenya", "region": "Africa"}]
+
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]
+
+if __name__ == "__main__":
+    # This block only runs when you execute: python data.py
+    # It does NOT run when another file does: import data
+    print(find_by_region("Africa"))</code></pre>
+
+    <h3>A module's top-level code runs once, and only once</h3>
+    <p>Python caches every module after its first import. If ten different files import the same module, its top-level code still only executes a single time — every importer shares the same already-built module object.</p>
+    <pre><code># counter.py
+print("data.py is loading...")
+value = 0
+
+# app.py
+import counter          # prints "data.py is loading..." — first time
+import counter as c2     # does NOT print again — already cached
+print(counter is c2)     # True — same object</code></pre>
 
 
 
@@ -207,84 +212,75 @@ print(k.get_population())  # no argument needed — self already has it</code></
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Add a summary method and a mutating grow_population method to Country, then prove the dot-call is equivalent to calling through the class directly.
+      <strong>Lab objective:</strong> Split your country data into its own module, import it two different ways, and add a __main__ guard.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>country_methods.py</code>.</p>
+    <p>Two files: <code>country_data.py</code> (the module) and <code>explorer.py</code> (imports and uses it).</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with __init__ and a summary method</strong></p>
+        <p><strong>Create country_data.py with the list and one function</strong></p>
 
-        <pre><code># country_methods.py
-class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
+        <pre><code># country_data.py
+countries = [
+    {"name": "Kenya", "region": "Africa", "population": 54000000},
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+]
 
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"</code></pre>
+def find_by_region(region):
+    return [c for c in countries if c["region"] == region]
+
+if __name__ == "__main__":
+    print("Running country_data.py directly")
+    print(find_by_region("Africa"))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Create an instance and call summary()</strong></p>
+        <p><strong>Run country_data.py directly and observe the guard firing</strong></p>
+        <p>Confirm the __main__ block runs when you execute the file itself.</p>
 
-        <pre><code>kenya = Country("Kenya", "Africa", 54000000)
-print(kenya.summary())</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Prove k.summary() and Country.summary(k) are the same call</strong></p>
+        <p><strong>Create explorer.py using import module style</strong></p>
 
-        <pre><code>print(kenya.summary() == Country.summary(kenya))  # True</code></pre>
+        <pre><code># explorer.py
+import country_data
+
+print(country_data.countries)
+print(country_data.find_by_region("Africa"))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Add a mutating grow_population method with validation</strong></p>
-        <p>Reuse the ValueError pattern from Session 07.</p>
-        <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
+        <p><strong>Run explorer.py and confirm the __main__ block did NOT run</strong></p>
+        <p>You should NOT see "Running country_data.py directly" — only the two lines you explicitly printed.</p>
 
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount
-
-kenya = Country("Kenya", "Africa", 54000000)
-kenya.grow_population(1000000)
-print(kenya.summary())</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Call grow_population with a negative amount inside try/except</strong></p>
-        <p>Reuse the try/except pattern from Session 07 — confirm the exception is raised and caught.</p>
-        <pre><code>try:
-    kenya.grow_population(-500)
-except ValueError as e:
-    print("Rejected:", e)</code></pre>
+        <p><strong>Change explorer.py to use from...import with an alias</strong></p>
+
+        <pre><code># explorer.py
+from country_data import find_by_region as search
+
+print(search("Africa"))</code></pre>
       </div>
     </div>
 
@@ -298,9 +294,14 @@ except ValueError as e:
         </thead>
         <tbody>
           <tr>
-            <td><code>country_methods.py</code></td>
+            <td><code>country_data.py</code></td>
             <td>Created</td>
-            <td>Adds summary() and grow_population() instance methods to Country.</td>
+            <td>The reusable module — data and functions, with a __main__ guard.</td>
+          </tr>
+          <tr>
+            <td><code>explorer.py</code></td>
+            <td>Created</td>
+            <td>Imports and uses country_data two different ways.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-10/index.html</code></td>
@@ -312,18 +313,18 @@ except ValueError as e:
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country_methods.py docs/sessions/session-10/index.html
-git commit -m "session-10: add summary and grow_population instance methods"</code></pre>
+    <pre><code>git add country_data.py explorer.py docs/sessions/session-10/index.html
+git commit -m "session-10: split data into a module, import it two ways, add a __main__ guard"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does grow_population not need the country passed in as an argument the way Session 04's functions did?"
+      Do not commit until you can answer out loud: "Why did the __main__ block run when I executed country_data.py directly, but not when explorer.py imported it?"
     </div>
 
     <hr class="section-divider" />
@@ -334,23 +335,23 @@ git commit -m "session-10: add summary and grow_population instance methods"</co
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">summary() reads only self attributes and returns a formatted string</label>
+        <label for="c1">country_data.py contains the list, at least one function, and a __main__ guard</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">kenya.summary() is proven equal to Country.summary(kenya)</label>
+        <label for="c2">explorer.py demonstrates import module style (module.name access)</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">grow_population() mutates self.population in place</label>
+        <label for="c3">explorer.py also demonstrates from module import name style, with an alias</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">grow_population() raises ValueError on a negative amount, reusing Session 07's pattern</label>
+        <label for="c4">Running country_data.py directly shows the guarded print statement</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">The raised exception is caught with try/except elsewhere in the file</label>
+        <label for="c5">Running explorer.py does NOT show the guarded print statement</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -370,52 +371,52 @@ git commit -m "session-10: add summary and grow_population instance methods"</co
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>class Country:\n    def __init__(self, name, population):\n        self.name = name\n        self.population = population\n    def summary(self):\n        return f"{self.name}: {self.population}"</code>, what does <code>k.summary()</code> return for <code>k = Country("Kenya", 54000000)</code>?</p>
-        <label class="quiz-option" data-val="a">"Country: population"</label>
-        <label class="quiz-option" data-val="b">"Kenya: 54000000"</label>
-        <label class="quiz-option" data-val="c">A TypeError — summary requires an argument</label>
-        <label class="quiz-option" data-val="d">None, because summary only prints</label>
-        <div class="explanation">Calling <code>k.summary()</code> runs the method with <code>self</code> bound to <code>k</code>. Inside, <code>self.name</code> is "Kenya" and <code>self.population</code> is 54000000, producing "Kenya: 54000000".</div>
+        <p>You have a file <code>data.py</code> containing <code>countries = [...]</code>. In another file, which import makes <code>countries</code> directly usable by that name (no prefix)?</p>
+        <label class="quiz-option" data-val="a"><code>import data</code></label>
+        <label class="quiz-option" data-val="b"><code>from data import countries</code></label>
+        <label class="quiz-option" data-val="c"><code>import countries from data</code></label>
+        <label class="quiz-option" data-val="d"><code>require("data")</code></label>
+        <div class="explanation"><code>from data import countries</code> pulls the specific name <code>countries</code> directly into the importing file's namespace. With plain <code>import data</code>, you would need to write <code>data.countries</code> instead.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?</p>
-        <label class="quiz-option" data-val="a">Because summary() secretly has no parameters at all</label>
-        <label class="quiz-option" data-val="b">Because Python automatically passes k as the self argument when you call it via dot notation on k</label>
-        <label class="quiz-option" data-val="c">Because summary() is a class-level constant, not a real function</label>
-        <label class="quiz-option" data-val="d">It does require that — k.summary() is shorthand for summary(k) written incorrectly</label>
-        <div class="explanation">The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 09 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.</div>
+        <p>If you use <code>import data</code> instead, how do you then access the <code>countries</code> list defined in data.py?</p>
+        <label class="quiz-option" data-val="a"><code>countries</code></label>
+        <label class="quiz-option" data-val="b"><code>data.countries</code></label>
+        <label class="quiz-option" data-val="c"><code>data["countries"]</code></label>
+        <label class="quiz-option" data-val="d"><code>data->countries</code></label>
+        <div class="explanation">Plain <code>import data</code> gives you the whole module as an object named <code>data</code>. Everything it defines is accessed through dot notation on that module object: <code>data.countries</code>.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given a method <code>def grow_population(self, amount):\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?</p>
-        <label class="quiz-option" data-val="a">Returns a new Country with 1,000,000 more population, leaving k unchanged</label>
-        <label class="quiz-option" data-val="b">Mutates k.population in place, adding 1,000,000 to it</label>
-        <label class="quiz-option" data-val="c">Raises an error because self already has a population</label>
-        <label class="quiz-option" data-val="d">Does nothing unless the result is assigned back to k</label>
-        <div class="explanation">Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.</div>
+        <p>What does <code>import numpy as np</code> do?</p>
+        <label class="quiz-option" data-val="a">Imports only the "np" function from numpy</label>
+        <label class="quiz-option" data-val="b">Imports the numpy module and binds it to the local name np</label>
+        <label class="quiz-option" data-val="c">Renames the numpy package on disk to np</label>
+        <label class="quiz-option" data-val="d">Is invalid syntax</label>
+        <div class="explanation"><code>as</code> creates a local alias for the imported module — the module itself is unchanged, you've just given yourself a shorter or clearer name to refer to it by in this file.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Compare method calls to the Layer 1 approach: In Session 04 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?</p>
-        <label class="quiz-option" data-val="a"><code>get_population(k)</code> — methods work exactly the same way</label>
-        <label class="quiz-option" data-val="b"><code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly</label>
-        <label class="quiz-option" data-val="c"><code>k.get_population(k)</code> — you must still pass k explicitly</label>
-        <label class="quiz-option" data-val="d">Methods cannot replace standalone functions like get_population</label>
-        <div class="explanation">This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.</div>
+        <p>What is the purpose of <code>if __name__ == "__main__":</code> at the bottom of a script?</p>
+        <label class="quiz-option" data-val="a">It is required syntax for every Python file</label>
+        <label class="quiz-option" data-val="b">It only runs the code inside it when the file is executed directly, not when it is imported by another file</label>
+        <label class="quiz-option" data-val="c">It defines the main function that Python always calls first</label>
+        <label class="quiz-option" data-val="d">It prevents the file from being imported at all</label>
+        <div class="explanation">When a file is run directly, Python sets its <code>__name__</code> to <code>"__main__"</code>. When the same file is imported by another module, <code>__name__</code> is set to the module's name instead. This guard lets a file provide both reusable functions AND a runnable demo, without the demo firing every time it's imported.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="b">
+      <div class="quiz-question" data-question="4" data-answer="c">
         <div class="question-num">Question 5 of 5</div>
-        <p>If Country defines a method called region_label(self), can you call it as Country.region_label(k) instead of k.region_label()?</p>
-        <label class="quiz-option" data-val="a">No — that syntax is always invalid</label>
-        <label class="quiz-option" data-val="b">Yes — both are equivalent; k.region_label() is shorthand for Country.region_label(k)</label>
-        <label class="quiz-option" data-val="c">Yes, but only for __init__, not other methods</label>
-        <label class="quiz-option" data-val="d">Only if region_label takes no self parameter</label>
-        <div class="explanation">The dot-call syntax is genuinely just convenient shorthand. <code>k.region_label()</code> and <code>Country.region_label(k)</code> do exactly the same thing — the first form is simply what everyone writes in practice.</div>
+        <p>You import the same module twice from two different files in your project (e.g. both <code>app.py</code> and <code>tests.py</code> import <code>data.py</code>). How many times does data.py's top-level code actually execute?</p>
+        <label class="quiz-option" data-val="a">Twice — once per import</label>
+        <label class="quiz-option" data-val="b">Zero — imports only expose names, they don't run code</label>
+        <label class="quiz-option" data-val="c">Once — Python caches modules after the first import</label>
+        <label class="quiz-option" data-val="d">It depends on the order the files are run in</label>
+        <div class="explanation">Python caches every module the first time it is imported. Subsequent imports anywhere in the program reuse the cached, already-executed module instead of re-running its top-level code.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -428,10 +429,10 @@ git commit -m "session-10: add summary and grow_population instance methods"</co
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Rewrite grow_population as a Layer-1-style standalone function taking a dict. How many more characters does the caller have to type versus the method version?</li>
-        <li>Why does putting validation logic (the ValueError check) inside the method make it harder to accidentally bypass than a separate validation function would?</li>
-        <li>What would happen if you defined grow_population without self as the first parameter? Try it and read the error message carefully.</li>
-        <li>Can every standalone function from Layer 1 become a method? Can you think of one that could not?</li>
+        <li>Why would putting a "demo" print statement at the top level of country_data.py (outside the guard) have caused a problem in explorer.py?</li>
+        <li>When would you prefer <code>import module</code> over <code>from module import name</code>, given that the second saves typing?</li>
+        <li>What real-world project structure benefit comes from every module only executing once, even if imported from many places?</li>
+        <li>How does a Python module's import caching remind you of anything else you've learned about references and shared state (Session 05)?</li>
       </ol>
     </div>
 
@@ -440,9 +441,9 @@ git commit -m "session-10: add summary and grow_population instance methods"</co
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Missing self bugs:</strong> Forgetting <code>self</code> as a method's first parameter produces a confusing TypeError about argument counts when the method is called normally — a very common early mistake that this session should immunize you against.</li>
-        <li><strong>Passing data (Session 11):</strong> Right now every instance is built by passing all fields directly to __init__. In the next session, we formalize this as "props" flowing into an object at construction time, drawing an explicit line back to the original React course's prop pattern.</li>
-        <li><strong>Testing methods (Layer 5):</strong> Every unit test you write from Session 29 onward calls methods on instances exactly the way this lab does. If method calls are not second nature, reading test code will be much harder.</li>
+        <li><strong>Demo code leaking into imports:</strong> Without the <code>__main__</code> guard, any print statements, test calls, or demo code at the top level of a module will fire every single time that module is imported anywhere — cluttering output and sometimes causing real side effects in production code.</li>
+        <li><strong>Circular imports:</strong> Once code is split across files, it becomes possible for module A to import module B while B tries to import A — a circular import error. Understanding how imports execute (once, top to bottom) is the first step to debugging this later.</li>
+        <li><strong>Project architecture (Layer 6):</strong> Sessions 36–40 are entirely about organizing a growing codebase into modules and packages. Everything there assumes you are comfortable splitting files and importing between them.</li>
       </ul>
     </div>
 
@@ -450,9 +451,9 @@ git commit -m "session-10: add summary and grow_population instance methods"</co
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Instance methods — self-bound functions that read and mutate an instance's own data without needing it passed in explicitly.</p>
-      <p><strong>Unlocks:</strong> Country is now a genuine object: data plus the behavior that belongs with it. This is the last piece needed before we start composing objects together.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 11 — Passing Data via the Constructor</a>. We formalize how data flows into an object at construction time, and start passing whole objects (not just primitive values) into other objects.</p>
+      <p><strong>Python concept mastered:</strong> Modules and the import system — import vs from-import, aliasing, and the __main__ guard.</p>
+      <p><strong>Unlocks:</strong> You can now split growing code across multiple files instead of one giant script — the basis for any real Python project structure.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 11 — Errors and Exceptions</a>. We will learn to handle things going wrong — try/except and raising exceptions — before we build anything more complex.</p>
     </div>
 
 

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Session 47 — Packaging & Virtual Environments — Python Learning</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <link rel="stylesheet" href="../../notes-widget.css" />
+  <link rel="stylesheet" href="../../bookmark-widget.css" />
+  <link rel="stylesheet" href="../../quiz-explain-modal.css" />
+  <style>
+    .quiz-option { display: block; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 8px; cursor: pointer; font-size: 14px; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .quiz-option:hover { border-color: var(--accent); background: var(--surface); }
+    .quiz-option.selected { border-color: var(--accent); background: rgba(88,166,255,0.1); }
+    .quiz-option.correct  { border-color: var(--green);  background: rgba(63,185,80,0.1); }
+    .quiz-option.wrong    { border-color: var(--red);    background: rgba(248,81,73,0.1); }
+    .quiz-question { margin-bottom: 28px; }
+    .quiz-question p { font-weight: 600; margin-bottom: 10px; font-size: 15px; }
+    .quiz-question .question-num { color: var(--text-muted); font-size: 12px; font-weight: 400; margin-bottom: 4px; }
+    .quiz-result { display: none; padding: 16px 20px; border-radius: var(--radius); margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .quiz-result.pass { background: rgba(63,185,80,0.12); border: 1px solid var(--green); color: var(--green); }
+    .quiz-result.fail { background: rgba(248,81,73,0.12); border: 1px solid var(--red);   color: var(--red); }
+    .explanation { display: none; font-size: 13px; color: var(--text-muted); margin-top: 6px; padding: 8px 12px; background: var(--surface-2); border-radius: var(--radius); border-left: 2px solid var(--border); }
+    .submit-btn { background: var(--accent); color: #0d1117; border: none; border-radius: var(--radius); padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; }
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .step { display: flex; gap: 16px; margin-bottom: 20px; }
+    .step-num { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #0d1117; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+    .step-body { flex: 1; }
+    .step-body p { margin-bottom: 6px; }
+    .section-divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+    .checklist-item { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; font-size: 14px; }
+    .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="../../index.html" class="brand">🐍 Python Learning</a>
+    <a href="../../syllabus/index.html">Syllabus</a>
+    <a href="../../sessions/index.html" class="active">Sessions</a>
+    <a href="../../quizzes/index.html">Quizzes</a>
+    <a href="../../labs/index.html">Labs</a>
+    <a href="../../architecture/index.html">Architecture</a>
+    <a href="../../session-notes/index.html">Notes</a>
+    <a href="../../commit-reviews/index.html">Commits</a>
+    <a href="../../prompts/index.html">Prompts</a>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+
+    <!-- Header -->
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
+      <span class="badge badge-layer">Layer 8</span>
+      <span class="badge badge-gate">Session 47 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Beyond the Fundamentals</span>
+    </div>
+    <h1>Packaging & Virtual Environments</h1>
+    <p class="subtitle">The final session. Every pip install across this curriculum quietly assumed a working Python setup. This session covers the practical piece every real project needs: isolating dependencies per-project.</p>
+
+    <div class="alert alert-info">
+      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+    </div>
+
+    <h2>1. Learning Objective</h2>
+    <div class="card">
+      <p>By the end of this session you will be able to:</p>
+      <ul>
+        <li>Explain what problem a virtual environment solves</li>
+        <li>Create and activate a virtual environment with venv</li>
+        <li>Install packages into an isolated environment and freeze them to a requirements.txt</li>
+        <li>Recreate an identical environment on a different machine from requirements.txt</li>
+        <li>Explain, at a high level, what pyproject.toml is for in a real distributable package</li>
+      </ul>
+    </div>
+
+    <h2>2. Pre-Coding Quiz</h2>
+    <p>
+      Answer these <strong>before</strong> reading the concept explanation or writing any code.
+      It is fine to get these wrong — that is the point. You need 4/5 to proceed to the lab.
+    </p>
+
+    <div id="pre-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Two different projects on the same computer need different, conflicting versions of the requests library. What problem does this create if both use the same global Python installation?</p>
+        <label class="quiz-option" data-val="a">There is no problem — pip automatically keeps versions separate per project</label>
+        <label class="quiz-option" data-val="b">Installing one version for one project would silently break the other project, which needs a different version — they cannot both be installed globally at once</label>
+        <label class="quiz-option" data-val="c">Python refuses to run any project that has a version conflict anywhere on the machine</label>
+        <label class="quiz-option" data-val="d">This can only happen with more than 10 dependencies</label>
+        <div class="explanation">A global Python installation has exactly ONE set of installed packages, shared by everything on that machine. Two projects needing different versions of the same library genuinely conflict — this is exactly the problem virtual environments solve.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="a">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does a virtual environment (created with python -m venv env) actually provide?</p>
+        <label class="quiz-option" data-val="a">A separate, isolated copy of the Python interpreter and its own installed packages, independent of the global installation and independent of any other project's environment</label>
+        <label class="quiz-option" data-val="b">A faster version of Python</label>
+        <label class="quiz-option" data-val="c">A cloud-hosted Python runtime</label>
+        <label class="quiz-option" data-val="d">A way to run Python 2 and Python 3 code in the same file</label>
+        <div class="explanation">A virtual environment is a self-contained directory holding its own Python interpreter (or a link to one) and its own <code>site-packages</code> — installing something into it has zero effect on the global installation or any other project's environment.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does pip freeze > requirements.txt do, and why does the whole curriculum's pip install pytest requests (Sessions 32, 42) become more reproducible because of it?</p>
+        <label class="quiz-option" data-val="a">It deletes all currently installed packages</label>
+        <label class="quiz-option" data-val="b">It writes every currently installed package and its exact version to a file, so anyone (including future you, on a different machine) can recreate the identical environment with one command</label>
+        <label class="quiz-option" data-val="c">It permanently locks the Python version itself</label>
+        <label class="quiz-option" data-val="d">It uploads your code to PyPI</label>
+        <div class="explanation"><code>requirements.txt</code> is a plain list of package==version pairs. Anyone who clones the project can run <code>pip install -r requirements.txt</code> and get the exact same dependency versions you had — without requirements.txt, "pip install pytest requests" (as taught in earlier sessions) gets whatever the LATEST versions happen to be at install time, which may differ machine to machine.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You clone the Country Explorer project on a new machine and want the exact same dependencies. What is the correct sequence, given a requirements.txt already exists?</p>
+        <label class="quiz-option" data-val="a">python -m venv env, activate it, then pip install -r requirements.txt</label>
+        <label class="quiz-option" data-val="b">pip install -r requirements.txt directly into the global Python installation, skipping venv entirely</label>
+        <label class="quiz-option" data-val="c">Copy the old machine's venv folder directly onto the new machine and run it</label>
+        <label class="quiz-option" data-val="d">requirements.txt does the whole setup automatically with no other commands needed</label>
+        <div class="explanation">Create a fresh, isolated virtual environment first, activate it (so pip installs INTO it, not globally), then install from the requirements file. This is the standard, portable Python project setup sequence.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>At a high level, what is pyproject.toml for, as opposed to requirements.txt?</p>
+        <label class="quiz-option" data-val="a">They are two names for the exact same file with no real difference</label>
+        <label class="quiz-option" data-val="b">requirements.txt lists dependencies for reproducing an environment; pyproject.toml describes a project as a distributable PACKAGE — its name, version, dependencies, and build configuration, for publishing or installing it as a library</label>
+        <label class="quiz-option" data-val="c">pyproject.toml is only used by Python 2 projects</label>
+        <label class="quiz-option" data-val="d">requirements.txt is required; pyproject.toml is never used in real projects</label>
+        <div class="explanation">requirements.txt is about reproducing a working ENVIRONMENT for running a project. pyproject.toml is about describing a project as an installable, distributable PACKAGE — the modern standard for anything meant to be published (e.g. to PyPI) or installed via pip install your-package-name.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Pre-Quiz</button>
+      <div class="quiz-result" id="pre-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>3. The Concept — Isolating and Sharing a Python Project</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">GLOBAL PYTHON</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">shared,</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">conflict-prone</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">VENV PER PROJECT</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">isolated,</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">conflict-free</text>
+      </svg>
+      <p class="diagram-caption-text">Each project gets its own isolated interpreter and packages — no more conflicts between projects sharing one global Python.</p>
+    </div>
+
+
+    <h3>The problem: one global Python, many conflicting needs</h3>
+    <p>Every <code>pip install</code> across this curriculum (Session 32's pytest, Session 42's requests) quietly assumed a single, shared Python installation. In reality, different projects often need different, conflicting versions of the same package — impossible to satisfy with one global set of installed packages.</p>
+
+    <h3>Creating and activating a virtual environment</h3>
+    <p>venv, built into Python, creates a self-contained directory with its own interpreter and package list — completely isolated from the global installation and from any other project's environment.</p>
+    <pre><code># Create a virtual environment in a folder called "env"
+# python -m venv env
+
+# Activate it (varies by OS)
+# macOS/Linux: source env/bin/activate
+# Windows:     env\Scripts\activate
+
+# Once activated, your prompt shows (env) — pip now installs HERE, not globally
+# pip install pytest requests
+
+# Deactivate when done
+# deactivate</code></pre>
+
+    <h3>Freezing and restoring dependencies</h3>
+    <p>pip freeze lists every installed package and its exact version. Saving that to requirements.txt lets anyone recreate an identical environment — turning "it works on my machine" into "run these two commands and it works on yours too."</p>
+    <pre><code># Inside an activated venv, after installing what you need:
+# pip freeze &gt; requirements.txt
+
+# requirements.txt now looks something like:
+# pytest==8.3.4
+# requests==2.32.3
+
+# On a fresh machine, to reproduce the exact same environment:
+# python -m venv env
+# source env/bin/activate   (or env\Scripts\activate on Windows)
+# pip install -r requirements.txt</code></pre>
+
+    <h3>pyproject.toml — describing a distributable package</h3>
+    <p>requirements.txt reproduces an environment for RUNNING a project. pyproject.toml is the modern standard for describing a project as an installable PACKAGE — its name, version, and dependencies — used when you want something installable via <code>pip install your-package-name</code>, not just runnable locally.</p>
+    <pre><code># pyproject.toml — a minimal example, for context only (not built in this lab)
+# [project]
+# name = "country-explorer"
+# version = "1.0.0"
+# dependencies = [
+#     "requests&gt;=2.32",
+# ]</code></pre>
+
+    <div class="alert alert-warning">
+      <strong>The curriculum, complete:</strong> This is the final session of Python Fundamentals, core and bonus layers alike. You now have the language fundamentals, the object-oriented and testing discipline, the architectural judgment, and the practical project-setup knowledge to build and share a real Python project.
+    </div>
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Create a virtual environment for the Country Explorer project, install its real dependencies, and produce a requirements.txt that could recreate the setup on any machine.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A virtual environment and a <code>requirements.txt</code> file.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create a virtual environment for the project</strong></p>
+        <p>Run this in your project's root folder.</p>
+        <pre><code># python -m venv env</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Activate it and confirm you are inside it</strong></p>
+        <p>Your terminal prompt should now show (env) at the start.</p>
+        <pre><code># source env/bin/activate     (macOS/Linux)
+# env\Scripts\activate          (Windows)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Install the project's real dependencies</strong></p>
+        <p>These are the two packages this whole curriculum actually used, in Sessions 32 and 42.</p>
+        <pre><code># pip install pytest requests</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Freeze the exact versions to requirements.txt</strong></p>
+
+        <pre><code># pip freeze &gt; requirements.txt
+# cat requirements.txt   (or open it in an editor)</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <p><strong>Simulate a fresh machine: deactivate, then reproduce the environment from scratch</strong></p>
+        <p>Delete the env folder, then rebuild it purely from requirements.txt, proving the file is sufficient on its own.</p>
+        <pre><code># deactivate
+# rm -rf env                       (macOS/Linux)   or   rmdir /s env   (Windows)
+# python -m venv env
+# source env/bin/activate            (or env\Scripts\activate)
+# pip install -r requirements.txt
+# pip list                            # confirm pytest and requests are both back</code></pre>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>5. Expected Files Changed</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>File</th><th>Action</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>env/</code></td>
+            <td>Created</td>
+            <td>An isolated virtual environment for this project (not committed to git).</td>
+          </tr>
+          <tr>
+            <td><code>requirements.txt</code></td>
+            <td>Created</td>
+            <td>The exact, reproducible list of the project's dependencies.</td>
+          </tr>
+          <tr>
+            <td><code>docs/sessions/session-47/index.html</code></td>
+            <td>Created</td>
+            <td>This session document — the final session of the curriculum.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="alert alert-warning">
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>6. Commit Checkpoint</h2>
+    <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
+    <pre><code>git add requirements.txt docs/sessions/session-47/index.html
+git commit -m "session-47: isolate dependencies with venv and freeze them to requirements.txt"</code></pre>
+
+    <div class="alert alert-info">
+      Do not commit until you can answer out loud: "Why does the env/ folder itself get excluded from git (via .gitignore), while requirements.txt does get committed?"
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>7. Code Review Checklist</h2>
+    <p>Go through your code line by line and check each item:</p>
+
+    <div class="card">
+      <div class="checklist-item">
+        <input type="checkbox" id="c1" />
+        <label for="c1">A virtual environment was created and successfully activated</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c2" />
+        <label for="c2">pytest and requests were installed inside the venv, not globally</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c3" />
+        <label for="c3">requirements.txt was generated with pip freeze and contains exact pinned versions</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c4" />
+        <label for="c4">The environment was deleted and successfully rebuilt from requirements.txt alone, proving reproducibility</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c5" />
+        <label for="c5">env/ is excluded from version control via .gitignore; requirements.txt is not</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="c6" />
+        <label for="c6">I can explain every line without looking at the concept section</label>
+      </div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>8. Post-Coding Quiz</h2>
+    <p>
+      Same 5 questions. Take it again now that you have written and run the code.
+      You need 4/5 to mark this session complete.
+    </p>
+
+    <div id="post-quiz">
+
+      <div class="quiz-question" data-question="0" data-answer="b">
+        <div class="question-num">Question 1 of 5</div>
+        <p>Two different projects on the same computer need different, conflicting versions of the requests library. What problem does this create if both use the same global Python installation?</p>
+        <label class="quiz-option" data-val="a">There is no problem — pip automatically keeps versions separate per project</label>
+        <label class="quiz-option" data-val="b">Installing one version for one project would silently break the other project, which needs a different version — they cannot both be installed globally at once</label>
+        <label class="quiz-option" data-val="c">Python refuses to run any project that has a version conflict anywhere on the machine</label>
+        <label class="quiz-option" data-val="d">This can only happen with more than 10 dependencies</label>
+        <div class="explanation">A global Python installation has exactly ONE set of installed packages, shared by everything on that machine. Two projects needing different versions of the same library genuinely conflict — this is exactly the problem virtual environments solve.</div>
+      </div>
+
+      <div class="quiz-question" data-question="1" data-answer="a">
+        <div class="question-num">Question 2 of 5</div>
+        <p>What does a virtual environment (created with python -m venv env) actually provide?</p>
+        <label class="quiz-option" data-val="a">A separate, isolated copy of the Python interpreter and its own installed packages, independent of the global installation and independent of any other project's environment</label>
+        <label class="quiz-option" data-val="b">A faster version of Python</label>
+        <label class="quiz-option" data-val="c">A cloud-hosted Python runtime</label>
+        <label class="quiz-option" data-val="d">A way to run Python 2 and Python 3 code in the same file</label>
+        <div class="explanation">A virtual environment is a self-contained directory holding its own Python interpreter (or a link to one) and its own <code>site-packages</code> — installing something into it has zero effect on the global installation or any other project's environment.</div>
+      </div>
+
+      <div class="quiz-question" data-question="2" data-answer="b">
+        <div class="question-num">Question 3 of 5</div>
+        <p>What does pip freeze > requirements.txt do, and why does the whole curriculum's pip install pytest requests (Sessions 32, 42) become more reproducible because of it?</p>
+        <label class="quiz-option" data-val="a">It deletes all currently installed packages</label>
+        <label class="quiz-option" data-val="b">It writes every currently installed package and its exact version to a file, so anyone (including future you, on a different machine) can recreate the identical environment with one command</label>
+        <label class="quiz-option" data-val="c">It permanently locks the Python version itself</label>
+        <label class="quiz-option" data-val="d">It uploads your code to PyPI</label>
+        <div class="explanation"><code>requirements.txt</code> is a plain list of package==version pairs. Anyone who clones the project can run <code>pip install -r requirements.txt</code> and get the exact same dependency versions you had — without requirements.txt, "pip install pytest requests" (as taught in earlier sessions) gets whatever the LATEST versions happen to be at install time, which may differ machine to machine.</div>
+      </div>
+
+      <div class="quiz-question" data-question="3" data-answer="a">
+        <div class="question-num">Question 4 of 5</div>
+        <p>You clone the Country Explorer project on a new machine and want the exact same dependencies. What is the correct sequence, given a requirements.txt already exists?</p>
+        <label class="quiz-option" data-val="a">python -m venv env, activate it, then pip install -r requirements.txt</label>
+        <label class="quiz-option" data-val="b">pip install -r requirements.txt directly into the global Python installation, skipping venv entirely</label>
+        <label class="quiz-option" data-val="c">Copy the old machine's venv folder directly onto the new machine and run it</label>
+        <label class="quiz-option" data-val="d">requirements.txt does the whole setup automatically with no other commands needed</label>
+        <div class="explanation">Create a fresh, isolated virtual environment first, activate it (so pip installs INTO it, not globally), then install from the requirements file. This is the standard, portable Python project setup sequence.</div>
+      </div>
+
+      <div class="quiz-question" data-question="4" data-answer="b">
+        <div class="question-num">Question 5 of 5</div>
+        <p>At a high level, what is pyproject.toml for, as opposed to requirements.txt?</p>
+        <label class="quiz-option" data-val="a">They are two names for the exact same file with no real difference</label>
+        <label class="quiz-option" data-val="b">requirements.txt lists dependencies for reproducing an environment; pyproject.toml describes a project as a distributable PACKAGE — its name, version, dependencies, and build configuration, for publishing or installing it as a library</label>
+        <label class="quiz-option" data-val="c">pyproject.toml is only used by Python 2 projects</label>
+        <label class="quiz-option" data-val="d">requirements.txt is required; pyproject.toml is never used in real projects</label>
+        <div class="explanation">requirements.txt is about reproducing a working ENVIRONMENT for running a project. pyproject.toml is about describing a project as an installable, distributable PACKAGE — the modern standard for anything meant to be published (e.g. to PyPI) or installed via pip install your-package-name.</div>
+      </div>
+
+      <button class="submit-btn" disabled>Submit Post-Quiz</button>
+      <div class="quiz-result" id="post-result"></div>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>9. Reflection Questions</h2>
+    <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
+    <div class="card">
+      <ol>
+        <li>Why should the env/ folder itself never be committed to git, while requirements.txt should be? What is the difference in what each one represents?</li>
+        <li>What would have gone wrong across Sessions 32-44 if two different learners' machines had silently different installed versions of pytest or requests?</li>
+        <li>When would you actually need a full pyproject.toml instead of just a requirements.txt? Think about the difference between "running a project" and "publishing a package."</li>
+        <li>Looking back across all 47 sessions, which single practice from this curriculum do you think will matter most the next time you start a brand-new Python project from scratch?</li>
+      </ol>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>10. What Breaks If This Knowledge Is Missing?</h2>
+    <div class="card">
+      <ul>
+        <li><strong>"Works on my machine" bugs:</strong> Without virtual environments and requirements.txt, a project silently depends on whatever happens to be globally installed on one specific machine — the single most common reason a project runs for its author but fails for anyone else.</li>
+        <li><strong>Dependency conflicts between projects:</strong> Without isolation, working on two Python projects with different version needs on the same machine eventually forces you to break one to fix the other — venv is what prevents this entirely.</li>
+      </ul>
+    </div>
+
+    <hr class="section-divider" />
+
+    <h2>11. What We Learned</h2>
+    <div class="card" style="border-color: var(--green);">
+      <p><strong>Python concept mastered:</strong> Isolating project dependencies with venv, reproducing environments with pip freeze / requirements.txt, and the distinction between an environment file and a distributable package's pyproject.toml.</p>
+      <p><strong>Unlocks:</strong> You can now set up, isolate, and share any real Python project so it runs identically on any machine — the last practical skill standing between "a script that works for me" and a genuinely shareable project.</p>
+      <p><strong>This is the final session.</strong> The curriculum, core and bonus layers alike, is complete.</p>
+    </div>
+
+
+  </div>
+</main>
+<script src="../../quiz.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    setupQuiz('pre');
+    setupQuiz('post');
+  });
+</script>
+
+<script src="../../notes-widget.js" defer></script>
+<script src="../../bookmark-widget.js" defer></script>
+
+</body>
+</html>

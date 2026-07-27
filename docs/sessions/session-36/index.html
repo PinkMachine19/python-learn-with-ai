@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 36 — Architecture Review — Python Learning</title>
+  <title>Session 36 — Package and Folder Organization — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -55,11 +55,11 @@
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
       <span class="badge badge-layer">Layer 6</span>
-      <span class="badge badge-gate">Session 36 — Gate</span>
+      <span class="badge badge-current">Session 36</span>
       <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
     </div>
-    <h1>Architecture Review</h1>
-    <p class="subtitle">This is the Layer 6 gate. We step back and review every major structural decision made across the whole project, documenting the reasoning the way a real engineering team would.</p>
+    <h1>Package and Folder Organization</h1>
+    <p class="subtitle">Layer 6 begins. Our project has grown past what flat files can comfortably hold. We reorganize into a proper Python package structure.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Write an Architecture Decision Record (ADR) documenting a real decision made earlier in the project</li>
-        <li>Review the current package structure end to end and assess whether it still makes sense</li>
-        <li>Identify one thing you would do differently if starting the project over, and explain why</li>
-        <li>Confirm the full test suite still passes as a final Layer 6 checkpoint</li>
-        <li>Explicitly connect the prop drilling problem from Session 35 to a documented architectural tradeoff</li>
+        <li>Explain the difference between a module (Session 10) and a package</li>
+        <li>Create a package using an __init__.py file</li>
+        <li>Reorganize country.py's growing classes into a package with focused submodules</li>
+        <li>Update import statements across the project to match the new structure</li>
+        <li>Run the existing test suite after reorganizing, to confirm nothing broke</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What are the essential components of a good Architecture Decision Record (ADR), based on this session's format?</p>
-        <label class="quiz-option" data-val="a">Only the final decision, with no explanation</label>
-        <label class="quiz-option" data-val="b">The decision itself, the context/session it was made in, the reasoning behind it, alternatives that were considered, and the consequences going forward</label>
-        <label class="quiz-option" data-val="c">A complete line-by-line diff of every file changed</label>
-        <label class="quiz-option" data-val="d">A screenshot of the code</label>
-        <div class="explanation">A useful ADR captures not just WHAT was decided, but WHY — including what else was considered and rejected, and what the decision commits the project to going forward. This is what makes it useful to someone (including future-you) revisiting the decision later.</div>
+        <p>What is the difference between a module (Session 10) and a package?</p>
+        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
+        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
+        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
+        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
+        <div class="explanation">A module (Session 10) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why is it valuable to document that Session 24's repository pattern was chosen SPECIFICALLY to support later testing (Session 31) and later real-API integration (Session 38), rather than just noting "we added a repository class"?</p>
-        <label class="quiz-option" data-val="a">It is not valuable; the code speaks for itself</label>
-        <label class="quiz-option" data-val="b">Recording the REASONING behind a decision preserves context that the code alone cannot show — a future reader (or future you) can understand not just what exists, but why it was built that way, and whether that reasoning still holds</label>
-        <label class="quiz-option" data-val="c">This information is automatically embedded in Python bytecode</label>
-        <label class="quiz-option" data-val="d">ADRs are only useful for decisions made by teams larger than one person</label>
-        <div class="explanation">This is precisely why Session 24's WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.</div>
+        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
+        <label class="quiz-option" data-val="a">A file named package.json</label>
+        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
+        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
+        <label class="quiz-option" data-val="d">A README.md file</label>
+        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Reviewing the prop drilling problem from Session 35, what should an honest architecture review document about it?</p>
-        <label class="quiz-option" data-val="a">Nothing — it was fully solved and no longer matters</label>
-        <label class="quiz-option" data-val="b">That it is a real, currently-unresolved tradeoff of the current composition structure, worth noting explicitly as a known limitation rather than pretending the project has no rough edges</label>
-        <label class="quiz-option" data-val="c">That composed objects should never be used again anywhere</label>
-        <label class="quiz-option" data-val="d">That the problem does not actually exist in Python</label>
-        <div class="explanation">A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 35's deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.</div>
+        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
+        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
+        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
+        <label class="quiz-option" data-val="c">Country must be renamed</label>
+        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
+        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 32 already ran it after the package reorganization?</p>
-        <label class="quiz-option" data-val="a">It is redundant and unnecessary busywork</label>
-        <label class="quiz-option" data-val="b">Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 33-35) also preserved correct behavior, not just the reorganization itself</label>
-        <label class="quiz-option" data-val="c">pytest results expire after one session and must be re-verified</label>
-        <label class="quiz-option" data-val="d">This is only for show; the actual result does not matter</label>
-        <div class="explanation">This is Layer 5's safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 33, 34, 35, and now 36) gives ongoing confidence that Layer 6's reorganization work has been behavior-preserving throughout, not just at one checkpoint.</div>
+        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
+        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
+        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
+        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
+        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
+        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is the value of explicitly asking "what would I do differently if starting over" as part of this review, rather than only documenting decisions as unquestionably correct?</p>
-        <label class="quiz-option" data-val="a">There is no value; decisions made should never be questioned</label>
-        <label class="quiz-option" data-val="b">Honest retrospection identifies real limitations and learning, which is valuable input for future projects (or a future iteration of this one) — treating every past decision as beyond question would prevent genuine improvement</label>
-        <label class="quiz-option" data-val="c">This step is purely ceremonial and has no practical use</label>
-        <label class="quiz-option" data-val="d">It is only useful for very large teams, never for solo work</label>
-        <div class="explanation">This is genuine engineering reflection: acknowledging that a decision — even a reasonable one at the time — might not be the best choice in hindsight is how real understanding (and real improvement in future projects) develops, rather than treating early choices as permanently beyond question.</div>
+        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 28's separation of concerns?</p>
+        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
+        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
+        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
+        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
+        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 28's repository vs explorer distinction, Session 24's separate validators module) — grouping by responsibility, not arbitrarily.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,174 +141,187 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Conducting an Architecture Review</h2>
-
-    <h3>The ADR format</h3>
-    <p>An Architecture Decision Record captures a real decision, its context, its reasoning, the alternatives considered, and its ongoing consequences — turning tacit reasoning into a durable, readable record.</p>
-    <pre><code># ADR-001 — Repository Pattern for Data Access
-#
-# Decision: Wrap all data access behind a CountryRepository class with a
-# stable get_all()/find_by_region() interface.
-#
-# Session: 24 (Building a Data Access Layer)
-#
-# Why: Application logic should not need to know or care whether data comes
-# from an in-memory mock list, a JSON file, or eventually a real API. This
-# separation lets each of those be swapped in independently, and lets tests
-# (Session 31) inject small, controlled fake datasets without touching real
-# files or the network.
-#
-# Alternatives considered: Letting every part of the app import mock data
-# directly. Rejected — this would tightly couple application logic to one
-# specific data source, and make testing much harder.
-#
-# Consequence: Any future data source (Session 38's real API) must be
-# adapted to return data in the same raw shape the repository expects.</code></pre>
-
-    <h3>Reviewing the current package structure</h3>
-    <p>Session 32 split the project into country_explorer/models.py, repository.py, validators.py, formatting.py, and search.py. A genuine review asks: does this grouping still make sense, now that the project has grown further?</p>
-    <pre><code># country_explorer/
-#   __init__.py     — re-exports the package's public interface
-#   models.py        — Country, CountryExplorer (data + core behavior)
-#   repository.py    — CountryRepository (data access)
-#   validators.py     — validate_country_record (data contract enforcement)
-#   formatting.py     — format_population (shared display logic)
-#   search.py          — matches_search_term (shared search logic)
-#
-# Does this still make sense? formatting.py and search.py are both small,
-# single-function modules — reasonable for now, but worth reconsidering if
-# either grows substantially.</code></pre>
-
-    <h3>Documenting a known, unresolved limitation</h3>
-    <p>A genuine review does not pretend the project is flawless — Session 35's prop drilling problem is a real, currently open architectural tradeoff worth recording explicitly.</p>
-    <pre><code># ADR-002 — Prop Drilling in the Composed UI-Layer Classes (UNRESOLVED)
-#
-# Decision: (none yet — documenting a known problem, not a fix)
-#
-# Session: 35 (The Prop Drilling Problem)
-#
-# Why this is a problem: App -&gt; NavigationPanel -&gt; MenuSection -&gt;
-# CountryExplorer requires every intermediate layer to forward a reference
-# it does not otherwise use, coupling unrelated classes together.
-#
-# Status: Deliberately left unresolved in this curriculum. A future
-# iteration might explore a shared context/state object or dependency
-# injection to address this, but understanding the problem clearly (as
-# Session 35 did) is prioritized over reaching for a fix prematurely.</code></pre>
-
-    <h3>The final Layer 6 checkpoint: does everything still work?</h3>
-    <p>Before considering Layer 6 complete, confirm the full test suite still passes — proving all the structural work across Sessions 32-36 was behavior-preserving throughout, not just at one point in time.</p>
-
-    <div class="alert alert-warning">
-      <strong>Layer 6 gate:</strong> This is the last Layer 6 session. Every remaining session assumes you can document and reason about architecture decisions the way a real engineering team does — including honestly naming unresolved tradeoffs.
+    <h2>3. The Concept — Modules vs Packages</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">COUNTRY.PY</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">one growing</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">file</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">COUNTRY_EXPLORER/</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="54" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">models.py</text><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">repository.py</text><text x="280" y="84" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">validators.py</text>
+      </svg>
+      <p class="diagram-caption-text">country.py splits into a package: focused submodules, with __init__.py re-exporting the names external code actually needs.</p>
     </div>
+
+
+    <h3>From one growing file to a package</h3>
+    <p>country.py has grown to contain Country, CountryExplorer, CountryRepository, and validate_country_record — several distinct responsibilities crammed into one file. A package lets us split these while keeping them organized under one importable unit.</p>
+    <pre><code># Before — everything in one growing file
+# country.py
+class Country: ...
+class CountryExplorer: ...
+class CountryRepository: ...
+def validate_country_record(data): ...</code></pre>
+
+    <h3>Creating a package with __init__.py</h3>
+    <p>A directory becomes a package once it contains an __init__.py file. The file can be empty, or it can re-export names to make imports more convenient for users of the package.</p>
+    <pre><code># country_explorer/__init__.py
+from .models import Country, CountryExplorer
+from .repository import CountryRepository
+from .validators import validate_country_record
+
+# This lets other code do: from country_explorer import Country
+# instead of the more verbose: from country_explorer.models import Country</code></pre>
+
+    <h3>Splitting by responsibility</h3>
+    <p>Following the conceptual boundaries already established in the project — Session 28's repository/explorer split, Session 24's separate validators — gives a natural, sensible package layout.</p>
+    <pre><code># country_explorer/models.py
+class Country:
+    ...
+
+class CountryExplorer:
+    ...
+
+# country_explorer/repository.py
+from .models import Country
+
+class CountryRepository:
+    ...
+
+# country_explorer/validators.py
+def validate_country_record(data):
+    ...</code></pre>
+
+    <h3>Updating imports and re-running the test suite</h3>
+    <p>Every file that imported from country now needs to import from country_explorer (or a specific submodule). Running the full test suite immediately afterward confirms the reorganization did not silently break anything — the payoff of Layer 5's investment.</p>
+    <pre><code># tests/test_country.py — before
+# from country import Country
+
+# tests/test_country.py — after
+from country_explorer import Country
+
+# Then: pytest -v
+# If every test still passes, the reorganization was behavior-preserving, as intended</code></pre>
+
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Write a real architecture review document covering at least two decisions (one resolved, one open), and confirm the full test suite still passes.
+      <strong>Lab objective:</strong> Reorganize country.py into a country_explorer/ package with focused submodules, update all imports, and confirm the full test suite still passes.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>ARCHITECTURE.md</code> at the project root.</p>
+    <p>A new package directory <code>country_explorer/</code> replacing the flat <code>country.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create ARCHITECTURE.md with the repository pattern ADR</strong></p>
+        <p><strong>Create the country_explorer/ directory with __init__.py</strong></p>
 
-        <pre><code># Architecture Decisions
-
-## ADR-001 — Repository Pattern for Data Access
-
-**Decision:** Wrap all data access behind a CountryRepository class with a
-stable get_all()/find_by_region()/search() interface.
-
-**Session:** 24 (Building a Data Access Layer)
-
-**Why:** Application logic should not need to know or care whether data
-comes from an in-memory mock list, a JSON file, or eventually a real API.
-
-**Alternatives considered:** Letting every part of the app import mock
-data directly. Rejected — this would tightly couple application logic to
-one specific data source.
-
-**Consequence:** Any future data source must be adapted to return data in
-the same raw shape the repository expects.</code></pre>
+        <pre><code># country_explorer/__init__.py
+from .models import Country, CountryExplorer
+from .repository import CountryRepository
+from .validators import validate_country_record</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Add an ADR for the package reorganization from Session 32</strong></p>
+        <p><strong>Move Country and CountryExplorer into models.py</strong></p>
 
-        <pre><code>## ADR-002 — Package Structure (models / repository / validators / formatting / search)
+        <pre><code># country_explorer/models.py
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
 
-**Decision:** Split the growing country.py into a country_explorer package
-with focused submodules by responsibility.
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
 
-**Session:** 32 (Package and Folder Organization)
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
 
-**Why:** A single growing file mixed unrelated responsibilities. Splitting
-by responsibility (data modeling, data access, validation, formatting,
-search) keeps each module focused and easier to navigate.
+    def grow_population(self, amount):
+        if amount &lt; 0:
+            raise ValueError(f"amount must be non-negative, got {amount}")
+        self.population += amount
 
-**Alternatives considered:** Splitting by "layer" of the curriculum
-instead of by responsibility. Rejected — responsibility-based grouping
-stays meaningful even as the curriculum's own structure changes.
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
 
-**Consequence:** Every new piece of cross-cutting logic must be evaluated
-for which existing module (or a new one) it belongs in.</code></pre>
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def add_country(self, country):
+        if not isinstance(country, Country):
+            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
+        self.countries.append(country)
+
+    @property
+    def country_count(self):
+        return len(self.countries)
+
+    @property
+    def total_population(self):
+        return sum(c.population for c in self.countries)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add an ADR documenting the unresolved prop drilling problem</strong></p>
+        <p><strong>Move CountryRepository into repository.py, importing Country from models</strong></p>
 
-        <pre><code>## ADR-003 — Prop Drilling in Composed UI-Layer Classes (UNRESOLVED)
+        <pre><code># country_explorer/repository.py
+from .models import Country
 
-**Decision:** None yet — this documents a known problem, not a fix.
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
 
-**Session:** 35 (The Prop Drilling Problem)
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
 
-**Why this is a problem:** A layered App -&gt; NavigationPanel -&gt; MenuSection
--&gt; CountryExplorer structure requires every intermediate layer to forward
-a reference it does not otherwise use.
-
-**Status:** Deliberately left unresolved. Future work might explore a
-shared context object or dependency injection, but understanding the
-problem clearly is prioritized over a premature fix.</code></pre>
+    def find_by_region(self, region):
+        return [Country.from_dict(r) for r in self._raw_data if r["region"] == region]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Review the current package structure and write a short assessment</strong></p>
-        <p>Answer explicitly: does the current models/repository/validators/formatting/search split still make sense? What, if anything, would you change?</p>
-        <pre><code>## Package Structure Review
+        <p><strong>Move validate_country_record into validators.py</strong></p>
 
-country_explorer/models.py, repository.py, validators.py, formatting.py,
-and search.py currently reflect distinct responsibilities established in
-Sessions 24, 26, 33, and 34. formatting.py and search.py are each small
-single-function modules — reasonable for the project's current size, but
-worth reconsidering if either grows to contain several unrelated helpers.</code></pre>
+        <pre><code># country_explorer/validators.py
+def validate_country_record(data):
+    required = {"name": str, "region": str, "population": int}
+    for key, expected_type in required.items():
+        if key not in data:
+            raise ValueError(f"missing required field: {key}")
+        if not isinstance(data[key], expected_type):
+            raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
+    return data</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Run the full test suite as the final Layer 6 checkpoint</strong></p>
-        <p>Confirm every test from Sessions 27-34 still passes, proving all of Layer 6's structural changes were behavior-preserving.</p>
-        <pre><code># pytest -v</code></pre>
+        <p><strong>Update every test file's imports and run the full suite</strong></p>
+        <p>Change every from country import ... to from country_explorer import ..., delete the old country.py, and run pytest -v.</p>
+        <pre><code># tests/test_country.py, test_return_values.py, test_state_changes.py, test_repository.py
+# change: from country import Country, CountryExplorer, CountryRepository, validate_country_record
+# to:     from country_explorer import Country, CountryExplorer, CountryRepository, validate_country_record
+
+# pytest -v</code></pre>
       </div>
     </div>
 
@@ -322,32 +335,58 @@ worth reconsidering if either grows to contain several unrelated helpers.</code>
         </thead>
         <tbody>
           <tr>
-            <td><code>ARCHITECTURE.md</code></td>
+            <td><code>country_explorer/__init__.py</code></td>
             <td>Created</td>
-            <td>A real architecture decision record documenting resolved and unresolved decisions.</td>
+            <td>Marks the directory as a package and re-exports the key names.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Created</td>
+            <td>Country and CountryExplorer, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/repository.py</code></td>
+            <td>Created</td>
+            <td>CountryRepository, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/validators.py</code></td>
+            <td>Created</td>
+            <td>validate_country_record, moved from country.py.</td>
+          </tr>
+          <tr>
+            <td><code>country.py</code></td>
+            <td>Deleted</td>
+            <td>Replaced by the new country_explorer package.</td>
+          </tr>
+          <tr>
+            <td><code>tests/*.py</code></td>
+            <td>Modified</td>
+            <td>Import paths updated to the new package structure.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-36/index.html</code></td>
             <td>Created</td>
-            <td>This session document — Layer 6 gate.</td>
+            <td>This session document.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+      If you find yourself editing any other file, stop. This session touches exactly 7 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add ARCHITECTURE.md docs/sessions/session-36/index.html
-git commit -m "session-36: conduct a full architecture review and document key decisions"</code></pre>
+    <pre><code>git add country_explorer/ tests/ docs/sessions/session-36/index.html
+git rm country.py
+git commit -m "session-36: reorganize into a country_explorer package with focused submodules"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why did ADR-003 document a problem without proposing a fix, unlike ADR-001 and ADR-002?"
+      Do not commit until you can answer out loud: "Why did running the full test suite right after this reorganization matter more than after almost any previous session?"
     </div>
 
     <hr class="section-divider" />
@@ -358,23 +397,23 @@ git commit -m "session-36: conduct a full architecture review and document key d
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">ARCHITECTURE.md contains at least one fully resolved decision (ADR-001 or ADR-002) with reasoning and alternatives</label>
+        <label for="c1">country_explorer/ is a real package with __init__.py re-exporting the key names</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">ARCHITECTURE.md contains the deliberately unresolved prop drilling ADR, documented honestly</label>
+        <label for="c2">models.py, repository.py, and validators.py each contain only their own responsibility</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">The current package structure is explicitly assessed for whether it still makes sense</label>
+        <label for="c3">repository.py imports Country from .models rather than duplicating it</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">The full test suite is run and confirmed passing as the final Layer 6 checkpoint</label>
+        <label for="c4">Every test file's imports are updated to the new package path</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">Every ADR references the specific session where the decision was actually made</label>
+        <label for="c5">The full test suite passes with zero failures after the reorganization</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -394,52 +433,52 @@ git commit -m "session-36: conduct a full architecture review and document key d
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What are the essential components of a good Architecture Decision Record (ADR), based on this session's format?</p>
-        <label class="quiz-option" data-val="a">Only the final decision, with no explanation</label>
-        <label class="quiz-option" data-val="b">The decision itself, the context/session it was made in, the reasoning behind it, alternatives that were considered, and the consequences going forward</label>
-        <label class="quiz-option" data-val="c">A complete line-by-line diff of every file changed</label>
-        <label class="quiz-option" data-val="d">A screenshot of the code</label>
-        <div class="explanation">A useful ADR captures not just WHAT was decided, but WHY — including what else was considered and rejected, and what the decision commits the project to going forward. This is what makes it useful to someone (including future-you) revisiting the decision later.</div>
+        <p>What is the difference between a module (Session 10) and a package?</p>
+        <label class="quiz-option" data-val="a">They are exactly the same thing with different names</label>
+        <label class="quiz-option" data-val="b">A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file</label>
+        <label class="quiz-option" data-val="c">A package can only contain classes, never functions</label>
+        <label class="quiz-option" data-val="d">A module can contain other modules; a package cannot</label>
+        <div class="explanation">A module (Session 10) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why is it valuable to document that Session 24's repository pattern was chosen SPECIFICALLY to support later testing (Session 31) and later real-API integration (Session 38), rather than just noting "we added a repository class"?</p>
-        <label class="quiz-option" data-val="a">It is not valuable; the code speaks for itself</label>
-        <label class="quiz-option" data-val="b">Recording the REASONING behind a decision preserves context that the code alone cannot show — a future reader (or future you) can understand not just what exists, but why it was built that way, and whether that reasoning still holds</label>
-        <label class="quiz-option" data-val="c">This information is automatically embedded in Python bytecode</label>
-        <label class="quiz-option" data-val="d">ADRs are only useful for decisions made by teams larger than one person</label>
-        <div class="explanation">This is precisely why Session 24's WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.</div>
+        <p>What is the minimum required for a directory to be treated as a regular Python package?</p>
+        <label class="quiz-option" data-val="a">A file named package.json</label>
+        <label class="quiz-option" data-val="b">An __init__.py file inside the directory (even if empty)</label>
+        <label class="quiz-option" data-val="c">At least 10 files inside it</label>
+        <label class="quiz-option" data-val="d">A README.md file</label>
+        <div class="explanation">An <code>__init__.py</code> file (even completely empty) is what traditionally marks a directory as a Python package, making <code>from mypackage import something</code> work.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Reviewing the prop drilling problem from Session 35, what should an honest architecture review document about it?</p>
-        <label class="quiz-option" data-val="a">Nothing — it was fully solved and no longer matters</label>
-        <label class="quiz-option" data-val="b">That it is a real, currently-unresolved tradeoff of the current composition structure, worth noting explicitly as a known limitation rather than pretending the project has no rough edges</label>
-        <label class="quiz-option" data-val="c">That composed objects should never be used again anywhere</label>
-        <label class="quiz-option" data-val="d">That the problem does not actually exist in Python</label>
-        <div class="explanation">A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 35's deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.</div>
+        <p>You split country.py into country_explorer/models.py (Country, CountryExplorer), country_explorer/repository.py (CountryRepository), and country_explorer/validators.py. What must change in files that used to do from country import Country?</p>
+        <label class="quiz-option" data-val="a">Nothing — Python automatically finds Country wherever it was moved to</label>
+        <label class="quiz-option" data-val="b">The import must be updated to reflect the new location, e.g. from country_explorer.models import Country</label>
+        <label class="quiz-option" data-val="c">Country must be renamed</label>
+        <label class="quiz-option" data-val="d">All files that used Country must be deleted and rewritten from scratch</label>
+        <div class="explanation">Moving a class to a new module means every import referencing its old location must be updated to the new path — this is a real, visible cost of reorganizing, which is exactly why a test suite (Layer 5) is valuable for confirming nothing was missed.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 32 already ran it after the package reorganization?</p>
-        <label class="quiz-option" data-val="a">It is redundant and unnecessary busywork</label>
-        <label class="quiz-option" data-val="b">Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 33-35) also preserved correct behavior, not just the reorganization itself</label>
-        <label class="quiz-option" data-val="c">pytest results expire after one session and must be re-verified</label>
-        <label class="quiz-option" data-val="d">This is only for show; the actual result does not matter</label>
-        <div class="explanation">This is Layer 5's safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 33, 34, 35, and now 36) gives ongoing confidence that Layer 6's reorganization work has been behavior-preserving throughout, not just at one checkpoint.</div>
+        <p>Why should you run the full test suite immediately after reorganizing files into a package, before making any other changes?</p>
+        <label class="quiz-option" data-val="a">It is not necessary; reorganizing files never breaks anything</label>
+        <label class="quiz-option" data-val="b">Reorganizing is a pure refactor (no intended behavior change) — running tests immediately confirms every import was updated correctly and nothing was accidentally broken in the process</label>
+        <label class="quiz-option" data-val="c">Tests must be run before every single line of code is written, always</label>
+        <label class="quiz-option" data-val="d">Running tests fixes broken imports automatically</label>
+        <div class="explanation">This is Layer 5's entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What is the value of explicitly asking "what would I do differently if starting over" as part of this review, rather than only documenting decisions as unquestionably correct?</p>
-        <label class="quiz-option" data-val="a">There is no value; decisions made should never be questioned</label>
-        <label class="quiz-option" data-val="b">Honest retrospection identifies real limitations and learning, which is valuable input for future projects (or a future iteration of this one) — treating every past decision as beyond question would prevent genuine improvement</label>
-        <label class="quiz-option" data-val="c">This step is purely ceremonial and has no practical use</label>
-        <label class="quiz-option" data-val="d">It is only useful for very large teams, never for solo work</label>
-        <div class="explanation">This is genuine engineering reflection: acknowledging that a decision — even a reasonable one at the time — might not be the best choice in hindsight is how real understanding (and real improvement in future projects) develops, rather than treating early choices as permanently beyond question.</div>
+        <p>What is a reasonable way to split country.py's growing content across a package, based on Session 28's separation of concerns?</p>
+        <label class="quiz-option" data-val="a">Randomly, by alphabetical order of the code inside each file</label>
+        <label class="quiz-option" data-val="b">By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established</label>
+        <label class="quiz-option" data-val="c">Every single function and class must go in its own separate file, no matter how small</label>
+        <label class="quiz-option" data-val="d">Splitting should wait until the project is finished</label>
+        <div class="explanation">Good package organization follows the conceptual boundaries already established by the project's design (Session 28's repository vs explorer distinction, Session 24's separate validators module) — grouping by responsibility, not arbitrarily.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -452,10 +491,10 @@ git commit -m "session-36: conduct a full architecture review and document key d
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>If you were handing this project to a new developer, which single ADR would be most valuable for them to read first, and why?</li>
-        <li>What is one decision made earlier in this curriculum (Sessions 1-35) that you now, in hindsight, might have made differently? Why?</li>
-        <li>Why does documenting a KNOWN limitation (ADR-003) honestly build more trust in a project's documentation than only ever documenting successes?</li>
-        <li>How does the discipline of writing an ADR relate to the "What We Learned" section that has closed every single session in this curriculum?</li>
+        <li>Did any test fail immediately after the reorganization? If so, what did that reveal about a missed import? If not, what does that tell you about how thorough Layer 5's coverage really was?</li>
+        <li>Why does __init__.py re-export names instead of requiring every caller to know the exact submodule (models, repository, validators) a given class lives in?</li>
+        <li>How does this package split reflect the conceptual boundaries you've been building since Session 28 (repository) and Session 24 (validators), rather than an arbitrary split?</li>
+        <li>What would you do differently if you needed to add a FOURTH responsibility to this package later — how would you decide whether it deserves its own submodule?</li>
       </ol>
     </div>
 
@@ -464,9 +503,9 @@ git commit -m "session-36: conduct a full architecture review and document key d
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Lost institutional knowledge:</strong> Without documented reasoning, future decisions about whether to change the repository pattern, the package structure, or address prop drilling would have to be re-derived from scratch, or worse, made without understanding the original tradeoffs at all.</li>
-        <li><strong>Real-world file and network work (Layer 7):</strong> The next layer adds real files and a real API — genuinely new external dependencies. Reviewing the architecture now, before adding more complexity, ensures the foundation is well-understood before building further on top of it.</li>
-        <li><strong>The capstone review (Session 40):</strong> This session's ARCHITECTURE.md becomes a key artifact referenced in the final capstone review, which walks through the entire project end to end.</li>
+        <li><strong>Import errors from a rushed reorganization:</strong> Reorganizing files without updating every import reference (and without a test suite to catch the ones you miss) is one of the most common sources of "it worked yesterday" bugs in real projects.</li>
+        <li><strong>Reusable modules (Session 37):</strong> The next session builds genuinely reusable utility functions — having a clean package structure in place first makes it obvious where new shared code should live.</li>
+        <li><strong>God objects and tight coupling (Session 39):</strong> A clean package split makes it much easier to SEE when one module starts doing too much or reaching too deeply into another's internals — the problem Session 39 addresses directly.</li>
       </ul>
     </div>
 
@@ -474,9 +513,9 @@ git commit -m "session-36: conduct a full architecture review and document key d
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Writing Architecture Decision Records that document not just what was built, but why — including honestly documenting known, unresolved limitations.</p>
-      <p><strong>Unlocks:</strong> The project now has a durable record of its own reasoning, and Layer 6's structural work is confirmed complete and behavior-preserving via a full passing test suite.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 37 — File I/O Deep Dive</a>. Layer 7 begins. We finally touch the real world — real files and, soon, a real network API — building on a now well-understood, well-tested foundation.</p>
+      <p><strong>Python concept mastered:</strong> Packages vs modules, creating a package with __init__.py, and safely reorganizing a growing codebase with a test suite as a safety net.</p>
+      <p><strong>Unlocks:</strong> The project now has a real, scalable package structure instead of one growing flat file — and you have proven, with tests, that the reorganization changed nothing about behavior.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 37 — Reusable Functions and Modules</a>. We extract genuinely reusable functions and utility modules, building on the clean structure we just established.</p>
     </div>
 
 

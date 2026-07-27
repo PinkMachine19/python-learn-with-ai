@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 29 — Testing Functions and Return Values — Python Learning</title>
+  <title>Session 29 — Working with JSON Files — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 5</span>
+      <span class="badge badge-layer">Layer 4</span>
       <span class="badge badge-current">Session 29</span>
-      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
+      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
     </div>
-    <h1>Testing Functions and Return Values</h1>
-    <p class="subtitle">We systematically test return values across the project, including edge cases: empty inputs, boundary values, and the exact examples used in each session's own concept explanation.</p>
+    <h1>Working with JSON Files</h1>
+    <p class="subtitle">We give the repository its first genuinely external data source: a real JSON file on disk, read and parsed with Python's standard library.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Write multiple test functions covering a normal case, an edge case, and a boundary case for one function</li>
-        <li>Use pytest parametrization to run the same test logic across several inputs</li>
-        <li>Test a list comprehension's output by checking exact contents, not just length</li>
-        <li>Test the from_dict classmethod from Session 14 with both valid and malformed input</li>
-        <li>Identify what "edge case" means concretely, using examples from this project</li>
+        <li>Write Python data to a JSON file with the json module</li>
+        <li>Read and parse a JSON file back into Python data structures</li>
+        <li>Handle a missing or malformed JSON file gracefully, reusing Session 11's error handling</li>
+        <li>Point CountryRepository at a JSON file instead of the in-memory mock list</li>
+        <li>Explain the relationship between JSON types and Python types</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
-        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
-        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
-        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
-        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
-        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 13).</div>
+        <p>What does <code>json.dump(MOCK_COUNTRIES, f)</code> do, given an open file f?</p>
+        <label class="quiz-option" data-val="a">Reads JSON data from the file into MOCK_COUNTRIES</label>
+        <label class="quiz-option" data-val="b">Writes MOCK_COUNTRIES to the file as JSON text</label>
+        <label class="quiz-option" data-val="c">Deletes the file</label>
+        <label class="quiz-option" data-val="d">Validates that MOCK_COUNTRIES is correctly formatted JSON</label>
+        <div class="explanation"><code>json.dump(data, file)</code> serializes a Python data structure (here, a list of dicts) into JSON text and writes it to the given open file.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="a">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does @pytest.mark.parametrize let you do?</p>
-        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
-        <label class="quiz-option" data-val="b">Skip a test entirely</label>
-        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
-        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
-        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
+        <p>After reading a JSON file with <code>data = json.load(f)</code>, what Python type does a JSON array of objects become?</p>
+        <label class="quiz-option" data-val="a">A tuple of tuples</label>
+        <label class="quiz-option" data-val="b">A list of dictionaries</label>
+        <label class="quiz-option" data-val="c">A single dictionary with numeric keys</label>
+        <label class="quiz-option" data-val="d">A string containing the raw JSON text</label>
+        <div class="explanation">A JSON array becomes a Python list; a JSON object becomes a Python dict. A JSON array of objects — exactly our country records — becomes a list of dicts, the exact shape we have been using since Session 06.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
-        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
-        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
-        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
-        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
-        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
+        <p>What happens if you call <code>json.load(f)</code> on a file that does not exist?</p>
+        <label class="quiz-option" data-val="a">It returns an empty list</label>
+        <label class="quiz-option" data-val="b">It raises a FileNotFoundError, before json.load even gets a chance to run</label>
+        <label class="quiz-option" data-val="c">It silently creates the file</label>
+        <label class="quiz-option" data-val="d">It returns None</label>
+        <div class="explanation">Attempting to open a nonexistent file for reading raises <code>FileNotFoundError</code> at the <code>open()</code> call itself — this needs a try/except (Session 11) if the file might legitimately be missing.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
-        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
-        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
-        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
-        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
-        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
+        <p>What happens if the file exists but contains invalid JSON text, e.g. a typo'd bracket?</p>
+        <label class="quiz-option" data-val="a">json.load() returns the raw text as a string instead</label>
+        <label class="quiz-option" data-val="b">json.load() raises a json.JSONDecodeError</label>
+        <label class="quiz-option" data-val="c">It silently returns an empty dict</label>
+        <label class="quiz-option" data-val="d">Python auto-corrects minor JSON syntax errors</label>
+        <div class="explanation">Malformed JSON raises <code>json.JSONDecodeError</code> (a subclass of <code>ValueError</code>) — another case where try/except lets you fail gracefully with a clear message instead of crashing the whole program.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
-        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
-        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
-        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
-        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
-        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
+        <p>To point CountryRepository at a JSON file instead of MOCK_COUNTRIES, what needs to change, given Session 28's design?</p>
+        <label class="quiz-option" data-val="a">Every method inside CountryRepository must be rewritten</label>
+        <label class="quiz-option" data-val="b">Only the raw_data passed into CountryRepository's constructor changes — from MOCK_COUNTRIES to the result of reading and parsing the JSON file; get_all() and find_by_region() need no changes at all</label>
+        <label class="quiz-option" data-val="c">CountryExplorer needs to be rewritten</label>
+        <label class="quiz-option" data-val="d">The whole application needs restructuring</label>
+        <div class="explanation">This is exactly the payoff promised in Session 28: as long as the JSON file's parsed content is still a list of dicts with the same keys, only the CONSTRUCTOR argument changes — the repository's methods and everything downstream of it are completely untouched.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,75 +141,70 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Testing Return Values Systematically</h2>
-
-    <h3>Three kinds of cases: normal, edge, and boundary</h3>
-    <p>A thorough test suite for a function covers its normal, expected use; edge cases (empty inputs, zero matches); and boundary cases (values right at a validation limit, like exactly 0).</p>
-    <pre><code># country.py additions
-def find_by_region(countries, region):
-    return [c for c in countries if c.region == region]
-
-# tests/test_find_by_region.py
-from country import Country, find_by_region
-
-def test_find_by_region_normal_case():
-    countries = [
-        Country(name="Kenya", region="Africa", population=54000000),
-        Country(name="Peru", region="Americas", population=33000000),
-    ]
-    result = find_by_region(countries, "Africa")
-    assert [c.name for c in result] == ["Kenya"]  # exact contents, not just length
-
-def test_find_by_region_no_matches_returns_empty_list():
-    countries = [Country(name="Kenya", region="Africa", population=54000000)]
-    result = find_by_region(countries, "Antarctica")
-    assert result == []  # Session 13's guarantee, verified
-
-def test_find_by_region_empty_source_list():
-    result = find_by_region([], "Africa")
-    assert result == []</code></pre>
-
-    <h3>Parametrizing repetitive test logic</h3>
-    <p>When the same test logic needs to run against several input/output pairs, @pytest.mark.parametrize avoids copy-pasting near-identical test functions.</p>
-    <pre><code>import pytest
-from country import Country
-
-@pytest.mark.parametrize("value,expected_valid", [
-    (54000000, True),
-    (0, True),         # boundary — exactly zero should be valid
-    (-1, False),        # boundary — just below zero should be invalid
-    (-999999, False),
-])
-def test_set_population_validity(value, expected_valid):
-    k = Country(name="Kenya", region="Africa", population=1)
-    if expected_valid:
-        k.set_population(value)
-        assert k.population == value
-    else:
-        with pytest.raises(ValueError):
-            k.set_population(value)</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">test body</span>written once</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">parametrize</span>4 cases
-run automatically</div>
-      <div class="diagram-caption">One test body, run automatically once per parametrized case — no copy-pasted near-duplicate test functions.</div>
+    <h2>3. The Concept — Reading and Writing JSON</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">JSON ARRAY</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">[ {...}, {...} ]</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PYTHON</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">list of dicts</text>
+      </svg>
+      <p class="diagram-caption-text">JSON arrays become Python lists; JSON objects become Python dicts — the same shape we've worked with since Session 06.</p>
     </div>
 
-    <h3>Testing from_dict with valid and malformed input</h3>
-    <p>Session 14's classmethod is a natural place for edge-case testing: what happens with correct data, and what happens with a missing required field.</p>
-    <pre><code>import pytest
-from country import Country
 
-def test_from_dict_builds_correct_instance():
-    data = {"name": "Kenya", "region": "Africa", "population": 54000000}
-    k = Country.from_dict(data)
-    assert k.name == "Kenya"
-    assert k.population == 54000000
+    <h3>Writing data to a JSON file</h3>
+    <p>Python's standard library json module converts Python data structures to and from JSON text — no external installation required.</p>
+    <pre><code>import json
+from mock_countries import MOCK_COUNTRIES
 
-def test_from_dict_missing_field_raises():
-    data = {"name": "Ghost Nation"}  # missing region and population
-    with pytest.raises(TypeError):
-        Country.from_dict(data)</code></pre>
+with open("countries.json", "w") as f:
+    json.dump(MOCK_COUNTRIES, f, indent=2)
+
+# countries.json now contains readable, formatted JSON text on disk</code></pre>
+
+    <h3>Reading it back</h3>
+    <p>json.load() parses a JSON file directly back into native Python data structures — a JSON array of objects becomes exactly the list of dicts we've used since Session 06.</p>
+    <pre><code>import json
+
+with open("countries.json") as f:
+    data = json.load(f)
+
+print(type(data))        # &lt;class 'list'&gt;
+print(type(data[0]))     # &lt;class 'dict'&gt;
+print(data[0]["name"])   # "Kenya"</code></pre>
+
+    <h3>Handling a missing or malformed file</h3>
+    <p>A file that does not exist, or contains invalid JSON, raises an exception — Session 11's discipline applies directly.</p>
+    <pre><code>import json
+
+def load_countries_file(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"{path} does not exist — using an empty dataset")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"{path} contains invalid JSON: {e}")
+        return []
+
+data = load_countries_file("countries.json")
+data_missing = load_countries_file("does_not_exist.json")  # handled gracefully</code></pre>
+
+    <h3>Pointing the repository at the file — nothing else changes</h3>
+    <p>This is Session 28's payoff, delivered: only the constructor argument changes, because get_all() was never coupled to WHERE raw_data came from.</p>
+    <pre><code>class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+# Before: built from the in-memory mock list
+# repo = CountryRepository(raw_data=MOCK_COUNTRIES)
+
+# Now: built from a real file on disk — get_all() is completely unchanged
+repo = CountryRepository(raw_data=load_countries_file("countries.json"))
+print(len(repo.get_all()))</code></pre>
 
 
 
@@ -217,102 +212,93 @@ def test_from_dict_missing_field_raises():
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Write a systematic test suite covering normal, edge, and boundary cases for find_by_region, from_dict, and set_population, using parametrization.
+      <strong>Lab objective:</strong> Write the mock data to a real JSON file, read it back with graceful error handling, and point CountryRepository at it.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>tests/test_return_values.py</code>, building on Session 28's country.py.</p>
+    <p>A file called <code>json_lab.py</code>, plus a generated <code>countries.json</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Add find_by_region and from_dict to country.py if not already present</strong></p>
+        <p><strong>Create the file and write the mock data to countries.json</strong></p>
 
-        <pre><code># country.py (additions)
-def find_by_region(countries, region):
-    return [c for c in countries if c.region == region]
+        <pre><code># json_lab.py
+import json
+from mock_countries import MOCK_COUNTRIES
 
-class Country:
-    # ... existing __init__, summary, set_population, grow_population ...
+with open("countries.json", "w") as f:
+    json.dump(MOCK_COUNTRIES, f, indent=2)
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)</code></pre>
+print("Wrote countries.json")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Write normal-case and exact-content tests for find_by_region</strong></p>
+        <p><strong>Open countries.json in a text editor and confirm it is readable JSON</strong></p>
+        <p>No code needed — just look at the file to see what json.dump produced.</p>
 
-        <pre><code># tests/test_return_values.py
-import pytest
-from country import Country, find_by_region
-
-def test_find_by_region_returns_exact_matches():
-    countries = [
-        Country(name="Kenya", region="Africa", population=54000000),
-        Country(name="Ghana", region="Africa", population=31000000),
-        Country(name="Peru", region="Americas", population=33000000),
-    ]
-    result = find_by_region(countries, "Africa")
-    assert [c.name for c in result] == ["Kenya", "Ghana"]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add edge case tests: no matches, empty source</strong></p>
+        <p><strong>Write load_countries_file() with graceful error handling</strong></p>
 
-        <pre><code>def test_find_by_region_no_matches():
-    countries = [Country(name="Kenya", region="Africa", population=54000000)]
-    assert find_by_region(countries, "Antarctica") == []
-
-def test_find_by_region_empty_source():
-    assert find_by_region([], "Africa") == []</code></pre>
+        <pre><code>def load_countries_file(path):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print(f"{path} does not exist — using an empty dataset")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"{path} contains invalid JSON: {e}")
+        return []</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Add from_dict tests, valid and malformed</strong></p>
+        <p><strong>Load the real file and a nonexistent file, confirming both are handled gracefully</strong></p>
 
-        <pre><code>def test_from_dict_valid():
-    k = Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})
-    assert k.name == "Kenya"
-    assert k.population == 54000000
-
-def test_from_dict_missing_field_raises():
-    with pytest.raises(TypeError):
-        Country.from_dict({"name": "Ghost Nation"})</code></pre>
+        <pre><code>real_data = load_countries_file("countries.json")
+missing_data = load_countries_file("does_not_exist.json")
+print("Real records:", len(real_data))
+print("Missing-file fallback:", missing_data)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Add a parametrized boundary test for set_population</strong></p>
+        <p><strong>Point CountryRepository at the JSON file and confirm everything still works</strong></p>
 
-        <pre><code>@pytest.mark.parametrize("value,should_succeed", [
-    (54000000, True),
-    (0, True),
-    (-1, False),
-])
-def test_set_population_boundaries(value, should_succeed):
-    k = Country(name="Kenya", region="Africa", population=1)
-    if should_succeed:
-        k.set_population(value)
-        assert k.population == value
-    else:
-        with pytest.raises(ValueError):
-            k.set_population(value)
+        <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
 
-# Run: pytest -v   (the -v flag shows each parametrized case individually)</code></pre>
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)
+
+class CountryRepository:
+    def __init__(self, raw_data):
+        self._raw_data = raw_data
+
+    def get_all(self):
+        return [Country.from_dict(r) for r in self._raw_data]
+
+repo = CountryRepository(raw_data=load_countries_file("countries.json"))
+print(len(repo.get_all()))</code></pre>
       </div>
     </div>
 
@@ -326,14 +312,14 @@ def test_set_population_boundaries(value, should_succeed):
         </thead>
         <tbody>
           <tr>
-            <td><code>country.py</code></td>
-            <td>Modified</td>
-            <td>Adds find_by_region and from_dict if not already present.</td>
+            <td><code>json_lab.py</code></td>
+            <td>Created</td>
+            <td>Writes and reads countries.json, with graceful error handling, feeding CountryRepository.</td>
           </tr>
           <tr>
-            <td><code>tests/test_return_values.py</code></td>
-            <td>Created</td>
-            <td>Systematic normal/edge/boundary test coverage, including parametrized cases.</td>
+            <td><code>countries.json</code></td>
+            <td>Generated</td>
+            <td>The mock data, now persisted as a real file on disk.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-29/index.html</code></td>
@@ -352,11 +338,11 @@ def test_set_population_boundaries(value, should_succeed):
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country.py tests/test_return_values.py docs/sessions/session-29/index.html
-git commit -m "session-29: systematically test return values, including edge and boundary cases"</code></pre>
+    <pre><code>git add json_lab.py countries.json docs/sessions/session-29/index.html
+git commit -m "session-29: read and write JSON files, point the repository at real disk data"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does test_find_by_region_returns_exact_matches check the exact list of names instead of just the count?"
+      Do not commit until you can answer out loud: "What two things could go wrong when reading countries.json, and how did I handle each one?"
     </div>
 
     <hr class="section-divider" />
@@ -367,23 +353,23 @@ git commit -m "session-29: systematically test return values, including edge and
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">find_by_region is tested for exact contents, no matches, and an empty source list</label>
+        <label for="c1">countries.json is generated with json.dump and is valid, readable JSON</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">from_dict is tested for both valid construction and a malformed record raising TypeError</label>
+        <label for="c2">load_countries_file() catches both FileNotFoundError and json.JSONDecodeError separately</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">set_population's boundary (exactly 0 vs -1) is tested using @pytest.mark.parametrize</label>
+        <label for="c3">A nonexistent file path is tested and handled gracefully, returning an empty list</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">pytest -v is run and each parametrized case is visible individually in the output</label>
+        <label for="c4">CountryRepository is constructed from the JSON file's parsed content with zero changes to its own methods</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">All new tests pass</label>
+        <label for="c5">The final repo.get_all() call returns the expected number of Country instances</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -403,52 +389,52 @@ git commit -m "session-29: systematically test return values, including edge and
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
-        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
-        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
-        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
-        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
-        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 13).</div>
+        <p>What does <code>json.dump(MOCK_COUNTRIES, f)</code> do, given an open file f?</p>
+        <label class="quiz-option" data-val="a">Reads JSON data from the file into MOCK_COUNTRIES</label>
+        <label class="quiz-option" data-val="b">Writes MOCK_COUNTRIES to the file as JSON text</label>
+        <label class="quiz-option" data-val="c">Deletes the file</label>
+        <label class="quiz-option" data-val="d">Validates that MOCK_COUNTRIES is correctly formatted JSON</label>
+        <div class="explanation"><code>json.dump(data, file)</code> serializes a Python data structure (here, a list of dicts) into JSON text and writes it to the given open file.</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="a">
+      <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does @pytest.mark.parametrize let you do?</p>
-        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
-        <label class="quiz-option" data-val="b">Skip a test entirely</label>
-        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
-        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
-        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
+        <p>After reading a JSON file with <code>data = json.load(f)</code>, what Python type does a JSON array of objects become?</p>
+        <label class="quiz-option" data-val="a">A tuple of tuples</label>
+        <label class="quiz-option" data-val="b">A list of dictionaries</label>
+        <label class="quiz-option" data-val="c">A single dictionary with numeric keys</label>
+        <label class="quiz-option" data-val="d">A string containing the raw JSON text</label>
+        <div class="explanation">A JSON array becomes a Python list; a JSON object becomes a Python dict. A JSON array of objects — exactly our country records — becomes a list of dicts, the exact shape we have been using since Session 06.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
-        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
-        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
-        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
-        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
-        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
+        <p>What happens if you call <code>json.load(f)</code> on a file that does not exist?</p>
+        <label class="quiz-option" data-val="a">It returns an empty list</label>
+        <label class="quiz-option" data-val="b">It raises a FileNotFoundError, before json.load even gets a chance to run</label>
+        <label class="quiz-option" data-val="c">It silently creates the file</label>
+        <label class="quiz-option" data-val="d">It returns None</label>
+        <div class="explanation">Attempting to open a nonexistent file for reading raises <code>FileNotFoundError</code> at the <code>open()</code> call itself — this needs a try/except (Session 11) if the file might legitimately be missing.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
-        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
-        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
-        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
-        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
-        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
+        <p>What happens if the file exists but contains invalid JSON text, e.g. a typo'd bracket?</p>
+        <label class="quiz-option" data-val="a">json.load() returns the raw text as a string instead</label>
+        <label class="quiz-option" data-val="b">json.load() raises a json.JSONDecodeError</label>
+        <label class="quiz-option" data-val="c">It silently returns an empty dict</label>
+        <label class="quiz-option" data-val="d">Python auto-corrects minor JSON syntax errors</label>
+        <div class="explanation">Malformed JSON raises <code>json.JSONDecodeError</code> (a subclass of <code>ValueError</code>) — another case where try/except lets you fail gracefully with a clear message instead of crashing the whole program.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
-        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
-        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
-        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
-        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
-        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
+        <p>To point CountryRepository at a JSON file instead of MOCK_COUNTRIES, what needs to change, given Session 28's design?</p>
+        <label class="quiz-option" data-val="a">Every method inside CountryRepository must be rewritten</label>
+        <label class="quiz-option" data-val="b">Only the raw_data passed into CountryRepository's constructor changes — from MOCK_COUNTRIES to the result of reading and parsing the JSON file; get_all() and find_by_region() need no changes at all</label>
+        <label class="quiz-option" data-val="c">CountryExplorer needs to be rewritten</label>
+        <label class="quiz-option" data-val="d">The whole application needs restructuring</label>
+        <div class="explanation">This is exactly the payoff promised in Session 28: as long as the JSON file's parsed content is still a list of dicts with the same keys, only the CONSTRUCTOR argument changes — the repository's methods and everything downstream of it are completely untouched.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -461,10 +447,10 @@ git commit -m "session-29: systematically test return values, including edge and
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does testing the boundary value 0 for set_population matter specifically, given the validation rule is value < 0?</li>
-        <li>Could a bug exist where find_by_region returns the correct COUNT of countries but the WRONG countries? Design a scenario where only an exact-content test would catch it.</li>
-        <li>How did parametrizing the set_population boundary test compare, in terms of clarity, to writing three separate test functions?</li>
-        <li>Which of today's tests would have caught a real bug from an earlier session, if that bug had existed?</li>
+        <li>Why does json.load() raise a FileNotFoundError from the open() call rather than from json.load() itself? What does that tell you about the order operations happen in?</li>
+        <li>What is the practical difference for a user between your program silently falling back to an empty list versus crashing entirely, when countries.json is missing?</li>
+        <li>Manually break countries.json (delete a bracket) and confirm your JSONDecodeError handling catches it. What did the error message tell you?</li>
+        <li>How does this session prove Session 28's repository design was worth the extra structure, now that a genuinely different data source exists?</li>
       </ol>
     </div>
 
@@ -473,9 +459,9 @@ git commit -m "session-29: systematically test return values, including edge and
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>False confidence from weak assertions:</strong> A test suite full of length-only or existence-only checks gives a false sense of safety — it can pass while the actual returned data is subtly wrong, exactly the gap exact-content assertions close.</li>
-        <li><strong>Testing state changes (Session 30):</strong> This session focused on return VALUES. The next session tests state CHANGES on an object over time — a related but distinct testing skill, since not every method returns something meaningful; some just mutate.</li>
-        <li><strong>Regression safety for the whole project:</strong> Every function and method tested in this session is now protected against silent regressions in every remaining session of the curriculum — this is the payoff of investing in test coverage now.</li>
+        <li><strong>Crash on missing or corrupt files:</strong> Without explicit handling for FileNotFoundError and JSONDecodeError, a single missing file or one bad edit to countries.json would crash the entire application on startup instead of degrading gracefully.</li>
+        <li><strong>Data contracts (Session 30):</strong> Nothing currently verifies that every record read from the JSON file actually has the right keys and types — a JSON file is just text, and can contain anything. The next session formalizes exactly this check.</li>
+        <li><strong>Real APIs (Session 42):</strong> Reading and parsing JSON is exactly what a real API response requires too — this session's json.load() pattern is nearly identical to how you will parse an HTTP response body in Layer 7.</li>
       </ul>
     </div>
 
@@ -483,9 +469,9 @@ git commit -m "session-29: systematically test return values, including edge and
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Systematic testing of return values — normal, edge, and boundary cases, exact-content assertions, and pytest parametrization.</p>
-      <p><strong>Unlocks:</strong> The project's core data-returning functions are now protected by a thorough, systematic test suite, not just a handful of happy-path checks.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 30 — Testing Classes and State Changes</a>. We test the other half of the picture: methods that change an object's state over time, rather than returning a value.</p>
+      <p><strong>Python concept mastered:</strong> Reading and writing JSON files with the json module, handling missing/malformed files gracefully, and pointing a repository at a real disk-based data source.</p>
+      <p><strong>Unlocks:</strong> The application now has a genuinely persistent, external data source — the first real (if still local) data the repository pattern was built to support.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 30 — Designing Data Contracts</a>. We formalize what a "valid" country record actually looks like, using type hints and dataclasses — the Layer 4 gate.</p>
     </div>
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 17 — Updating State via Methods — Python Learning</title>
+  <title>Session 17 — Conditional Logic in Methods — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-layer">Layer 2</span>
       <span class="badge badge-current">Session 17</span>
-      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>Updating State via Methods</h1>
-    <p class="subtitle">Direct attribute assignment lets anyone set invalid state from anywhere. This session channels every state change through named, validating methods instead.</p>
+    <h1>Conditional Logic in Methods</h1>
+    <p class="subtitle">Real data has gaps. A method needs to behave sensibly when the collection is empty, a value is missing, or a search finds nothing at all.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Rewrite direct attribute mutation as a named, validating method call</li>
-        <li>Design a method name that clearly communicates what state change it performs</li>
-        <li>Validate a proposed state change before applying it, reusing Session 07's exception patterns</li>
-        <li>Explain why "one method, one clear responsibility" makes state changes traceable</li>
-        <li>Add a second controlled-update method to CountryExplorer for adding a country safely</li>
+        <li>Write a method that branches based on the state of the instance</li>
+        <li>Use a ternary (conditional) expression for a short either/or value</li>
+        <li>Handle an empty list gracefully without a crash or a misleading result</li>
+        <li>Use the "truthy" nature of empty lists/strings in an if condition</li>
+        <li>Explain the difference between "no result found" and "an actual error"</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
-        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
-        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
-        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
-        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
-        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 07's raise) before any bad data is ever stored.</div>
+        <p>Given <code>def total_population(self):\n    return sum(c.population for c in self.countries)</code>, what does this return if self.countries is an empty list?</p>
+        <label class="quiz-option" data-val="a">A TypeError — sum() cannot handle an empty generator</label>
+        <label class="quiz-option" data-val="b">0 — sum() of nothing is 0, no crash</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">It raises an IndexError</label>
+        <div class="explanation"><code>sum()</code> of an empty sequence returns <code>0</code> by definition — no special handling is needed here. This is worth confirming explicitly rather than assuming.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
-        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
-        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
-        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
-        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
-        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
+        <p>What does <code>if self.countries:</code> check, given that self.countries is a list?</p>
+        <label class="quiz-option" data-val="a">Whether self.countries is exactly the value True</label>
+        <label class="quiz-option" data-val="b">Whether the list has at least one item — an empty list is "falsy", a non-empty one is "truthy"</label>
+        <label class="quiz-option" data-val="c">Whether self.countries is not None, but ignores emptiness</label>
+        <label class="quiz-option" data-val="d">It is a syntax error — you must write if len(self.countries) > 0</label>
+        <div class="explanation">In Python, empty collections (list, dict, string) are falsy, and non-empty ones are truthy. <code>if self.countries:</code> is idiomatic for "does this list have anything in it?" — equivalent to but more idiomatic than checking length explicitly.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
-        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
-        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
-        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
-        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
-        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
+        <p>Given <code>label = "Africa" if country.region == "Africa" else "Other"</code>, what kind of expression is this?</p>
+        <label class="quiz-option" data-val="a">A regular if statement written on one line</label>
+        <label class="quiz-option" data-val="b">A ternary (conditional) expression — it evaluates to one of two values inline</label>
+        <label class="quiz-option" data-val="c">A syntax error — Python has no ternary operator</label>
+        <label class="quiz-option" data-val="d">A lambda function</label>
+        <div class="explanation">Python's ternary form is <code>value_if_true if condition else value_if_false</code>. It is an expression (it produces a value) rather than a statement, useful for short either/or assignments.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 16)?</p>
-        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
-        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
-        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
-        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
-        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
+        <p>A method find_by_region(region) returns [] when no country matches. Is returning an empty list the same kind of situation as raising an exception?</p>
+        <label class="quiz-option" data-val="a">Yes — both represent a failure and should be handled identically</label>
+        <label class="quiz-option" data-val="b">No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 11)</label>
+        <label class="quiz-option" data-val="c">Yes, an empty list should always be converted to a raised exception</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction in Python</label>
+        <div class="explanation">A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 11) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
-        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
-        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
-        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
-        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
-        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
+        <p>Given a method that must show a message when there are no countries, which is more idiomatic Python?</p>
+        <label class="quiz-option" data-val="a"><code>if len(self.countries) == 0:</code></label>
+        <label class="quiz-option" data-val="b"><code>if not self.countries:</code></label>
+        <label class="quiz-option" data-val="c"><code>if self.countries == []:</code></label>
+        <label class="quiz-option" data-val="d">All three are equally un-idiomatic</label>
+        <div class="explanation"><code>if not self.countries:</code> relies on the truthy/falsy behaviour from this session and is the idiomatic Python style. The other two work but are unnecessarily verbose for the same check.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,64 +141,69 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Controlled State Updates</h2>
-
-    <h3>From direct assignment to a named method</h3>
-    <p>Session 10 already introduced grow_population as a validating method. This session generalizes that pattern: every state change should go through a method, never a bare attribute assignment from outside the class.</p>
-    <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name
-        self.region = region
-        self.population = population
-
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount
-
-    def set_population(self, value):
-        if value &lt; 0:
-            raise ValueError(f"population must be non-negative, got {value}")
-        self.population = value  # only reachable if the value passed validation</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">proposed value</span>-999999</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">validation</span>rejected
-(ValueError)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">self.population</span>unchanged</div>
-      <div class="diagram-caption">A method acts as a checkpoint — invalid values are rejected before they ever reach the attribute.</div>
+    <h2>3. The Concept — Conditional Logic in Methods</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">[]</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">falsy</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">[X]</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">truthy</text>
+      </svg>
+      <p class="diagram-caption-text">Empty collections are falsy; anything with at least one item is truthy.</p>
     </div>
 
-    <h3>Naming a method to communicate intent</h3>
-    <p>A generic update(field, value) method either needs complicated per-field logic or skips validation entirely. Specific method names — set_population, grow_population, set_capital — each validate exactly one clear case.</p>
-    <pre><code># Avoid: a generic method that has to guess what "field" even means
-def update(self, field, value):
-    setattr(self, field, value)  # no validation possible here — dangerous
 
-# Prefer: specific, self-documenting, individually validated methods
-def set_capital(self, new_capital):
-    if not new_capital:
-        raise ValueError("capital cannot be empty")
-    self.capital = new_capital</code></pre>
-
-    <h3>Extending the pattern to CountryExplorer</h3>
-    <p>The same discipline applies to the collection-level state from Session 12 — an add_country method guarantees every item in the list is actually a valid Country.</p>
+    <h3>Branching based on instance state</h3>
+    <p>A method can look at self's current attributes and behave differently depending on what it finds — exactly like the plain if-statements from earlier sessions, just now reading self instead of a passed-in argument.</p>
     <pre><code>class CountryExplorer:
     def __init__(self, countries):
         self.countries = countries
 
-    def add_country(self, country):
-        if not isinstance(country, Country):
-            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
-        self.countries.append(country)
+    def status_message(self):
+        if not self.countries:
+            return "No countries loaded yet."
+        return f"{len(self.countries)} countries loaded."
+
+empty_explorer = CountryExplorer(countries=[])
+print(empty_explorer.status_message())  # "No countries loaded yet."</code></pre>
+
+    <h3>Truthy and falsy collections</h3>
+    <p>Python treats an empty list, empty string, empty dict, 0, and None as falsy in a boolean context. A non-empty version of any of them is truthy. This lets you write <code>if not self.countries:</code> instead of the more verbose <code>if len(self.countries) == 0:</code>.</p>
+    <pre><code>countries = []
+print(bool(countries))  # False — empty list is falsy
+
+countries = [1]
+print(bool(countries))  # True — non-empty list is truthy
+
+# Idiomatic style
+if not countries:
+    print("empty")
+else:
+    print("has items")</code></pre>
+
+    <h3>The ternary expression for short either/or values</h3>
+    <p>When a value simply needs to be one of two things based on a condition, a ternary expression is more compact than a full if/else block, and it produces a value directly rather than a side effect.</p>
+    <pre><code>def region_or_unknown(country):
+    return country.region if country.region else "Unknown"
+
+# equivalent longhand
+def region_or_unknown_longhand(country):
+    if country.region:
+        return country.region
+    else:
+        return "Unknown"</code></pre>
+
+    <h3>"Not found" is not the same as "broken"</h3>
+    <p>Recall Session 11: exceptions are for genuinely invalid states. A search that legitimately finds nothing should return an empty, valid result — not raise an exception. Confusing the two forces every caller to wrap normal searches in try/except unnecessarily.</p>
+    <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def find_by_region(self, region):
+        # Zero matches is a NORMAL outcome — return an empty list, don't raise
+        return [c for c in self.countries if c.region == region]
 
 explorer = CountryExplorer(countries=[])
-explorer.add_country(Country(name="Kenya", region="Africa", population=54000000))
-print(len(explorer.countries))  # 1
-
-# explorer.add_country("not a country")  # raises TypeError — caught before corrupting the list</code></pre>
-
-    <h3>Why this actually solves Session 16's risk</h3>
-    <p>Once population can only change through grow_population or set_population, tracing an unexpected value means checking those two call sites — not the entire codebase.</p>
+result = explorer.find_by_region("Antarctica")
+print(result)  # [] — a valid, empty answer, no crash, no exception</code></pre>
 
 
 
@@ -206,39 +211,86 @@ print(len(explorer.countries))  # 1
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Add set_population, set_capital, and add_country as controlled, validating state-change methods, replacing direct attribute assignment.
+      <strong>Lab objective:</strong> Add conditional logic to CountryExplorer that handles an empty collection gracefully, using truthy checks and a ternary expression.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>controlled_state.py</code>.</p>
+    <p>A file called <code>conditional_lab.py</code>, building on Session 16's CountryExplorer.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file with Country including grow_population from Session 10</strong></p>
+        <p><strong>Create the file with Country and CountryExplorer</strong></p>
 
-        <pre><code># controlled_state.py
+        <pre><code># conditional_lab.py
 class Country:
-    def __init__(self, name, region, population, capital=None):
+    def __init__(self, name, region, population):
         self.name = name
         self.region = region
         self.population = population
-        self.capital = capital
 
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount</code></pre>
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Add set_population and set_capital methods, both validating</strong></p>
+        <p><strong>Add a status_message() method using not self.countries</strong></p>
 
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def status_message(self):
+        if not self.countries:
+            return "No countries loaded yet."
+        return f"{len(self.countries)} countries loaded."
+
+empty = CountryExplorer(countries=[])
+loaded = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+print(empty.status_message())
+print(loaded.status_message())</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <p><strong>Add find_by_region() and confirm zero matches returns [] without a crash</strong></p>
+
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def status_message(self):
+        if not self.countries:
+            return "No countries loaded yet."
+        return f"{len(self.countries)} countries loaded."
+
+    def find_by_region(self, region):
+        return [c for c in self.countries if c.region == region]
+
+explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=54000000)])
+result = explorer.find_by_region("Antarctica")
+print(result)          # []
+print(type(result))    # &lt;class 'list'&gt; — never None, never an exception</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <p><strong>Add a ternary-based method for a country's display capital</strong></p>
+        <p>Give Country an optional capital, defaulting to None, and add a method that returns it or "Unknown".</p>
         <pre><code>class Country:
     def __init__(self, name, region, population, capital=None):
         self.name = name
@@ -246,75 +298,25 @@ class Country:
         self.population = population
         self.capital = capital
 
-    def grow_population(self, amount):
-        if amount &lt; 0:
-            raise ValueError(f"amount must be non-negative, got {amount}")
-        self.population += amount
+    def display_capital(self):
+        return self.capital if self.capital else "Unknown"
 
-    def set_population(self, value):
-        if value &lt; 0:
-            raise ValueError(f"population must be non-negative, got {value}")
-        self.population = value
-
-    def set_capital(self, new_capital):
-        if not new_capital:
-            raise ValueError("capital cannot be empty")
-        self.capital = new_capital</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <p><strong>Prove invalid changes are rejected and valid state is preserved</strong></p>
-
-        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
-
-try:
-    k.set_population(-5)
-except ValueError as e:
-    print("Rejected:", e)
-
-print("Population still valid:", k.population)  # unchanged — still 54000000
-
-try:
-    k.set_capital("")
-except ValueError as e:
-    print("Rejected:", e)</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <p><strong>Add add_country to CountryExplorer with type validation</strong></p>
-
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    def add_country(self, country):
-        if not isinstance(country, Country):
-            raise TypeError(f"expected a Country instance, got {type(country).__name__}")
-        self.countries.append(country)
-
-explorer = CountryExplorer(countries=[])
-explorer.add_country(k)
-print(len(explorer.countries))</code></pre>
+k = Country(name="Kenya", region="Africa", population=54000000, capital="Nairobi")
+u = Country(name="Unclaimed", region="Antarctica", population=0)
+print(k.display_capital())  # "Nairobi"
+print(u.display_capital())  # "Unknown"</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Attempt to add an invalid item and confirm it is rejected</strong></p>
+        <p><strong>Confirm status_message on an explorer with one country added after construction</strong></p>
 
-        <pre><code>try:
-    explorer.add_country("not a country")
-except TypeError as e:
-    print("Rejected:", e)
-
-print("Collection still valid, length:", len(explorer.countries))  # still 1</code></pre>
+        <pre><code>explorer = CountryExplorer(countries=[])
+print(explorer.status_message())  # "No countries loaded yet."
+explorer.countries.append(k)
+print(explorer.status_message())  # "1 countries loaded." — note the grammar, discuss in reflection</code></pre>
       </div>
     </div>
 
@@ -328,9 +330,9 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1</co
         </thead>
         <tbody>
           <tr>
-            <td><code>controlled_state.py</code></td>
+            <td><code>conditional_lab.py</code></td>
             <td>Created</td>
-            <td>Replaces direct attribute assignment with validating set_population, set_capital, and add_country methods.</td>
+            <td>Adds conditional branching, truthy checks, and a ternary display method.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-17/index.html</code></td>
@@ -349,11 +351,11 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1</co
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add controlled_state.py docs/sessions/session-17/index.html
-git commit -m "session-17: channel all state changes through validating methods"</code></pre>
+    <pre><code>git add conditional_lab.py docs/sessions/session-17/index.html
+git commit -m "session-17: handle empty collections and missing values with conditional logic"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does the object's state stay valid even after I tried to set an invalid population?"
+      Do not commit until you can answer out loud: "Why does find_by_region return an empty list instead of raising an exception when nothing matches?"
     </div>
 
     <hr class="section-divider" />
@@ -364,23 +366,23 @@ git commit -m "session-17: channel all state changes through validating methods"
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">set_population and set_capital both validate before assigning</label>
+        <label for="c1">status_message() uses not self.countries, not len(self.countries) == 0</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">A rejected set_population call is proven to leave the previous valid population untouched</label>
+        <label for="c2">find_by_region() returns an empty list (never raises, never returns None) when nothing matches</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">add_country validates its argument type before appending to self.countries</label>
+        <label for="c3">display_capital() uses a ternary expression, not a full if/else block</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">A rejected add_country call is proven to leave the collection's length unchanged</label>
+        <label for="c4">Both an empty and a non-empty explorer are tested against status_message()</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No code in the file assigns to .population, .capital, or .countries directly from outside the class</label>
+        <label for="c5">A comment or reflection note addresses the "1 countries loaded" grammar issue noticed in step 5</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -400,52 +402,52 @@ git commit -m "session-17: channel all state changes through validating methods"
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?</p>
-        <label class="quiz-option" data-val="a">They have identical effects and identical safety</label>
-        <label class="quiz-option" data-val="b">The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead</label>
-        <label class="quiz-option" data-val="c">The method call is always slower, that is the only difference</label>
-        <label class="quiz-option" data-val="d">Direct assignment is actually safer because it is simpler</label>
-        <div class="explanation">Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 07's raise) before any bad data is ever stored.</div>
+        <p>Given <code>def total_population(self):\n    return sum(c.population for c in self.countries)</code>, what does this return if self.countries is an empty list?</p>
+        <label class="quiz-option" data-val="a">A TypeError — sum() cannot handle an empty generator</label>
+        <label class="quiz-option" data-val="b">0 — sum() of nothing is 0, no crash</label>
+        <label class="quiz-option" data-val="c">None</label>
+        <label class="quiz-option" data-val="d">It raises an IndexError</label>
+        <div class="explanation"><code>sum()</code> of an empty sequence returns <code>0</code> by definition — no special handling is needed here. This is worth confirming explicitly rather than assuming.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?</p>
-        <label class="quiz-option" data-val="a">Generic methods are always faster</label>
-        <label class="quiz-option" data-val="b">A specific method name documents exactly what change is intended and can validate that one specific case correctly; a generic method either validates nothing or needs complex logic for every possible field</label>
-        <label class="quiz-option" data-val="c">There is no meaningful difference between the two approaches</label>
-        <label class="quiz-option" data-val="d">Python does not allow generic update methods</label>
-        <div class="explanation">A specific method like <code>set_capital</code> can say, precisely, "capital must be a non-empty string" — a generic <code>update(field, value)</code> either has to special-case every possible field internally (messy) or skip validation entirely (unsafe).</div>
+        <p>What does <code>if self.countries:</code> check, given that self.countries is a list?</p>
+        <label class="quiz-option" data-val="a">Whether self.countries is exactly the value True</label>
+        <label class="quiz-option" data-val="b">Whether the list has at least one item — an empty list is "falsy", a non-empty one is "truthy"</label>
+        <label class="quiz-option" data-val="c">Whether self.countries is not None, but ignores emptiness</label>
+        <label class="quiz-option" data-val="d">It is a syntax error — you must write if len(self.countries) > 0</label>
+        <div class="explanation">In Python, empty collections (list, dict, string) are falsy, and non-empty ones are truthy. <code>if self.countries:</code> is idiomatic for "does this list have anything in it?" — equivalent to but more idiomatic than checking length explicitly.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given a method <code>def set_population(self, value):\n    if value < 0:\n        raise ValueError(...)\n    self.population = value</code>, what happens if you call it with a negative number?</p>
-        <label class="quiz-option" data-val="a">self.population silently becomes 0</label>
-        <label class="quiz-option" data-val="b">A ValueError is raised BEFORE self.population is touched — the state remains at its previous valid value</label>
-        <label class="quiz-option" data-val="c">self.population becomes the negative value anyway, after printing a warning</label>
-        <label class="quiz-option" data-val="d">The program crashes with no traceback</label>
-        <div class="explanation">The validation check runs and raises before the assignment line ever executes. This guarantees the object's state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.</div>
+        <p>Given <code>label = "Africa" if country.region == "Africa" else "Other"</code>, what kind of expression is this?</p>
+        <label class="quiz-option" data-val="a">A regular if statement written on one line</label>
+        <label class="quiz-option" data-val="b">A ternary (conditional) expression — it evaluates to one of two values inline</label>
+        <label class="quiz-option" data-val="c">A syntax error — Python has no ternary operator</label>
+        <label class="quiz-option" data-val="d">A lambda function</label>
+        <div class="explanation">Python's ternary form is <code>value_if_true if condition else value_if_false</code>. It is an expression (it produces a value) rather than a statement, useful for short either/or assignments.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 16)?</p>
-        <label class="quiz-option" data-val="a">It does not actually help — this is a myth</label>
-        <label class="quiz-option" data-val="b">When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere</label>
-        <label class="quiz-option" data-val="c">Named methods run in a special debug mode automatically</label>
-        <label class="quiz-option" data-val="d">It only helps for numeric attributes, not strings</label>
-        <div class="explanation">If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."</div>
+        <p>A method find_by_region(region) returns [] when no country matches. Is returning an empty list the same kind of situation as raising an exception?</p>
+        <label class="quiz-option" data-val="a">Yes — both represent a failure and should be handled identically</label>
+        <label class="quiz-option" data-val="b">No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 11)</label>
+        <label class="quiz-option" data-val="c">Yes, an empty list should always be converted to a raised exception</label>
+        <label class="quiz-option" data-val="d">There is no meaningful distinction in Python</label>
+        <div class="explanation">A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 11) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You add an add_country(self, country) method to CountryExplorer that validates the argument is a Country instance before appending. Why is this better than callers doing explorer.countries.append(x) directly?</p>
-        <label class="quiz-option" data-val="a">It is not better — .append() is already perfectly safe</label>
-        <label class="quiz-option" data-val="b">add_country can reject a non-Country value before it enters the collection, keeping every item in self.countries guaranteed to be a valid Country</label>
-        <label class="quiz-option" data-val="c">add_country is required syntax in Python for all lists</label>
-        <label class="quiz-option" data-val="d">There is no difference in behavior, only in typing speed</label>
-        <div class="explanation">Without a controlled entry point, nothing stops <code>explorer.countries.append("not a country")</code> from corrupting the collection's invariant that every item is a Country instance. A validating method is the checkpoint that guarantees this stays true.</div>
+        <p>Given a method that must show a message when there are no countries, which is more idiomatic Python?</p>
+        <label class="quiz-option" data-val="a"><code>if len(self.countries) == 0:</code></label>
+        <label class="quiz-option" data-val="b"><code>if not self.countries:</code></label>
+        <label class="quiz-option" data-val="c"><code>if self.countries == []:</code></label>
+        <label class="quiz-option" data-val="d">All three are equally un-idiomatic</label>
+        <div class="explanation"><code>if not self.countries:</code> relies on the truthy/falsy behaviour from this session and is the idiomatic Python style. The other two work but are unnecessarily verbose for the same check.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -458,10 +460,10 @@ git commit -m "session-17: channel all state changes through validating methods"
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Compare this session's code to Session 16's uncontrolled mutation demo. Walk through, step by step, why the exact same invalid value (-999999 or empty string) is now safely rejected.</li>
-        <li>What would a generic update(field, value) version of set_population and set_capital look like, and why is it worse for validation specifically?</li>
-        <li>If a bug report said "population went negative somewhere," how would having these controlled methods change your debugging process compared to Session 16's version?</li>
-        <li>Is there a state change you can think of for Country or CountryExplorer that this session did not cover, but probably should have its own controlled method?</li>
+        <li>Step 5 printed "1 countries loaded." — grammatically wrong. How would you fix this with a ternary expression? Try writing it.</li>
+        <li>Why is returning an empty list from find_by_region a better design than returning None when nothing is found?</li>
+        <li>Can you think of a case in this lab where using an exception (Session 11) WOULD have been the right choice instead of a normal empty return?</li>
+        <li>How does the truthy/falsy behaviour of empty lists connect to what you learned about mutability and identity in Session 05 and 02?</li>
       </ol>
     </div>
 
@@ -470,9 +472,9 @@ git commit -m "session-17: channel all state changes through validating methods"
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Silent data corruption returns:</strong> If even one code path in a large project still assigns .population directly instead of calling set_population, the guarantee this whole session builds is broken — controlled state updates only work if EVERY mutation goes through the checkpoint, with no exceptions.</li>
-        <li><strong>Event handling (Session 18):</strong> The next session adds user input as a trigger for these exact methods. Without a solid, validated set_population/set_capital to call INTO, handling user input safely is not possible.</li>
-        <li><strong>Data contracts (Layer 4):</strong> Session 26 formalizes exactly this kind of validation using type hints and dataclasses — this session is the hand-rolled version of a discipline that later gets language-level support.</li>
+        <li><strong>None-checking chaos:</strong> If find_by_region sometimes returned None instead of an empty list, every single caller would need an extra None-check before it could safely loop over the result — multiplying defensive code throughout the whole project for no benefit.</li>
+        <li><strong>Building lists of objects (Session 18):</strong> The next session focuses on constructing many Country instances at once, often from raw data that may have missing fields. This session's conditional patterns are what keep that construction from crashing on incomplete records.</li>
+        <li><strong>UI-equivalent states (parallel to the original React course):</strong> This is directly analogous to Session 17 of the source React course ("Conditional Rendering") — handling an empty search result gracefully is the same problem whether you are printing to a console or rendering to a screen.</li>
       </ul>
     </div>
 
@@ -480,9 +482,9 @@ git commit -m "session-17: channel all state changes through validating methods"
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Controlled state updates — validating, specifically-named methods as the only path to changing an object's state, replacing direct attribute assignment.</p>
-      <p><strong>Unlocks:</strong> Country and CountryExplorer can no longer silently enter an invalid state — every change is validated at a single, traceable checkpoint.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 18 — Handling User Input</a>. We connect these controlled methods to an actual trigger: input typed by a user at the keyboard.</p>
+      <p><strong>Python concept mastered:</strong> Conditional logic inside methods — truthy/falsy checks on collections, ternary expressions, and treating "not found" as a normal outcome rather than an error.</p>
+      <p><strong>Unlocks:</strong> CountryExplorer now handles the messy, incomplete cases real data throws at it, without crashing or producing misleading results.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 18 — Building Lists of Objects</a>. We build lists of Country objects from raw data at scale, and formalize the pattern for converting many dicts into many instances.</p>
     </div>
 
 

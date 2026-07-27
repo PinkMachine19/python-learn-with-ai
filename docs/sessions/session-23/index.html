@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 23 — Why Mock Data Matters — Python Learning</title>
+  <title>Session 23 — Tracing State Changes — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 4</span>
+      <span class="badge badge-layer">Layer 3</span>
       <span class="badge badge-current">Session 23</span>
-      <span style="color:var(--text-muted); font-size:13px;">Mock Data</span>
+      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
     </div>
-    <h1>Why Mock Data Matters</h1>
-    <p class="subtitle">Layer 4 begins. Real teams build and test an application's logic long before a real data source is ready. We formalize working against fake data on purpose.</p>
+    <h1>Tracing State Changes</h1>
+    <p class="subtitle">Now that state can only change through controlled methods, we can add visibility into every change — turning "why is this value wrong" from a mystery into a readable trace.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Explain why building against mock data before a real API exists speeds up development</li>
-        <li>Write a mock data file that mirrors the shape a future real data source will have</li>
-        <li>Explain what a "contract" means in the context of data shape</li>
-        <li>Recognise this as a largely concept session, similar to Sessions 08 and 16</li>
-        <li>Identify the risk of a mock data shape silently diverging from the real data shape it is meant to mirror</li>
+        <li>Add a print-based trace to a controlled state-change method</li>
+        <li>Use Python's logging module for a more structured trace than print()</li>
+        <li>Explain the difference between a debug-level and a warning-level log message</li>
+        <li>Track how many times a state-change method has been called, as a simple instrumentation pattern</li>
+        <li>Explain why this is only possible because state changes are funneled through methods (Session 21)</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why would a team build the Country Explorer's search feature against a hand-written mock_countries.py file instead of waiting for a real API to be ready?</p>
-        <label class="quiz-option" data-val="a">Mock data is always more accurate than real data</label>
-        <label class="quiz-option" data-val="b">It lets development and testing of the application logic proceed independently of an external dependency that might be slow, unavailable, or still being built</label>
-        <label class="quiz-option" data-val="c">Real APIs cannot be used during development for legal reasons</label>
-        <label class="quiz-option" data-val="d">There is no real benefit; it is just tradition</label>
-        <div class="explanation">Depending on an external, possibly-unfinished, possibly-unreliable data source blocks all progress on everything else. Mock data lets the rest of the application be built, used, and tested completely independently.</div>
+        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
+        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
+        <label class="quiz-option" data-val="b">Because Session 21 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
+        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
+        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
+        <div class="explanation">This is the payoff of Session 21's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does it mean for mock data to "mirror the shape" of a future real data source?</p>
-        <label class="quiz-option" data-val="a">The mock data must contain the exact same values as the real data will</label>
-        <label class="quiz-option" data-val="b">The mock data uses the same keys, types, and structure the real data is expected to have, even though the specific values are made up</label>
-        <label class="quiz-option" data-val="c">Shape does not matter, only the total count of records matters</label>
-        <label class="quiz-option" data-val="d">Mock data should always be empty</label>
-        <div class="explanation">If real data will have <code>name</code>, <code>region</code>, and <code>population</code> keys with string/string/int types, the mock data should use exactly the same keys and types — even though "Kenya" and 54000000 are made-up placeholder values, not scraped from a real source.</div>
+        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
+        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
+        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
+        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
+        <label class="quiz-option" data-val="d">warning always stops the program</label>
+        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is a "contract" in the sense used by this session?</p>
-        <label class="quiz-option" data-val="a">A legal document required before writing any code</label>
-        <label class="quiz-option" data-val="b">An agreed-upon shape/structure that data is expected to have, so that code written against mock data continues working once real data (matching that same shape) replaces it</label>
-        <label class="quiz-option" data-val="c">A Python built-in type</label>
-        <label class="quiz-option" data-val="d">A synonym for "constructor"</label>
-        <div class="explanation">A data contract is the agreed structure — which keys exist, what types they hold — that all code can rely on. As long as real data honors the same contract as the mock data, code built against the mock keeps working without changes.</div>
+        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
+        <label class="quiz-option" data-val="a">The current population value</label>
+        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
+        <label class="quiz-option" data-val="c">The total population across all countries</label>
+        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
+        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>What risk exists if the mock data's shape silently diverges from what the real data source will actually provide (e.g. mock uses "pop", but the real API returns "population")?</p>
-        <label class="quiz-option" data-val="a">No risk — Python automatically reconciles differing key names</label>
-        <label class="quiz-option" data-val="b">All the code built and tested against the mock data will break the moment it is pointed at real data, since the contract was not actually honored</label>
-        <label class="quiz-option" data-val="c">This divergence is impossible in Python</label>
-        <label class="quiz-option" data-val="d">It only matters for numeric fields</label>
-        <div class="explanation">Mock data is only useful if it honestly represents the shape real data will have. If they diverge, all the work done "safely" against the mock turns out to be built on a false assumption, and breaks the moment real data is introduced.</div>
+        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 20's uncontrolled-mutation version?</p>
+        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
+        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
+        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
+        <label class="quiz-option" data-val="d">print() did not exist before Session 21</label>
+        <div class="explanation">This is the direct payoff connecting Session 20 (the risk), Session 21 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is this session mostly concept, with a comparatively small lab?</p>
-        <label class="quiz-option" data-val="a">Because mock data has no real syntax of its own</label>
-        <label class="quiz-option" data-val="b">Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 24</label>
-        <label class="quiz-option" data-val="c">Because this topic is not actually important</label>
-        <label class="quiz-option" data-val="d">Because writing mock data always requires an external library</label>
-        <div class="explanation">This follows the same pattern established twice before in the curriculum: build the mental model first (why does this practice exist, what problem does it solve), then build the concrete implementation in the following session.</div>
+        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
+        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
+        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
+        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
+        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
+        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,85 +141,36 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Why Mock Data Matters</h2>
-
-    <h3>Building against fake data on purpose</h3>
-    <p>Every session so far has technically used mock data — hand-typed Country instances. This session makes that a deliberate practice: build and test your application's real logic against a fake data source that mirrors what a real one will eventually look like.</p>
-    <pre><code># mock_countries.py — deliberately fake, but shaped like the real thing will be
-MOCK_COUNTRIES = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-    {"name": "Japan", "region": "Asia", "population": 125000000},
-    {"name": "Norway", "region": "Europe", "population": 5400000},
-]</code></pre>
-
-    <h3>A contract is a shape everyone agrees to honor</h3>
-    <p>The "contract" is simply: every country record has a name (str), a region (str), and a population (int). As long as both the mock data and a future real API honor this same contract, code written against one will keep working against the other.</p>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">mock data</span>same shape</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">contract</span>name, region,
-population</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">real API (later)</span>same shape</div>
-      <div class="diagram-caption">Application code depends on the SHAPE (the contract), not on whether the data source is mock or real.</div>
-    </div>
-
-    <h3>The independence this buys us</h3>
-    <p>With a mock data source in place, every remaining feature — search, filtering, the whole CountryExplorer built in Layer 2 and 3 — can be developed and fully exercised without a real API existing yet, or even being reachable over the network at all.</p>
-    <pre><code>from mock_countries import MOCK_COUNTRIES
-
-countries = [Country.from_dict(r) for r in MOCK_COUNTRIES]
-explorer = CountryExplorer(countries=countries)
-print(explorer.total_population)   # works completely offline, no network needed</code></pre>
-
-    <h3>The risk: silent divergence from the real shape</h3>
-    <p>Mock data is only useful if it honestly represents what real data will look like. If the mock and the eventual real source disagree on key names or types, everything built "safely" against the mock will break the moment real data arrives — an important risk to keep in mind as we build Session 26's formal data contracts.</p>
-
-    <div class="alert alert-warning">
-      <strong>Concept session:</strong> Like Sessions 08 and 16, the goal here is understanding the practice before building the concrete implementation in Session 24.
+    <h2>3. The Concept — Tracing State Changes</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">MANY CALLERS</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">menu, tests,</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">other code</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">ONE METHOD</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">set_population</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">[trace]</text>
+      </svg>
+      <p class="diagram-caption-text">Every change funnels through one checkpoint — one trace line there sees every single change made anywhere in the program.</p>
     </div>
 
 
-    <hr class="section-divider" />
+    <h3>Why a controlled entry point makes tracing trivial</h3>
+    <p>Because Session 21 forced every population change through set_population and grow_population, adding a trace to those two methods gives complete visibility into every change, anywhere in the program, with no missed call sites.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
 
-    <h2>4. Lab</h2>
-    <div class="alert alert-success">
-      <strong>Lab objective:</strong> Write a mock country dataset with 10 records mirroring the eventual real API shape, and build the full explorer entirely offline from it.
-    </div>
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        print(f"[trace] {self.name}.population: {old} -&gt; {value}")</code></pre>
 
-    <h3>What you will build</h3>
-    <p>A file called <code>mock_countries.py</code> and a small script that uses it.</p>
+    <h3>A more structured trace with logging</h3>
+    <p>print() works, but Python's built-in logging module gives you severity levels and a consistent format, letting you turn tracing verbosity up or down without touching the code that produces it.</p>
+    <pre><code>import logging
 
-    <h3>Step-by-step instructions</h3>
-
-    <div class="step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <p><strong>Create mock_countries.py with 10 diverse records</strong></p>
-        <p>Use a variety of regions and population sizes — this will matter for later filtering exercises.</p>
-        <pre><code># mock_countries.py
-MOCK_COUNTRIES = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Nigeria", "region": "Africa", "population": 223000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-    {"name": "Canada", "region": "Americas", "population": 38000000},
-    {"name": "Brazil", "region": "Americas", "population": 216000000},
-    {"name": "Japan", "region": "Asia", "population": 125000000},
-    {"name": "India", "region": "Asia", "population": 1428000000},
-    {"name": "Norway", "region": "Europe", "population": 5400000},
-    {"name": "Germany", "region": "Europe", "population": 84000000},
-]</code></pre>
-      </div>
-    </div>
-
-    <div class="step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <p><strong>Create explore_offline.py that imports the mock and builds Country instances</strong></p>
-
-        <pre><code># explore_offline.py
-from mock_countries import MOCK_COUNTRIES
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
 
 class Country:
     def __init__(self, name, region, population):
@@ -227,57 +178,127 @@ class Country:
         self.region = region
         self.population = population
 
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {self.population:,}"
+    def set_population(self, value):
+        if value &lt; 0:
+            logging.warning(f"rejected population {value} for {self.name}")
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        logging.debug(f"{self.name}.population: {old} -&gt; {value}")</code></pre>
 
-    @classmethod
-    def from_dict(cls, data):
-        return cls(**data)
+    <h3>debug vs warning severity</h3>
+    <p>debug is for fine-grained detail you usually don't want cluttering normal output. warning flags something worth noticing — like a rejected change — without stopping the program the way an unhandled exception would.</p>
+    <pre><code>logging.basicConfig(level=logging.WARNING)  # debug messages now silenced
 
-countries = [Country.from_dict(r) for r in MOCK_COUNTRIES]
-print(len(countries))</code></pre>
+# This debug call produces no visible output at WARNING level:
+logging.debug("population changed")
+
+# This warning still shows, because it meets the configured threshold:
+logging.warning("rejected an invalid population value")</code></pre>
+
+    <h3>Counting calls as lightweight instrumentation</h3>
+    <p>A simple counter attribute, incremented inside the controlled method, tells you how often a state change has actually occurred — useful for spotting unexpectedly frequent (or absent) updates while debugging.</p>
+    <pre><code>class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+        self._update_count = 0
+
+    def set_population(self, value):
+        if value &lt; 0:
+            raise ValueError(f"population must be non-negative, got {value}")
+        self.population = value
+        self._update_count += 1
+
+k = Country(name="Kenya", region="Africa", population=54000000)
+k.set_population(55000000)
+k.set_population(56000000)
+print(k._update_count)  # 2</code></pre>
+
+
+
+    <hr class="section-divider" />
+
+    <h2>4. Lab</h2>
+    <div class="alert alert-success">
+      <strong>Lab objective:</strong> Add print-based and logging-based traces to set_population, plus an update counter, and observe both in action.
+    </div>
+
+    <h3>What you will build</h3>
+    <p>A file called <code>tracing_lab.py</code>.</p>
+
+    <h3>Step-by-step instructions</h3>
+
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <p><strong>Create the file with logging configured</strong></p>
+
+        <pre><code># tracing_lab.py
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(message)s")
+
+class Country:
+    def __init__(self, name, region, population):
+        self.name = name
+        self.region = region
+        self.population = population
+        self._update_count = 0</code></pre>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <p><strong>Add set_population with both a print trace and a logging.debug trace</strong></p>
+
+        <pre><code>    def set_population(self, value):
+        if value &lt; 0:
+            logging.warning(f"rejected population {value} for {self.name}")
+            raise ValueError(f"population must be non-negative, got {value}")
+        old = self.population
+        self.population = value
+        self._update_count += 1
+        print(f"[trace] {self.name}.population: {old} -&gt; {value}")
+        logging.debug(f"{self.name} update #{self._update_count}")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Build a CountryExplorer entirely offline, with total_population and country_count as @property</strong></p>
+        <p><strong>Make several valid changes and observe both trace channels</strong></p>
 
-        <pre><code>class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries
-
-    @property
-    def country_count(self):
-        return len(self.countries)
-
-    @property
-    def total_population(self):
-        return sum(c.population for c in self.countries)
-
-explorer = CountryExplorer(countries=countries)
-print(explorer.country_count)
-print(explorer.total_population)</code></pre>
+        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
+k.set_population(55000000)
+k.set_population(56000000)
+k.set_population(57000000)
+print("Total updates:", k._update_count)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Print every summary, proving the whole application works with zero network access</strong></p>
+        <p><strong>Trigger the warning trace with an invalid change</strong></p>
 
-        <pre><code>for c in explorer.countries:
-    print(c.summary())</code></pre>
+        <pre><code>try:
+    k.set_population(-1)
+except ValueError as e:
+    print("Caught:", e)
+print("Total updates still:", k._update_count)  # unchanged — rejected update did not count</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Write a comment describing the contract: what keys and types every record must have</strong></p>
-        <p>This will become Session 26's formal data contract — write it in plain English for now.</p>
-
+        <p><strong>Raise the logging level to WARNING and confirm debug traces go silent</strong></p>
+        <p>Change the level and re-run a valid update — the print trace still shows, but the debug log line does not.</p>
+        <pre><code>logging.getLogger().setLevel(logging.WARNING)
+k.set_population(58000000)  # print trace still visible; debug log line is now silenced</code></pre>
       </div>
     </div>
 
@@ -291,14 +312,9 @@ print(explorer.total_population)</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>mock_countries.py</code></td>
+            <td><code>tracing_lab.py</code></td>
             <td>Created</td>
-            <td>A mock dataset of 10 countries mirroring the eventual real API shape.</td>
-          </tr>
-          <tr>
-            <td><code>explore_offline.py</code></td>
-            <td>Created</td>
-            <td>Builds the full explorer entirely from mock data, no network needed.</td>
+            <td>Adds print and logging traces plus an update counter to the controlled set_population method.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-23/index.html</code></td>
@@ -310,18 +326,18 @@ print(explorer.total_population)</code></pre>
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 3 files.
+      If you find yourself editing any other file, stop. This session touches exactly 2 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add mock_countries.py explore_offline.py docs/sessions/session-23/index.html
-git commit -m "session-23: build a mock dataset and run the explorer entirely offline"</code></pre>
+    <pre><code>git add tracing_lab.py docs/sessions/session-23/index.html
+git commit -m "session-23: trace state changes with print, logging, and a call counter"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What is the "contract" mock_countries.py is honoring, and why does that matter for a future real data source?"
+      Do not commit until you can answer out loud: "Why does one trace statement inside set_population see every population change in the whole program?"
     </div>
 
     <hr class="section-divider" />
@@ -332,23 +348,23 @@ git commit -m "session-23: build a mock dataset and run the explorer entirely of
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">mock_countries.py contains at least 10 records with varied regions and populations</label>
+        <label for="c1">set_population prints a before/after trace and logs a debug message on every valid change</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">Every record uses consistent keys (name, region, population) with consistent types</label>
+        <label for="c2">A rejected (invalid) update logs a warning instead, and does not increment _update_count</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">explore_offline.py builds Country instances and a CountryExplorer entirely from the mock data</label>
+        <label for="c3">_update_count correctly reflects only successful updates</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">total_population and country_count are computed and printed correctly</label>
+        <label for="c4">Raising the logging level to WARNING is shown to silence debug messages while print statements remain unaffected</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A written comment describes the data contract in plain English</label>
+        <label for="c5">No tracing code changes the actual return values or control flow of the program</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -368,52 +384,52 @@ git commit -m "session-23: build a mock dataset and run the explorer entirely of
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Why would a team build the Country Explorer's search feature against a hand-written mock_countries.py file instead of waiting for a real API to be ready?</p>
-        <label class="quiz-option" data-val="a">Mock data is always more accurate than real data</label>
-        <label class="quiz-option" data-val="b">It lets development and testing of the application logic proceed independently of an external dependency that might be slow, unavailable, or still being built</label>
-        <label class="quiz-option" data-val="c">Real APIs cannot be used during development for legal reasons</label>
-        <label class="quiz-option" data-val="d">There is no real benefit; it is just tradition</label>
-        <div class="explanation">Depending on an external, possibly-unfinished, possibly-unreliable data source blocks all progress on everything else. Mock data lets the rest of the application be built, used, and tested completely independently.</div>
+        <p>Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?</p>
+        <label class="quiz-option" data-val="a">It does not — you would still need a print at every call site</label>
+        <label class="quiz-option" data-val="b">Because Session 21 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from</label>
+        <label class="quiz-option" data-val="c">print() automatically traces all attribute changes in Python</label>
+        <label class="quiz-option" data-val="d">This only works for numeric attributes</label>
+        <div class="explanation">This is the payoff of Session 21's discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does it mean for mock data to "mirror the shape" of a future real data source?</p>
-        <label class="quiz-option" data-val="a">The mock data must contain the exact same values as the real data will</label>
-        <label class="quiz-option" data-val="b">The mock data uses the same keys, types, and structure the real data is expected to have, even though the specific values are made up</label>
-        <label class="quiz-option" data-val="c">Shape does not matter, only the total count of records matters</label>
-        <label class="quiz-option" data-val="d">Mock data should always be empty</label>
-        <div class="explanation">If real data will have <code>name</code>, <code>region</code>, and <code>population</code> keys with string/string/int types, the mock data should use exactly the same keys and types — even though "Kenya" and 54000000 are made-up placeholder values, not scraped from a real source.</div>
+        <p>What is the practical difference between logging.debug(...) and logging.warning(...)?</p>
+        <label class="quiz-option" data-val="a">They are functionally identical, just different words</label>
+        <label class="quiz-option" data-val="b">They represent different severity levels — debug is fine-grained, usually-hidden detail; warning flags something that deserves attention but is not fatal</label>
+        <label class="quiz-option" data-val="c">debug messages are shown in production, warning messages never are</label>
+        <label class="quiz-option" data-val="d">warning always stops the program</label>
+        <div class="explanation">Logging levels let you control verbosity: <code>debug</code> is detailed tracing you usually silence in normal use; <code>warning</code> signals something worth noticing. This lets the same codebase be quiet during normal operation and verbose while debugging, without changing any code.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is a "contract" in the sense used by this session?</p>
-        <label class="quiz-option" data-val="a">A legal document required before writing any code</label>
-        <label class="quiz-option" data-val="b">An agreed-upon shape/structure that data is expected to have, so that code written against mock data continues working once real data (matching that same shape) replaces it</label>
-        <label class="quiz-option" data-val="c">A Python built-in type</label>
-        <label class="quiz-option" data-val="d">A synonym for "constructor"</label>
-        <div class="explanation">A data contract is the agreed structure — which keys exist, what types they hold — that all code can rely on. As long as real data honors the same contract as the mock data, code built against the mock keeps working without changes.</div>
+        <p>A class attribute self._update_count = 0 in __init__, incremented once per call inside set_population, tracks what?</p>
+        <label class="quiz-option" data-val="a">The current population value</label>
+        <label class="quiz-option" data-val="b">How many times set_population has been called on this specific instance over its lifetime</label>
+        <label class="quiz-option" data-val="c">The total population across all countries</label>
+        <label class="quiz-option" data-val="d">Nothing — this pattern has no real use</label>
+        <div class="explanation">A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>What risk exists if the mock data's shape silently diverges from what the real data source will actually provide (e.g. mock uses "pop", but the real API returns "population")?</p>
-        <label class="quiz-option" data-val="a">No risk — Python automatically reconciles differing key names</label>
-        <label class="quiz-option" data-val="b">All the code built and tested against the mock data will break the moment it is pointed at real data, since the contract was not actually honored</label>
-        <label class="quiz-option" data-val="c">This divergence is impossible in Python</label>
-        <label class="quiz-option" data-val="d">It only matters for numeric fields</label>
-        <div class="explanation">Mock data is only useful if it honestly represents the shape real data will have. If they diverge, all the work done "safely" against the mock turns out to be built on a false assumption, and breaks the moment real data is introduced.</div>
+        <p>Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 20's uncontrolled-mutation version?</p>
+        <label class="quiz-option" data-val="a">It would have been equally easy either way</label>
+        <label class="quiz-option" data-val="b">In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case</label>
+        <label class="quiz-option" data-val="c">Instrumentation only works with classes, never with plain attributes</label>
+        <label class="quiz-option" data-val="d">print() did not exist before Session 21</label>
+        <div class="explanation">This is the direct payoff connecting Session 20 (the risk), Session 21 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is this session mostly concept, with a comparatively small lab?</p>
-        <label class="quiz-option" data-val="a">Because mock data has no real syntax of its own</label>
-        <label class="quiz-option" data-val="b">Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 24</label>
-        <label class="quiz-option" data-val="c">Because this topic is not actually important</label>
-        <label class="quiz-option" data-val="d">Because writing mock data always requires an external library</label>
-        <div class="explanation">This follows the same pattern established twice before in the curriculum: build the mental model first (why does this practice exist, what problem does it solve), then build the concrete implementation in the following session.</div>
+        <p>Should tracing/logging code like this normally raise exceptions or otherwise change the program's actual behavior?</p>
+        <label class="quiz-option" data-val="a">Yes — tracing should always halt execution to force you to look at it</label>
+        <label class="quiz-option" data-val="b">No — tracing and logging should be observational only; they should never alter what the program actually does</label>
+        <label class="quiz-option" data-val="c">It depends on the logging level used</label>
+        <label class="quiz-option" data-val="d">Only debug-level logging is allowed to change behavior</label>
+        <div class="explanation">Good instrumentation is a side channel for observing behavior, not a part of the behavior itself. If adding a log line could change how your program runs, it stops being safe to add or remove tracing freely — a very important property to preserve.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -426,10 +442,10 @@ git commit -m "session-23: build a mock dataset and run the explorer entirely of
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>What would break in explore_offline.py if one mock record used "pop" instead of "population" as a key? Where exactly would the failure occur?</li>
-        <li>Why is it valuable that explore_offline.py runs with literally zero network access?</li>
-        <li>Can you think of a real project (not this one) where you have seen or could imagine mock data being useful before a backend was ready?</li>
-        <li>What is the cost of maintaining mock data as the "real" contract evolves over time? How would you keep them in sync?</li>
+        <li>Why does raising the logging level silence debug() calls but not your plain print() calls? What does that tell you about how the two mechanisms are separate?</li>
+        <li>If you needed to trace every state change across the WHOLE program (not just Country), what would you need to be true about how ALL your classes handle state, based on Session 21?</li>
+        <li>What is the tradeoff of leaving debug-level tracing permanently in the code (as opposed to removing it after debugging is done)?</li>
+        <li>How would you use _update_count to detect a bug where population is being changed far more often than expected?</li>
       </ol>
     </div>
 
@@ -438,9 +454,9 @@ git commit -m "session-23: build a mock dataset and run the explorer entirely of
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Blocked development:</strong> Without mock data, building and testing the Country Explorer's logic would be blocked on a real, possibly unfinished or unreliable API being available — an unnecessary dependency for logic that has nothing to do with networking.</li>
-        <li><strong>The data access layer (Session 24):</strong> The next session wraps this mock data behind a proper repository interface — the mock dataset from this session becomes the first "backend" that repository talks to.</li>
-        <li><strong>Data contracts (Session 26):</strong> The plain-English contract description written in this lab becomes the formal, enforced contract in Session 26, using type hints and dataclasses.</li>
+        <li><strong>Debugging without visibility:</strong> Without any tracing, tracking down "why did this value change unexpectedly" requires manually stepping through code with a debugger every single time — tracing built into the controlled entry point gives you a permanent, always-available record instead.</li>
+        <li><strong>Validated input (Session 24):</strong> The next session tightens validation on the input side. Having tracing already in place means you will be able to directly observe the effect of stricter validation instead of guessing.</li>
+        <li><strong>Testing failures (Layer 5):</strong> When a test fails in Session 34 because state didn't update as expected, the debugging techniques from this session — trace prints, logging, counters — are exactly what you'll reach for to understand why.</li>
       </ul>
     </div>
 
@@ -448,9 +464,9 @@ git commit -m "session-23: build a mock dataset and run the explorer entirely of
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Deliberately building and testing against mock data that mirrors a real data source's shape, and the concept of a data contract.</p>
-      <p><strong>Unlocks:</strong> The entire application can now be developed and demonstrated completely independent of any real, external data source.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 24 — Building a Data Access Layer</a>. We wrap this mock data behind a proper data-access layer, separating "how data is fetched" from "what the application does with it."</p>
+      <p><strong>Python concept mastered:</strong> Tracing state changes with print and the logging module's severity levels, plus lightweight call-counting instrumentation.</p>
+      <p><strong>Unlocks:</strong> You can now observe exactly when, how often, and why any piece of controlled state changes — turning invisible bugs into readable traces.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 24 — Validating Input</a>. We tighten validation further, handling edge cases in user-supplied input more thoroughly than Session 22 did.</p>
     </div>
 
 

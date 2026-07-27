@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 04 — Functions and Lambda — Python Learning</title>
+  <title>Session 04 — Loops — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,26 +54,26 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 1</span>
-      <span class="badge badge-current">Session 04</span>
-      <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
+      <span class="badge badge-layer">Layer 0</span>
+      <span class="badge badge-gate">Session 04 — Gate</span>
+      <span style="color:var(--text-muted); font-size:13px;">Python Basics</span>
     </div>
-    <h1>Functions and Lambda</h1>
-    <p class="subtitle">Every piece of logic we have written so far has been repeated inline. Functions let us name a piece of logic once and reuse it — the basis for everything from here forward.</p>
+    <h1>Loops</h1>
+    <p class="subtitle">This is the Layer 0 gate. Repeating an action for every item in a collection, or until a condition changes, is one of the most common things any program does.</p>
 
     <div class="alert alert-info">
-      Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
+      Estimated time: 30–35 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>
 
     <h2>1. Learning Objective</h2>
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Define a function with def, including default parameter values</li>
-        <li>Explain the difference between a parameter and an argument, and between positional and keyword arguments</li>
-        <li>Use return to send a value back to the caller, and understand a function with no return gives back None</li>
-        <li>Write a small lambda expression and know when it is (and is not) appropriate</li>
-        <li>Pass a function as an argument to sorted() using the key parameter</li>
+        <li>Write a for loop over a list of values and explain what the loop variable holds on each pass</li>
+        <li>Use range() to repeat an action a specific number of times</li>
+        <li>Write a while loop and explain the risk of an infinite loop</li>
+        <li>Use break to exit a loop early and continue to skip to the next iteration</li>
+        <li>Combine a loop with an if statement to process only some items</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
-        <label class="quiz-option" data-val="a">None — the function only prints</label>
-        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
-        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
-        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
-        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
+        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and <code>for country in countries:\n    print(country)</code>, what prints?</p>
+        <label class="quiz-option" data-val="a">The word "countries" three times</label>
+        <label class="quiz-option" data-val="b">"Kenya", then "Ghana", then "Peru", each on its own line</label>
+        <label class="quiz-option" data-val="c">The whole list printed once: ['Kenya', 'Ghana', 'Peru']</label>
+        <label class="quiz-option" data-val="d">Nothing — this is invalid syntax</label>
+        <div class="explanation">A <code>for ... in</code> loop runs its body once for every item in the list, binding <code>country</code> to each value in turn. Since the body is <code>print(country)</code>, each name prints on its own line.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
-        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
-        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
-        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
-        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
-        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
+        <p>What does <code>range(5)</code> produce when looped over?</p>
+        <label class="quiz-option" data-val="a">The numbers 1, 2, 3, 4, 5</label>
+        <label class="quiz-option" data-val="b">The numbers 0, 1, 2, 3, 4 (five numbers, starting at 0)</label>
+        <label class="quiz-option" data-val="c">The number 5, once</label>
+        <label class="quiz-option" data-val="d">An error — range() requires two arguments</label>
+        <div class="explanation"><code>range(5)</code> produces 5 numbers starting at 0 and stopping BEFORE 5: 0, 1, 2, 3, 4. This "starts at 0, stops before the given number" behavior matches how list indexing works, which is why it is the default.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
-        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
-        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">An empty string</label>
-        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
+        <p>What is the danger of writing <code>while count < 10:</code> without ever changing count inside the loop body?</p>
+        <label class="quiz-option" data-val="a">There is no danger — Python automatically stops after 10 iterations</label>
+        <label class="quiz-option" data-val="b">An infinite loop — the condition never becomes False, so the loop runs forever (or until you force-stop the program)</label>
+        <label class="quiz-option" data-val="c">A SyntaxError before the program even runs</label>
+        <label class="quiz-option" data-val="d">The loop runs exactly once and then stops</label>
+        <div class="explanation">A <code>while</code> loop keeps running as long as its condition is True. If nothing inside the loop body ever changes the value being checked, the condition never becomes False, and the loop never ends — you must update the checked value yourself, usually near the end of the loop body.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="a">
+      <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
-        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
-        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
-        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
-        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
-        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
+        <p>Given a loop searching for the first country with population over 100 million, what does break do once it is found?</p>
+        <label class="quiz-option" data-val="a">It skips just that one item and continues the loop</label>
+        <label class="quiz-option" data-val="b">It immediately exits the loop entirely, even if more items remain to check</label>
+        <label class="quiz-option" data-val="c">It restarts the loop from the beginning</label>
+        <label class="quiz-option" data-val="d">It has no effect inside a for loop, only while loops</label>
+        <div class="explanation"><code>break</code> exits the loop immediately and completely — useful once you have found what you were looking for and have no reason to keep checking the remaining items.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
-        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
-        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
-        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
-        <label class="quiz-option" data-val="d">It reverses the sort order</label>
-        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
+        <p>Given <code>for c in countries:\n    if c["population"] < 1000000:\n        continue\n    print(c["name"])</code>, what does continue do for a country with a small population?</p>
+        <label class="quiz-option" data-val="a">It stops the whole loop immediately</label>
+        <label class="quiz-option" data-val="b">It skips the rest of THIS iteration's body (so print never runs for this item) and moves on to the next item in the loop</label>
+        <label class="quiz-option" data-val="c">It removes the item from the countries list permanently</label>
+        <label class="quiz-option" data-val="d">It has the same effect as break</label>
+        <div class="explanation"><code>continue</code> skips only the remainder of the current iteration's body and moves the loop on to the next item — unlike <code>break</code>, the loop keeps going, it just skips printing for items matching the condition.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,143 +141,149 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Functions and Lambda</h2>
-
-    <h3>Defining a function</h3>
-    <p>A function packages up logic under a name so it can be called repeatedly instead of copy-pasted.</p>
-    <pre><code>def greet(name):
-    return f"Hello, {name}"
-
-print(greet("Kenya"))  # "Hello, Kenya"
-print(greet("Ghana"))  # "Hello, Ghana"</code></pre>
-
-    <h3>return vs print — a critical distinction</h3>
-    <p><code>print()</code> displays something to the console as a side effect. <code>return</code> sends a value back to whoever called the function, so it can be stored, passed along, or used in another expression. A function with no <code>return</code> statement evaluates to <code>None</code>.</p>
-    <pre><code>def broken_greet(name):
-    print(f"Hello, {name}")   # side effect — does NOT return anything
-
-result = broken_greet("Kenya")   # prints "Hello, Kenya" as a side effect
-print(result)                     # None — nothing was returned</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">print()</span>side effect
-(console only)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">return</span>value flows back
-to the caller</div>
-      <div class="diagram-caption">print() sends text to the console; return sends a value back into the calling code so it can be used further.</div>
+    <h2>3. The Concept — Repeating Actions with for and while</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 560 138" width="560" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="560" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">PASS 1</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">country = "Kenya"</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PASS 2</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">country = "Ghana"</text><line x1="360" y1="65" x2="394" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="390,61 398,65 390,69" fill="#58a6ff" /><text x="410" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">PASS 3</text><rect x="400" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="474" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">country = "Peru"</text>
+      </svg>
+      <p class="diagram-caption-text">The loop body runs once per item — country is rebound to a new value each time through.</p>
     </div>
 
-    <h3>Default parameter values</h3>
-    <p>A parameter can have a default, used whenever the caller omits that argument.</p>
-    <pre><code>def region_label(name, region="Unknown"):
-    return f"{name} ({region})"
 
-print(region_label("Kenya", "Africa"))  # "Kenya (Africa)"
-print(region_label("Atlantis"))          # "Atlantis (Unknown)" — default used</code></pre>
+    <h3>for loops — repeating for every item in a collection</h3>
+    <p>A for loop runs its body once per item in a list, binding a loop variable to each value in turn — no manual counting required.</p>
+    <pre><code>countries = ["Kenya", "Ghana", "Peru"]
 
-    <h3>Lambda — a small, anonymous function</h3>
-    <p>A lambda is a function expression with no name, written on one line, with the result implicitly returned. Lambdas are for short, throwaway logic — usually passed straight into another function.</p>
-    <pre><code># Full function
-def get_pop(c):
-    return c["population"]
+for country in countries:
+    print(country)
+# Kenya
+# Ghana
+# Peru</code></pre>
 
-# Equivalent lambda
-get_pop = lambda c: c["population"]
+    <h3>range() — repeating a specific number of times</h3>
+    <p>When you want to repeat an action a fixed number of times (not tied to a list), range() generates the sequence of numbers to loop over.</p>
+    <pre><code>for i in range(5):
+    print(i)
+# 0
+# 1
+# 2
+# 3
+# 4
 
-# Where lambdas actually shine: passed inline as an argument
-countries = [
+# range(start, stop) — customise where it begins
+for i in range(2, 5):
+    print(i)  # 2, 3, 4</code></pre>
+
+    <h3>while loops — repeating until a condition changes</h3>
+    <p>A while loop keeps running as long as its condition stays True. Unlike a for loop, nothing automatically ends it — you must change the checked value yourself inside the loop body, or it runs forever.</p>
+    <pre><code>count = 0
+
+while count &lt; 5:
+    print(count)
+    count = count + 1   # without this line, the loop never ends!
+# 0
+# 1
+# 2
+# 3
+# 4</code></pre>
+
+    <h3>break and continue</h3>
+    <p>break exits a loop immediately and completely. continue skips only the rest of the current pass and moves on to the next item.</p>
+    <pre><code>countries = [
+    {"name": "Norway", "population": 5400000},
     {"name": "Kenya", "population": 54000000},
-    {"name": "Ghana", "population": 31000000},
+    {"name": "India", "population": 1428000000},
 ]
-by_population = sorted(countries, key=lambda c: c["population"])
-print([c["name"] for c in by_population])  # ['Ghana', 'Kenya']</code></pre>
 
-    <h3>When to use a full function instead of a lambda</h3>
-    <p>If the logic needs a name for clarity, spans more than one line, or is reused in several places, write a real <code>def</code> function. A lambda is for a single, obvious, inline expression only.</p>
-    <pre><code># Bad: cramming multi-step logic into a lambda hurts readability
-# label = lambda c: c["name"] + " (" + c["region"] + ")" if c.get("region") else c["name"]
+# break — stop as soon as we find what we need
+for c in countries:
+    if c["population"] &gt; 100000000:
+        print("Found one:", c["name"])
+        break
 
-# Good: a real function with a name says what it does
-def format_label(c):
-    if c.get("region"):
-        return f"{c['name']} ({c['region']})"
-    return c["name"]</code></pre>
+# continue — skip small countries, but keep checking the rest
+for c in countries:
+    if c["population"] &lt; 10000000:
+        continue
+    print(c["name"])</code></pre>
 
+    <div class="alert alert-warning">
+      <strong>Layer 0 gate:</strong> This is the last Layer 0 session. Every remaining layer assumes for loops, comparisons, and conditionals are second nature — Layer 1 begins immediately with dictionaries and iteration built on exactly these tools.
+    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Write reusable functions for formatting and sorting countries, including one lambda used with sorted().
+      <strong>Lab objective:</strong> Iterate over a list with a for loop, repeat with range(), write a while loop, and use break and continue meaningfully.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>functions_lab.py</code>.</p>
+    <p>A file called <code>loops.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and the country list</strong></p>
+        <p><strong>Create the file and loop over a list of country names</strong></p>
 
-        <pre><code># functions_lab.py
-countries = [
-    {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa", "population": 31000000},
-    {"name": "Peru", "region": "Americas", "population": 33000000},
-]</code></pre>
+        <pre><code># loops.py
+countries = ["Kenya", "Ghana", "Peru", "Japan"]
+
+for country in countries:
+    print(country)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Write a function that formats one country as a label</strong></p>
-        <p>Give <code>region</code> a default value of <code>"Unknown"</code>.</p>
-        <pre><code>def format_country(name, region="Unknown"):
-    return f"{name} ({region})"
+        <p><strong>Use range() to print numbered positions</strong></p>
 
-print(format_country("Kenya", "Africa"))
-print(format_country("Atlantis"))  # uses the default</code></pre>
+        <pre><code>for i in range(len(countries)):
+    print(i, countries[i])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Write a function that returns the population, and one that prints it</strong></p>
-        <p>Call both and print the results to see the return-vs-print difference for yourself.</p>
-        <pre><code>def get_population(country):
-    return country["population"]
-
-def show_population(country):
-    print(country["name"], "has population", country["population"])
-
-result = show_population(countries[0])
-print("show_population returned:", result)  # None
-print("get_population returned:", get_population(countries[0]))</code></pre>
+        <p><strong>Write a while loop that counts down from 5</strong></p>
+        <p>Make sure the loop actually terminates.</p>
+        <pre><code>count = 5
+while count &gt; 0:
+    print(count)
+    count = count - 1
+print("Liftoff!")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Sort countries by population using a lambda</strong></p>
+        <p><strong>Use break to stop as soon as a target is found</strong></p>
 
-        <pre><code>by_population = sorted(countries, key=lambda c: c["population"])
-for c in by_population:
-    print(c["name"], c["population"])</code></pre>
+        <pre><code>target = "Peru"
+for country in countries:
+    if country == target:
+        print("Found", target)
+        break
+    print("Checked", country, "- not a match")</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Sort countries by population, descending</strong></p>
-        <p>Look up the reverse parameter of sorted().</p>
-        <pre><code>by_population_desc = sorted(countries, key=lambda c: c["population"], reverse=True)
-print([c["name"] for c in by_population_desc])</code></pre>
+        <p><strong>Use continue to skip items that do not match a condition</strong></p>
+
+        <pre><code>for country in countries:
+    if len(country) &lt; 5:
+        continue
+    print(country, "has 5 or more letters")</code></pre>
       </div>
     </div>
 
@@ -291,14 +297,14 @@ print([c["name"] for c in by_population_desc])</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>functions_lab.py</code></td>
+            <td><code>loops.py</code></td>
             <td>Created</td>
-            <td>Demonstrates function definitions, defaults, return vs print, and lambda with sorted().</td>
+            <td>Demonstrates for loops, range(), while loops, break, and continue.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-04/index.html</code></td>
             <td>Created</td>
-            <td>This session document.</td>
+            <td>This session document — Layer 0 gate.</td>
           </tr>
         </tbody>
       </table>
@@ -312,11 +318,11 @@ print([c["name"] for c in by_population_desc])</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add functions_lab.py docs/sessions/session-04/index.html
-git commit -m "session-04: define reusable functions and sort with a lambda key"</code></pre>
+    <pre><code>git add loops.py docs/sessions/session-04/index.html
+git commit -m "session-04: repeat actions with for/while loops, break, and continue"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why did show_population() print the value but return None, and why does that matter?"
+      Do not commit until you can answer out loud: "What would happen if the while loop's count variable was never decremented inside the loop body?"
     </div>
 
     <hr class="section-divider" />
@@ -327,23 +333,23 @@ git commit -m "session-04: define reusable functions and sort with a lambda key"
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">At least one function uses a default parameter value</label>
+        <label for="c1">A for loop iterates over a list of at least 4 items</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">The return-vs-print distinction is demonstrated explicitly, printing the None result</label>
+        <label for="c2">range() is used to loop a specific number of times</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">At least one lambda is written and used as the key argument to sorted()</label>
+        <label for="c3">A while loop is written with a condition that correctly becomes False, avoiding an infinite loop</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">sorted() is used both ascending and with reverse=True</label>
+        <label for="c4">break is used to exit a loop early once a target is found</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No lambda spans more than one expression</label>
+        <label for="c5">continue is used to skip items that do not meet a condition</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -363,52 +369,52 @@ git commit -m "session-04: define reusable functions and sort with a lambda key"
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>def greet(name):\n    return f"Hello, {name}"</code>, what does <code>greet("Kenya")</code> evaluate to?</p>
-        <label class="quiz-option" data-val="a">None — the function only prints</label>
-        <label class="quiz-option" data-val="b">"Hello, Kenya"</label>
-        <label class="quiz-option" data-val="c">A TypeError because name is not defined</label>
-        <label class="quiz-option" data-val="d">The literal text "greet(name)"</label>
-        <div class="explanation">Calling the function substitutes the argument "Kenya" for the parameter <code>name</code>, and <code>return</code> sends the formatted string back to the caller.</div>
+        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and <code>for country in countries:\n    print(country)</code>, what prints?</p>
+        <label class="quiz-option" data-val="a">The word "countries" three times</label>
+        <label class="quiz-option" data-val="b">"Kenya", then "Ghana", then "Peru", each on its own line</label>
+        <label class="quiz-option" data-val="c">The whole list printed once: ['Kenya', 'Ghana', 'Peru']</label>
+        <label class="quiz-option" data-val="d">Nothing — this is invalid syntax</label>
+        <div class="explanation">A <code>for ... in</code> loop runs its body once for every item in the list, binding <code>country</code> to each value in turn. Since the body is <code>print(country)</code>, each name prints on its own line.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>print(greet("Kenya"))</code> print if <code>greet</code> uses <code>print(f"Hello, {name}")</code> instead of <code>return</code>?</p>
-        <label class="quiz-option" data-val="a">"Hello, Kenya" once</label>
-        <label class="quiz-option" data-val="b">"Hello, Kenya" followed by "None" on the next line</label>
-        <label class="quiz-option" data-val="c">Nothing — the function silently fails</label>
-        <label class="quiz-option" data-val="d">An error — you cannot print a function call</label>
-        <div class="explanation">The function itself prints "Hello, Kenya" as a side effect. But since it has no <code>return</code>, calling it evaluates to <code>None</code> — and the outer <code>print()</code> then prints that <code>None</code> on the next line. This is a very common beginner confusion between printing and returning.</div>
+        <p>What does <code>range(5)</code> produce when looped over?</p>
+        <label class="quiz-option" data-val="a">The numbers 1, 2, 3, 4, 5</label>
+        <label class="quiz-option" data-val="b">The numbers 0, 1, 2, 3, 4 (five numbers, starting at 0)</label>
+        <label class="quiz-option" data-val="c">The number 5, once</label>
+        <label class="quiz-option" data-val="d">An error — range() requires two arguments</label>
+        <div class="explanation"><code>range(5)</code> produces 5 numbers starting at 0 and stopping BEFORE 5: 0, 1, 2, 3, 4. This "starts at 0, stops before the given number" behavior matches how list indexing works, which is why it is the default.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Given <code>def region_label(name, region="Unknown"):</code>, what does <code>region_label("Kenya")</code> return for <code>region</code>?</p>
-        <label class="quiz-option" data-val="a">A TypeError — region is required</label>
-        <label class="quiz-option" data-val="b">"Unknown" — the default value is used since no argument was passed</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">An empty string</label>
-        <div class="explanation">A default parameter value is used whenever the caller does not supply that argument. This lets callers omit parameters they don't care about.</div>
+        <p>What is the danger of writing <code>while count < 10:</code> without ever changing count inside the loop body?</p>
+        <label class="quiz-option" data-val="a">There is no danger — Python automatically stops after 10 iterations</label>
+        <label class="quiz-option" data-val="b">An infinite loop — the condition never becomes False, so the loop runs forever (or until you force-stop the program)</label>
+        <label class="quiz-option" data-val="c">A SyntaxError before the program even runs</label>
+        <label class="quiz-option" data-val="d">The loop runs exactly once and then stops</label>
+        <div class="explanation">A <code>while</code> loop keeps running as long as its condition is True. If nothing inside the loop body ever changes the value being checked, the condition never becomes False, and the loop never ends — you must update the checked value yourself, usually near the end of the loop body.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="a">
+      <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Which lambda is equivalent to <code>def get_pop(c): return c["population"]</code>?</p>
-        <label class="quiz-option" data-val="a"><code>lambda c: c["population"]</code></label>
-        <label class="quiz-option" data-val="b"><code>lambda c: return c["population"]</code></label>
-        <label class="quiz-option" data-val="c"><code>lambda(c): c["population"]</code></label>
-        <label class="quiz-option" data-val="d"><code>def lambda c: c["population"]</code></label>
-        <div class="explanation">A lambda has no <code>def</code>, no name, no parentheses around parameters, and no <code>return</code> keyword — the expression after the colon is implicitly returned.</div>
+        <p>Given a loop searching for the first country with population over 100 million, what does break do once it is found?</p>
+        <label class="quiz-option" data-val="a">It skips just that one item and continues the loop</label>
+        <label class="quiz-option" data-val="b">It immediately exits the loop entirely, even if more items remain to check</label>
+        <label class="quiz-option" data-val="c">It restarts the loop from the beginning</label>
+        <label class="quiz-option" data-val="d">It has no effect inside a for loop, only while loops</label>
+        <div class="explanation"><code>break</code> exits the loop immediately and completely — useful once you have found what you were looking for and have no reason to keep checking the remaining items.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>You call <code>sorted(countries, key=lambda c: c["population"])</code>. What does the <code>key</code> argument control?</p>
-        <label class="quiz-option" data-val="a">It filters out countries without a population key</label>
-        <label class="quiz-option" data-val="b">For each item, it computes the value that sorted() should compare on, instead of comparing the dicts directly</label>
-        <label class="quiz-option" data-val="c">It renames the "population" field to "key"</label>
-        <label class="quiz-option" data-val="d">It reverses the sort order</label>
-        <div class="explanation"><code>sorted()</code> normally compares items directly, which fails for dicts. <code>key</code> tells it: "for each item, run this function, and sort based on what it returns" — here, each country's population.</div>
+        <p>Given <code>for c in countries:\n    if c["population"] < 1000000:\n        continue\n    print(c["name"])</code>, what does continue do for a country with a small population?</p>
+        <label class="quiz-option" data-val="a">It stops the whole loop immediately</label>
+        <label class="quiz-option" data-val="b">It skips the rest of THIS iteration's body (so print never runs for this item) and moves on to the next item in the loop</label>
+        <label class="quiz-option" data-val="c">It removes the item from the countries list permanently</label>
+        <label class="quiz-option" data-val="d">It has the same effect as break</label>
+        <div class="explanation"><code>continue</code> skips only the remainder of the current iteration's body and moves the loop on to the next item — unlike <code>break</code>, the loop keeps going, it just skips printing for items matching the condition.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -421,10 +427,10 @@ git commit -m "session-04: define reusable functions and sort with a lambda key"
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does Python separate "produce a value" (return) from "display a value" (print) instead of combining them?</li>
-        <li>Rewrite the <code>lambda c: c["population"]</code> from the lab as a full <code>def</code> function. Which version is more readable in context?</li>
-        <li>What would happen if you forgot the <code>return</code> keyword inside <code>get_population</code>? Try it and observe.</li>
-        <li>Can you think of a case in the project ahead where a default parameter value would prevent a bug?</li>
+        <li>What would you observe on screen if you accidentally created an infinite while loop? How would you know something was wrong, and how would you stop it?</li>
+        <li>Why does break stop the ENTIRE loop, while continue only skips the current pass? Can you think of a scenario where you would want one but not the other?</li>
+        <li>Rewrite the range()-based numbered loop using enumerate(countries) instead (look up what it does). Which version is clearer to you right now?</li>
+        <li>Why is a for loop generally preferred over a while loop when you already know exactly what collection you are iterating over?</li>
       </ol>
     </div>
 
@@ -433,9 +439,8 @@ git commit -m "session-04: define reusable functions and sort with a lambda key"
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>The forgotten-return bug:</strong> Forgetting <code>return</code> is one of the most common beginner mistakes. The function appears to work (it prints correctly) but every caller that tries to use its result gets <code>None</code> instead — a bug that only shows up downstream.</li>
-        <li><strong>Data-layer functions (Layer 4):</strong> Session 24 builds a data-access layer entirely out of functions like the ones in this lab. If return values are not understood, that entire layer will silently pass <code>None</code> around.</li>
-        <li><strong>Sorting and filtering UI logic:</strong> Nearly every "sort by X" or "filter by Y" feature in real software is built on exactly the <code>key=lambda</code> pattern from this session.</li>
+        <li><strong>Every data-processing session in this entire curriculum:</strong> From Session 05 (Dictionaries) forward through the entire Country Explorer project, looping over collections of data is the single most repeated operation in the whole course. If a for loop does not feel completely automatic, everything ahead will be much harder than it needs to be.</li>
+        <li><strong>Infinite loops in real programs:</strong> A while loop whose condition never becomes False will hang a real program indefinitely — this is a genuine, common bug, not just a classroom exercise, and recognising the risk now will save you real debugging time later.</li>
       </ul>
     </div>
 
@@ -443,9 +448,9 @@ git commit -m "session-04: define reusable functions and sort with a lambda key"
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Functions — def, parameters, defaults, return vs print, and lambda expressions used as sort keys.</p>
-      <p><strong>Unlocks:</strong> You can now name and reuse logic instead of repeating it, and pass small functions as arguments to other functions.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 05 — Unpacking and *args/**kwargs</a>. We will learn to unpack values out of lists and dicts in one line, and accept flexible numbers of arguments with *args and **kwargs.</p>
+      <p><strong>Python concept mastered:</strong> Repeating actions with for loops, range(), while loops, and controlling loop flow with break and continue.</p>
+      <p><strong>Unlocks:</strong> You now have every fundamental building block — variables, types, operators, conditionals, and loops — needed to read and write real Python programs. Layer 0 is complete.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 05 — Dictionaries</a>. Layer 1 begins. We start working with Python's most important data structure: the dictionary — and everything from here builds toward a real, tested, deployed application.</p>
     </div>
 
 

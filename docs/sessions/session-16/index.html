@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 16 — What Is State in a Program? — Python Learning</title>
+  <title>Session 16 — Composition — Objects Containing Objects — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 3</span>
+      <span class="badge badge-layer">Layer 2</span>
       <span class="badge badge-current">Session 16</span>
-      <span style="color:var(--text-muted); font-size:13px;">State & Interactivity</span>
+      <span style="color:var(--text-muted); font-size:13px;">Object-Oriented Basics</span>
     </div>
-    <h1>What Is State in a Program?</h1>
-    <p class="subtitle">Layer 3 begins. Everything so far has been static — built once and read. State is data that legitimately changes while a program runs, and tracking it correctly is a skill of its own.</p>
+    <h1>Composition — Objects Containing Objects</h1>
+    <p class="subtitle">Real applications are built from many small, focused classes working together, not one giant class doing everything. We build a CountryExplorer that holds a list of Country objects.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Define "state" as data that changes over the lifetime of a running program</li>
-        <li>Distinguish construction-time data (Session 11) from data that is expected to change afterward</li>
-        <li>Explain why uncontrolled mutation of shared state causes bugs that are hard to trace</li>
-        <li>Identify which attributes of Country and CountryExplorer are state versus fixed identity</li>
-        <li>Recognise this as a concept-only session, mirroring Session 08's approach</li>
+        <li>Store a list of class instances as an attribute of another class</li>
+        <li>Write a method on the outer class that loops over and delegates to the inner instances' own methods</li>
+        <li>Explain the difference between composition (has-a) and the inheritance relationship we have not covered yet</li>
+        <li>Add an instance to a composed collection after construction</li>
+        <li>Trace a method call from the outer object down into an inner object's own method</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Which of these Country attributes is most clearly "state" — data expected to change during the program's life — versus a fixed identifying property?</p>
-        <label class="quiz-option" data-val="a">name — a country's name essentially never changes during a program run</label>
-        <label class="quiz-option" data-val="b">population — plausibly grows, shrinks, or gets corrected while the program runs</label>
-        <label class="quiz-option" data-val="c">Both are equally state</label>
-        <label class="quiz-option" data-val="d">Neither is state; state only applies to numbers</label>
-        <div class="explanation">population is a value we would realistically expect to be updated (Session 10's grow_population) while the program runs — the definition of state. name is closer to a fixed identifying property for the object's lifetime.</div>
+        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
+        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
+        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
+        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
+        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
+        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>A CountryExplorer's .countries list grows as more data loads in. Is that state?</p>
-        <label class="quiz-option" data-val="a">No — lists cannot be state, only numbers and strings can</label>
-        <label class="quiz-option" data-val="b">Yes — the collection changing shape over time (via .append()) is exactly what state means</label>
-        <label class="quiz-option" data-val="c">Only if the list is empty at the start</label>
-        <label class="quiz-option" data-val="d">It depends on how the list was constructed</label>
-        <div class="explanation">State is not limited to primitive values — any data that legitimately changes while the program runs is state, including collections that grow, shrink, or get reordered.</div>
+        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
+        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
+        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
+        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
+        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
+        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 14), and just collects the results.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Two different parts of a program both hold a reference to the same CountryExplorer instance. One part appends a country. What happens from the other part's point of view?</p>
-        <label class="quiz-option" data-val="a">Nothing — each reference has its own independent copy</label>
-        <label class="quiz-option" data-val="b">The other part sees the new country too, because both references point to the same shared state (Session 01's reference behaviour)</label>
-        <label class="quiz-option" data-val="c">A RuntimeError is raised for concurrent access</label>
-        <label class="quiz-option" data-val="d">The append is silently ignored</label>
-        <div class="explanation">This is Session 01's reference lesson applied to state specifically: if two parts of a program share a reference to the same mutable object, a change made through either one is visible through both — which is powerful, but also the source of many state-related bugs if not managed deliberately.</div>
+        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
+        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
+        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
+        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
+        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
+        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 06's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why can uncontrolled, scattered mutation of shared state be hard to debug?</p>
-        <label class="quiz-option" data-val="a">Python does not allow mutation, so this scenario cannot occur</label>
-        <label class="quiz-option" data-val="b">When many different parts of the code can change the same state directly, it becomes hard to know which part caused an unexpected value, since there is no single place responsible for the change</label>
-        <label class="quiz-option" data-val="c">Mutation is always slower than creating new objects, which is the only downside</label>
-        <label class="quiz-option" data-val="d">It is not actually hard to debug — this is a myth</label>
-        <div class="explanation">If any code, anywhere, can freely mutate shared state, tracing "why is this value wrong" requires checking every possible mutation site instead of one controlled entry point — this is exactly the problem Session 17's controlled updates will address.</div>
+        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
+        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
+        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
+        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
+        <label class="quiz-option" data-val="d">It depends on the population values</label>
+        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 06, just now calling a method instead of reading a dict key.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="a">
+      <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is this session mostly concept and almost no new syntax?</p>
-        <label class="quiz-option" data-val="a">Because state does not actually require any new Python features — it is a new way of thinking about attributes and mutation you already know how to write</label>
-        <label class="quiz-option" data-val="b">Because state is not actually important</label>
-        <label class="quiz-option" data-val="c">Because Python has no support for mutable state</label>
-        <label class="quiz-option" data-val="d">Because the syntax was already covered in Session 01 and needs no further explanation ever</label>
-        <div class="explanation">Just like Session 08 (What Classes Are and Why), this session builds a mental model using tools you already have — attributes and mutation. The next sessions build concrete, controlled patterns for managing it well.</div>
+        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
+        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
+        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
+        <label class="quiz-option" data-val="d">There is no real difference</label>
+        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 10.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,72 +141,99 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — State</h2>
+    <h2>3. The Concept — Composition</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">COUNTRYEXPLORER</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">.countries → [ ]</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">HOLDS</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Country, Country,</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">Country</text>
+      </svg>
+      <p class="diagram-caption-text">CountryExplorer HAS a list of Country instances — it does not become one, it holds references to several.</p>
+    </div>
 
-    <h3>State is data that changes while the program runs</h3>
-    <p>Every attribute we have written so far has technically been mutable — but not every attribute is meant to change. "State" specifically means data that is expected and designed to change over the lifetime of a running program, in response to something happening.</p>
+
+    <h3>One class holding instances of another</h3>
+    <p>Composition means an object's attribute is itself another object (or a collection of them) — a "has-a" relationship, as opposed to the "is-a" relationship of inheritance, which we are deliberately not covering yet.</p>
     <pre><code>class Country:
     def __init__(self, name, region, population):
-        self.name = name          # fixed identity — not expected to change
-        self.region = region      # fixed identity — not expected to change
-        self.population = population  # STATE — expected to change over time</code></pre>
+        self.name = name
+        self.region = region
+        self.population = population
 
-    <h3>Construction-time data vs state</h3>
-    <p>Session 11 established that data arrives explicitly through the constructor. Some of that data stays fixed for the object's lifetime (like name); other data is the object's starting state, expected to evolve afterward (like population, which grow_population already updates).</p>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">construction</span>name, region,
-population (start)</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">over time</span>population
-keeps changing</div>
-      <div class="diagram-caption">Construction sets the starting values. State is the subset expected to keep changing afterward, through controlled methods.</div>
-    </div>
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
 
-    <h3>A collection can be state too</h3>
-    <p>CountryExplorer.countries is state — it grows as data loads, and potentially shrinks or reorders based on user actions later in the project.</p>
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries  # a list of Country instances</code></pre>
+
+    <h3>Delegating to inner objects</h3>
+    <p>The outer class does not need to know HOW to summarize a country — it simply asks each Country instance to summarize itself, using the method that instance already has.</p>
+    <pre><code>explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+
+class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]  # delegates to each Country
+
+print(explorer.summaries())
+# ['Kenya (Africa): pop. 54,000,000', 'Peru (Americas): pop. 33,000,000']</code></pre>
+
+    <h3>Growing the collection after construction</h3>
+    <p>Since self.countries is just a list, everything from Session 06 still applies to it.</p>
+    <pre><code>nigeria = Country(name="Nigeria", region="Africa", population=223000000)
+explorer.countries.append(nigeria)
+print(len(explorer.countries))  # one more than before</code></pre>
+
+    <h3>A method that operates across the whole collection</h3>
+    <p>This is where composition starts to pay off — the outer class can offer operations that make sense at the collection level, built from what each inner object already knows.</p>
     <pre><code>class CountryExplorer:
     def __init__(self, countries):
-        self.countries = countries  # starts here, but this list is STATE — it changes over time
+        self.countries = countries
 
-explorer = CountryExplorer(countries=[])
-explorer.countries.append(Country(name="Kenya", region="Africa", population=54000000))
-# .countries just changed shape — this is state changing over the program's lifetime</code></pre>
+    def summaries(self):
+        return [c.summary() for c in self.countries]
 
-    <h3>Why uncontrolled mutation is risky</h3>
-    <p>If any part of a large program can reach in and mutate shared state directly, tracing an unexpected value back to its cause becomes very difficult — there is no single place to look. The next several sessions build the discipline of changing state only through deliberate, well-named methods.</p>
-    <pre><code># Risky — anyone, anywhere, can silently corrupt state
-explorer.countries[0].population = -999999  # no validation, no traceability
+    def total_population(self):
+        return sum(c.population for c in self.countries)
 
-# Better (Session 17 formalizes this) — a controlled method with rules
-explorer.countries[0].grow_population(1000000)  # validated, named, traceable</code></pre>
+    def find_by_region(self, region):
+        return [c for c in self.countries if c.region == region]</code></pre>
 
-    <div class="alert alert-warning">
-      <strong>Concept-only session:</strong> Like Session 08, there is very little new code today. The goal is recognising state as a distinct concept from ordinary attributes before Session 17 gives us controlled patterns for updating it.
-    </div>
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Identify and annotate which attributes across the project so far are state versus fixed identity, and observe uncontrolled mutation firsthand.
+      <strong>Lab objective:</strong> Build a CountryExplorer class that composes a list of Country instances and offers collection-level operations by delegating to each one.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>state_concept.py</code> — mostly comments and small demonstrations, not new functionality.</p>
+    <p>A file called <code>explorer_composed.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and re-declare Country and CountryExplorer</strong></p>
+        <p><strong>Create the file with Country and an empty CountryExplorer</strong></p>
 
-        <pre><code># state_concept.py
+        <pre><code># explorer_composed.py
 class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
         self.population = population
+
+    def summary(self):
+        return f"{self.name} ({self.region}): pop. {self.population:,}"
+
 
 class CountryExplorer:
     def __init__(self, countries):
@@ -217,51 +244,73 @@ class CountryExplorer:
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Annotate each attribute with a comment: STATE or FIXED</strong></p>
-        <p>This is the most important step — write your reasoning, not just a label.</p>
-        <pre><code>class Country:
-    def __init__(self, name, region, population):
-        self.name = name              # FIXED — identity, not expected to change
-        self.region = region          # FIXED — identity, not expected to change
-        self.population = population  # STATE — expected to change over time (Session 10)
+        <p><strong>Construct an explorer with 3 countries</strong></p>
 
-class CountryExplorer:
-    def __init__(self, countries):
-        self.countries = countries    # STATE — grows/shrinks as data loads (Session 12)</code></pre>
+        <pre><code>explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Ghana", region="Africa", population=31000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(len(explorer.countries))</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Demonstrate uncontrolled mutation directly and observe it works with no guardrails</strong></p>
+        <p><strong>Add a summaries() method that delegates to each Country</strong></p>
 
-        <pre><code>k = Country(name="Kenya", region="Africa", population=54000000)
-k.population = -999999   # directly assigned, bypassing any validation
-print(k.population)      # -999999 — nothing stopped this</code></pre>
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+for line in explorer.summaries():
+    print(line)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Demonstrate two references sharing the same mutable state</strong></p>
-        <p>Recall Session 01 — prove it applies to real objects too, not just dicts.</p>
-        <pre><code>explorer = CountryExplorer(countries=[k])
-same_explorer = explorer  # NOT a copy — same reference
+        <p><strong>Add total_population() and find_by_region() methods</strong></p>
 
-same_explorer.countries.append(Country(name="Ghana", region="Africa", population=31000000))
-print(len(explorer.countries))       # 2 — the change is visible through BOTH names
-print(len(same_explorer.countries))  # 2</code></pre>
+        <pre><code>class CountryExplorer:
+    def __init__(self, countries):
+        self.countries = countries
+
+    def summaries(self):
+        return [c.summary() for c in self.countries]
+
+    def total_population(self):
+        return sum(c.population for c in self.countries)
+
+    def find_by_region(self, region):
+        return [c for c in self.countries if c.region == region]
+
+explorer = CountryExplorer(countries=[
+    Country(name="Kenya", region="Africa", population=54000000),
+    Country(name="Ghana", region="Africa", population=31000000),
+    Country(name="Peru", region="Americas", population=33000000),
+])
+print(explorer.total_population())
+print([c.name for c in explorer.find_by_region("Africa")])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Write a short comment describing the risk you just observed</strong></p>
-        <p>No new code required — summarize, in your own words, why direct attribute assignment (step 3) is risky compared to a controlled method.</p>
+        <p><strong>Add a country after construction and confirm total_population updates</strong></p>
 
+        <pre><code>explorer.countries.append(Country(name="Nigeria", region="Africa", population=223000000))
+print(explorer.total_population())  # reflects the new total automatically</code></pre>
       </div>
     </div>
 
@@ -275,9 +324,9 @@ print(len(same_explorer.countries))  # 2</code></pre>
         </thead>
         <tbody>
           <tr>
-            <td><code>state_concept.py</code></td>
+            <td><code>explorer_composed.py</code></td>
             <td>Created</td>
-            <td>Identifies state vs fixed attributes and demonstrates uncontrolled mutation risk.</td>
+            <td>CountryExplorer composes and delegates to a list of Country instances.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-16/index.html</code></td>
@@ -296,11 +345,11 @@ print(len(same_explorer.countries))  # 2</code></pre>
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add state_concept.py docs/sessions/session-16/index.html
-git commit -m "session-16: identify state vs fixed attributes and observe uncontrolled mutation risk"</code></pre>
+    <pre><code>git add explorer_composed.py docs/sessions/session-16/index.html
+git commit -m "session-16: compose CountryExplorer from a list of Country instances"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "In my own words, what makes population "state" while name is not?"
+      Do not commit until you can answer out loud: "Why does total_population() automatically reflect a country added after construction, without any changes to total_population itself?"
     </div>
 
     <hr class="section-divider" />
@@ -311,23 +360,23 @@ git commit -m "session-16: identify state vs fixed attributes and observe uncont
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">Every attribute in Country and CountryExplorer is annotated STATE or FIXED with reasoning</label>
+        <label for="c1">CountryExplorer stores a list of Country instances as self.countries</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">Uncontrolled direct mutation (k.population = -999999) is demonstrated and its lack of guardrails is noted</label>
+        <label for="c2">summaries() delegates to each Country instance's own summary() method</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">Two references to the same CountryExplorer are shown to share mutations, connecting back to Session 01</label>
+        <label for="c3">total_population() and find_by_region() both operate across the whole collection</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">A written comment explains the risk of uncontrolled mutation in your own words</label>
+        <label for="c4">A country is appended after construction and total_population() is shown to reflect it</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No validation or controlled-update code is added yet — that is intentionally next session</label>
+        <label for="c5">No logic that belongs on Country (like formatting a summary) is duplicated inside CountryExplorer</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -347,52 +396,52 @@ git commit -m "session-16: identify state vs fixed attributes and observe uncont
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Which of these Country attributes is most clearly "state" — data expected to change during the program's life — versus a fixed identifying property?</p>
-        <label class="quiz-option" data-val="a">name — a country's name essentially never changes during a program run</label>
-        <label class="quiz-option" data-val="b">population — plausibly grows, shrinks, or gets corrected while the program runs</label>
-        <label class="quiz-option" data-val="c">Both are equally state</label>
-        <label class="quiz-option" data-val="d">Neither is state; state only applies to numbers</label>
-        <div class="explanation">population is a value we would realistically expect to be updated (Session 10's grow_population) while the program runs — the definition of state. name is closer to a fixed identifying property for the object's lifetime.</div>
+        <p>Given <code>class CountryExplorer:\n    def __init__(self, countries):\n        self.countries = countries</code> where countries is a list of Country instances, what kind of relationship is this?</p>
+        <label class="quiz-option" data-val="a">Inheritance — CountryExplorer is a kind of Country</label>
+        <label class="quiz-option" data-val="b">Composition — CountryExplorer has a list of Country instances</label>
+        <label class="quiz-option" data-val="c">No relationship — the two classes are unrelated</label>
+        <label class="quiz-option" data-val="d">Aliasing — CountryExplorer and Country are the same object</label>
+        <div class="explanation">This is composition: one object holds references to other objects as part of its own data. CountryExplorer is not a kind of Country, and does not inherit from it — it simply has some.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>A CountryExplorer's .countries list grows as more data loads in. Is that state?</p>
-        <label class="quiz-option" data-val="a">No — lists cannot be state, only numbers and strings can</label>
-        <label class="quiz-option" data-val="b">Yes — the collection changing shape over time (via .append()) is exactly what state means</label>
-        <label class="quiz-option" data-val="c">Only if the list is empty at the start</label>
-        <label class="quiz-option" data-val="d">It depends on how the list was constructed</label>
-        <div class="explanation">State is not limited to primitive values — any data that legitimately changes while the program runs is state, including collections that grow, shrink, or get reordered.</div>
+        <p>Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?</p>
+        <label class="quiz-option" data-val="a">Calls summary() on the CountryExplorer itself, once</label>
+        <label class="quiz-option" data-val="b">Loops over each Country instance in self.countries and calls each one's own summary() method, collecting the results</label>
+        <label class="quiz-option" data-val="c">Modifies each country's summary attribute directly</label>
+        <label class="quiz-option" data-val="d">Raises an error because Country objects cannot be inside a list comprehension</label>
+        <div class="explanation">This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance's own <code>summary()</code> method (from Session 14), and just collects the results.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Two different parts of a program both hold a reference to the same CountryExplorer instance. One part appends a country. What happens from the other part's point of view?</p>
-        <label class="quiz-option" data-val="a">Nothing — each reference has its own independent copy</label>
-        <label class="quiz-option" data-val="b">The other part sees the new country too, because both references point to the same shared state (Session 01's reference behaviour)</label>
-        <label class="quiz-option" data-val="c">A RuntimeError is raised for concurrent access</label>
-        <label class="quiz-option" data-val="d">The append is silently ignored</label>
-        <div class="explanation">This is Session 01's reference lesson applied to state specifically: if two parts of a program share a reference to the same mutable object, a change made through either one is visible through both — which is powerful, but also the source of many state-related bugs if not managed deliberately.</div>
+        <p>How do you add a new Country to an existing CountryExplorer instance's collection after construction?</p>
+        <label class="quiz-option" data-val="a">You cannot — the list is fixed once __init__ runs</label>
+        <label class="quiz-option" data-val="b">explorer.countries.append(new_country) — mutate the list attribute directly</label>
+        <label class="quiz-option" data-val="c">explorer.append(new_country)</label>
+        <label class="quiz-option" data-val="d">CountryExplorer(new_country)</label>
+        <div class="explanation"><code>self.countries</code> is just a regular list attribute — Session 06's <code>.append()</code> works on it exactly the same way it worked on any other list.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Why can uncontrolled, scattered mutation of shared state be hard to debug?</p>
-        <label class="quiz-option" data-val="a">Python does not allow mutation, so this scenario cannot occur</label>
-        <label class="quiz-option" data-val="b">When many different parts of the code can change the same state directly, it becomes hard to know which part caused an unexpected value, since there is no single place responsible for the change</label>
-        <label class="quiz-option" data-val="c">Mutation is always slower than creating new objects, which is the only downside</label>
-        <label class="quiz-option" data-val="d">It is not actually hard to debug — this is a myth</label>
-        <div class="explanation">If any code, anywhere, can freely mutate shared state, tracing "why is this value wrong" requires checking every possible mutation site instead of one controlled entry point — this is exactly the problem Session 17's controlled updates will address.</div>
+        <p>If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country's summary() method run?</p>
+        <label class="quiz-option" data-val="a">Once total, for the whole list</label>
+        <label class="quiz-option" data-val="b">Once each — 3 times total, once per Country instance</label>
+        <label class="quiz-option" data-val="c">Zero times — summaries() has its own separate implementation</label>
+        <label class="quiz-option" data-val="d">It depends on the population values</label>
+        <div class="explanation">The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 06, just now calling a method instead of reading a dict key.</div>
       </div>
 
-      <div class="quiz-question" data-question="4" data-answer="a">
+      <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is this session mostly concept and almost no new syntax?</p>
-        <label class="quiz-option" data-val="a">Because state does not actually require any new Python features — it is a new way of thinking about attributes and mutation you already know how to write</label>
-        <label class="quiz-option" data-val="b">Because state is not actually important</label>
-        <label class="quiz-option" data-val="c">Because Python has no support for mutable state</label>
-        <label class="quiz-option" data-val="d">Because the syntax was already covered in Session 01 and needs no further explanation ever</label>
-        <div class="explanation">Just like Session 08 (What Classes Are and Why), this session builds a mental model using tools you already have — attributes and mutation. The next sessions build concrete, controlled patterns for managing it well.</div>
+        <p>Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?</p>
+        <label class="quiz-option" data-val="a">Composition is always faster to execute</label>
+        <label class="quiz-option" data-val="b">It keeps each class focused on one responsibility, and Country's own logic (like grow_population) stays reusable and testable independently</label>
+        <label class="quiz-option" data-val="c">Python does not allow more than 3 attributes per class</label>
+        <label class="quiz-option" data-val="d">There is no real difference</label>
+        <div class="explanation">Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 10.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -405,10 +454,10 @@ git commit -m "session-16: identify state vs fixed attributes and observe uncont
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Is region truly always fixed? Can you think of a real-world scenario (e.g. historical border changes) where it might legitimately need to be state instead?</li>
-        <li>Why do you think this session deliberately shows you the RISK of uncontrolled mutation before Session 17 shows you the SOLUTION?</li>
-        <li>How does "two references sharing mutable state" in this session's lab connect back to Session 01's object mutation, Session 09's independent instances, and Session 12's composition?</li>
-        <li>Where in a large real application would uncontrolled state mutation be catastrophic versus merely annoying?</li>
+        <li>Why does total_population() automatically pick up the newly appended country without any code change to total_population itself? Trace through what self.countries actually contains at call time.</li>
+        <li>What would go wrong if CountryExplorer tried to reimplement summary formatting itself instead of calling c.summary()?</li>
+        <li>Can you think of a real application where "one object holding a collection of other objects" is the natural shape? (Hint: think of any list-based UI you have used.)</li>
+        <li>How is CountryExplorer.countries similar to and different from the plain list of dictionaries we used in Session 06?</li>
       </ol>
     </div>
 
@@ -417,9 +466,9 @@ git commit -m "session-16: identify state vs fixed attributes and observe uncont
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Untraceable bugs:</strong> A program where any code anywhere can mutate any state directly makes "why is this value wrong" a search through the entire codebase instead of a single, well-known method — this is the single most common source of hard-to-debug real-world software issues.</li>
-        <li><strong>Controlled updates (Session 17):</strong> The next session channels all state changes through named, validating methods. Without today's clear sense of what counts as state, that discipline will feel like unnecessary ceremony instead of a direct fix for a problem you just observed yourself.</li>
-        <li><strong>Re-render logic (parallel to the original course's Session 19):</strong> This mirrors exactly why the source React course treats state as sacred — uncontrolled mutation there breaks UI updates. Here, it breaks traceability. The underlying discipline is the same.</li>
+        <li><strong>Duplicated logic:</strong> If CountryExplorer reimplemented formatting or validation instead of delegating to Country's own methods, a bug fix would need to happen in two places — and they would inevitably drift out of sync over time.</li>
+        <li><strong>Conditional rendering / logic (Session 17):</strong> The next session adds conditional logic inside methods, such as handling an empty collection. Composition is what makes "no countries yet" a meaningful, testable state to handle.</li>
+        <li><strong>The whole rest of the project:</strong> Every remaining layer — mock data, testing, architecture, real APIs — operates on a composed structure just like CountryExplorer. This is the shape the entire application is built from.</li>
       </ul>
     </div>
 
@@ -427,9 +476,9 @@ git commit -m "session-16: identify state vs fixed attributes and observe uncont
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> State — data expected to change during a program's run, distinct from fixed identity data, and the risk of mutating it without a controlled entry point.</p>
-      <p><strong>Unlocks:</strong> You can now identify state in any class you design, and you have directly observed why uncontrolled mutation is a real problem, not a theoretical one.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 17 — Updating State via Methods</a>. We formalize controlled state updates through named, validating methods — turning the risk from this session into a solved problem.</p>
+      <p><strong>Python concept mastered:</strong> Composition — one class holding instances of another, and delegating collection-level work to each inner instance's own methods.</p>
+      <p><strong>Unlocks:</strong> You can now build a real application out of small, focused, cooperating classes instead of one giant class doing everything.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 17 — Conditional Logic in Methods</a>. We handle the cases where things are missing or empty — conditional logic inside methods, like an empty country list or a country with no known capital.</p>
     </div>
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 07 — Errors and Exceptions — Python Learning</title>
+  <title>Session 07 — List Comprehensions — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -55,11 +55,11 @@
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
       <span class="badge badge-layer">Layer 1</span>
-      <span class="badge badge-gate">Session 07 — Gate</span>
+      <span class="badge badge-current">Session 07</span>
       <span style="color:var(--text-muted); font-size:13px;">Python Foundations</span>
     </div>
-    <h1>Errors and Exceptions</h1>
-    <p class="subtitle">This is the Layer 1 gate. Real data is messy — missing keys, wrong types, invalid input. We learn to handle failure deliberately instead of letting the whole program crash.</p>
+    <h1>List Comprehensions</h1>
+    <p class="subtitle">Manually writing a for-loop to build a new list every time is repetitive. List comprehensions are Python's built-in shorthand for exactly that pattern.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Explain what an exception is and how it differs from a normal return value</li>
-        <li>Use try/except to catch a specific exception type and recover</li>
-        <li>Use else and finally correctly</li>
-        <li>Raise your own exception with a clear message using raise</li>
-        <li>Explain why catching Exception broadly is usually a mistake</li>
+        <li>Rewrite a transforming for-loop as a list comprehension</li>
+        <li>Rewrite a filtering for-loop (with an if) as a list comprehension</li>
+        <li>Combine transform and filter in a single comprehension</li>
+        <li>Recognise when a comprehension improves readability and when a plain loop is clearer</li>
+        <li>Explain that a comprehension always produces a brand-new list</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What happens when Python hits an error like <code>country["capital"]</code> on a dict with no "capital" key, if there is no try/except around it?</p>
-        <label class="quiz-option" data-val="a">It silently returns None</label>
-        <label class="quiz-option" data-val="b">It raises a KeyError, and the program stops (unless something up the call stack catches it)</label>
-        <label class="quiz-option" data-val="c">It logs a warning and continues to the next line</label>
-        <label class="quiz-option" data-val="d">It automatically retries with a default value</label>
-        <div class="explanation">An unhandled exception propagates up the call stack, printing a traceback, and stops the program (or whichever thread/request it happened in) once it reaches the top with nothing to catch it.</div>
+        <p>Given <code>names = [c["name"] for c in countries]</code>, what does this produce?</p>
+        <label class="quiz-option" data-val="a">It mutates <code>countries</code> to only contain names</label>
+        <label class="quiz-option" data-val="b">A new list containing just the "name" value from each dict in countries</label>
+        <label class="quiz-option" data-val="c">A single string of all names joined together</label>
+        <label class="quiz-option" data-val="d">A dictionary mapping names to countries</label>
+        <div class="explanation">A list comprehension always builds a brand-new list. <code>[c["name"] for c in countries]</code> is shorthand for looping over <code>countries</code> and collecting <code>c["name"]</code> from each item into a new list. <code>countries</code> itself is untouched.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given <code>try:\n    value = country["capital"]\nexcept KeyError:\n    value = "Unknown"</code>, what is <code>value</code> if "capital" is missing?</p>
-        <label class="quiz-option" data-val="a">The program crashes with a KeyError</label>
-        <label class="quiz-option" data-val="b">"Unknown" — the except block runs and assigns the fallback</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">An empty string, regardless of the except block</label>
-        <div class="explanation">The <code>try</code> block's <code>KeyError</code> is caught by the matching <code>except KeyError:</code> clause, which runs instead of crashing, assigning "Unknown" to <code>value</code>.</div>
+        <p>What does <code>[c for c in countries if c["region"] == "Africa"]</code> produce?</p>
+        <label class="quiz-option" data-val="a">A list of only the region strings that equal "Africa"</label>
+        <label class="quiz-option" data-val="b">A new list containing only the country dicts whose region is "Africa"</label>
+        <label class="quiz-option" data-val="c">True or False for each country</label>
+        <label class="quiz-option" data-val="d">A KeyError if any country lacks a region key</label>
+        <div class="explanation">The <code>if</code> clause at the end filters which items get included. Since the expression before <code>for</code> is just <code>c</code> (the whole dict), the result keeps entire country dicts, filtered down to African ones.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="b">
+      <div class="quiz-question" data-question="2" data-answer="a">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is the difference between an except block's code and a finally block's code?</p>
-        <label class="quiz-option" data-val="a">They are identical — finally is just another name for except</label>
-        <label class="quiz-option" data-val="b">except only runs if a matching error occurred; finally always runs, whether an error occurred or not</label>
-        <label class="quiz-option" data-val="c">finally only runs if no error occurred</label>
-        <label class="quiz-option" data-val="d">except runs before the try block; finally runs after</label>
-        <div class="explanation"><code>except</code> is conditional on a matching exception being raised. <code>finally</code> is unconditional — it always executes, useful for cleanup like closing a file, regardless of whether an error happened.</div>
+        <p>Which for-loop is exactly equivalent to <code>squares = [n * n for n in [1, 2, 3]]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>squares = []\nfor n in [1, 2, 3]:\n    squares.append(n * n)</code></label>
+        <label class="quiz-option" data-val="b"><code>squares = [1, 2, 3]\nfor n in squares:\n    n = n * n</code></label>
+        <label class="quiz-option" data-val="c"><code>squares = {}\nfor n in [1, 2, 3]:\n    squares[n] = n * n</code></label>
+        <label class="quiz-option" data-val="d">None of these are equivalent</label>
+        <div class="explanation">A comprehension is shorthand for: start with an empty list, loop, and append the transformed value each time. Option a is that exact loop written out longhand.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="a">
         <div class="question-num">Question 4 of 5</div>
-        <p>You write <code>raise ValueError("population must be positive")</code> inside a function. What happens?</p>
-        <label class="quiz-option" data-val="a">It prints the message and continues normally</label>
-        <label class="quiz-option" data-val="b">It immediately stops normal execution and raises a ValueError with that message, to be caught by a caller or crash the program</label>
-        <label class="quiz-option" data-val="c">It logs the message silently to a file</label>
-        <label class="quiz-option" data-val="d">It is a syntax error — raise cannot take a message</label>
-        <div class="explanation"><code>raise</code> deliberately triggers an exception. Execution of the current function stops immediately at that line, and the exception propagates up until something catches it (or the program crashes with that message).</div>
+        <p>You want the names of only the African countries in one line. Which comprehension does that?</p>
+        <label class="quiz-option" data-val="a"><code>[c["name"] for c in countries if c["region"] == "Africa"]</code></label>
+        <label class="quiz-option" data-val="b"><code>[c["name"] if c["region"] == "Africa" for c in countries]</code></label>
+        <label class="quiz-option" data-val="c"><code>[c for c["name"] in countries if region == "Africa"]</code></label>
+        <label class="quiz-option" data-val="d"><code>filter(c["name"] for c in countries)</code></label>
+        <div class="explanation">The syntax order is always <code>[expression for item in iterable if condition]</code>. Option a transforms to <code>c["name"]</code> and filters with <code>if c["region"] == "Africa"</code> in the correct positions.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is <code>except Exception:</code> (catching everything) usually considered a mistake?</p>
-        <label class="quiz-option" data-val="a">It is a syntax error in modern Python</label>
-        <label class="quiz-option" data-val="b">It silently swallows bugs you did not anticipate, hiding real problems (like a typo) behind the same fallback as expected errors</label>
-        <label class="quiz-option" data-val="c">It is slower than catching a specific exception</label>
-        <label class="quiz-option" data-val="d">Exception is not a real class in Python</label>
-        <div class="explanation">Catching everything means a genuine bug — like a typo'd variable name raising <code>NameError</code> — gets silently treated the same as an expected, recoverable error. This hides real problems instead of surfacing them. Catch the specific exception type you actually expect.</div>
+        <p>True or false: after running <code>names = [c["name"] for c in countries]</code>, the original <code>countries</code> list has been changed.</p>
+        <label class="quiz-option" data-val="a">True — comprehensions always mutate the source</label>
+        <label class="quiz-option" data-val="b">False — a comprehension never modifies the iterable it reads from</label>
+        <label class="quiz-option" data-val="c">True, but only if the list contains dictionaries</label>
+        <label class="quiz-option" data-val="d">It depends on whether <code>if</code> is used</label>
+        <div class="explanation">A comprehension only ever reads from the source iterable and builds a separate new list. <code>countries</code> is exactly as it was before, regardless of what the comprehension does.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,99 +141,86 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Errors and Exceptions</h2>
-
-    <h3>What is an exception?</h3>
-    <p>When something goes wrong, Python does not silently return a bad value — it raises an exception, which immediately stops normal execution and propagates upward looking for something to handle it.</p>
-    <pre><code>country = {"name": "Kenya"}
-print(country["capital"])
-# Traceback (most recent call last):
-#   ...
-# KeyError: 'capital'
-# Program stops here unless something catches it</code></pre>
-
-    <h3>Catching a specific exception with try/except</h3>
-    <p>Wrap the risky code in <code>try</code>, and handle the specific failure in a matching <code>except</code>. Only exceptions of that type (or a subclass) are caught — everything else still propagates.</p>
-    <pre><code>country = {"name": "Kenya"}
-
-try:
-    capital = country["capital"]
-except KeyError:
-    capital = "Unknown"
-
-print(capital)  # "Unknown" — no crash</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">try</span>risky code runs</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">except KeyError</span>handled here</div>
-      <div class="diagram-caption">A caught exception is handled locally; an uncaught one keeps propagating up the call stack.</div>
+    <h2>3. The Concept — List Comprehensions</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">4 LINES</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="46.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">names = []</text><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">for c in countries:</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">  names.append(</text><text x="86" y="91.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">    c["name"])</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">1 LINE</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">[c["name"]</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">for c in countries]</text>
+      </svg>
+      <p class="diagram-caption-text">Both approaches read every item and collect a transformed value — the comprehension is the loop, compressed onto one line.</p>
     </div>
 
-    <h3>else and finally</h3>
-    <p>An optional <code>else</code> block runs only if the <code>try</code> block succeeded with no exception. An optional <code>finally</code> block always runs, whether or not an exception occurred — used for cleanup.</p>
-    <pre><code>try:
-    capital = country["capital"]
-except KeyError:
-    print("No capital on file")
-else:
-    print("Found capital:", capital)  # only runs if no exception
-finally:
-    print("Lookup attempt finished")  # always runs</code></pre>
 
-    <h3>Raising your own exceptions</h3>
-    <p>You are not limited to reacting to Python's built-in errors. Use <code>raise</code> to signal that your own code has hit an invalid state, with a message explaining what went wrong.</p>
-    <pre><code>def set_population(country, value):
-    if value &lt; 0:
-        raise ValueError(f"population must be positive, got {value}")
-    country["population"] = value
+    <h3>From for-loop to comprehension — the transform case</h3>
+    <p>Recall from Session 06: building a new list from an old one always follows the same shape — start empty, loop, append the transformed value.</p>
+    <pre><code>countries = [
+    {"name": "Kenya", "region": "Africa"},
+    {"name": "Ghana", "region": "Africa"},
+    {"name": "Peru", "region": "Americas"},
+]
 
-country = {"name": "Kenya"}
-set_population(country, 54000000)  # fine
+# The longhand for-loop version
+names = []
+for c in countries:
+    names.append(c["name"])
 
-set_population(country, -5)
-# Traceback (most recent call last):
-#   ...
-# ValueError: population must be positive, got -5</code></pre>
+# The exact same result as a list comprehension
+names = [c["name"] for c in countries]
+print(names)  # ['Kenya', 'Ghana', 'Peru']</code></pre>
 
-    <h3>Catch specific exceptions, not everything</h3>
-    <p>Catching a broad <code>Exception</code> hides real bugs by treating every kind of failure — including ones you never intended to handle — the same way. Always catch the narrowest exception type that matches what you actually expect to go wrong.</p>
-    <pre><code># Risky: hides a typo (NameError) behind the same fallback as a real missing key
-try:
-    value = coutnry["capital"]   # typo! raises NameError, not KeyError
-except Exception:
-    value = "Unknown"             # bug is silently hidden
+    <h3>Adding a filter with if</h3>
+    <p>A trailing <code>if</code> clause keeps only the items matching a condition — equivalent to a for-loop with an if-check before the append.</p>
+    <pre><code># Longhand
+african = []
+for c in countries:
+    if c["region"] == "Africa":
+        african.append(c)
 
-# Better: only catch what you actually expect
-try:
-    value = country["capital"]
-except KeyError:
-    value = "Unknown"             # a real typo would now crash loudly, as it should</code></pre>
+# Comprehension
+african = [c for c in countries if c["region"] == "Africa"]
+print(african)
+# [{'name': 'Kenya', ...}, {'name': 'Ghana', ...}]</code></pre>
 
-    <div class="alert alert-warning">
-      <strong>Layer 1 gate:</strong> This is the last Layer 1 session. Every remaining layer assumes you can read a traceback, choose the right exception to catch, and know the difference between recoverable and unexpected failures.
-    </div>
+    <h3>Combining transform and filter</h3>
+    <p>You can transform and filter in the same expression — the transform goes first, the filter goes last.</p>
+    <pre><code>african_names = [c["name"] for c in countries if c["region"] == "Africa"]
+print(african_names)  # ['Kenya', 'Ghana']</code></pre>
+
+    <h3>When NOT to use a comprehension</h3>
+    <p>Comprehensions are for building a list. If your loop body does something else — printing, multiple statements, side effects — a plain for-loop is clearer. Forcing everything into a comprehension hurts readability instead of helping it.</p>
+    <pre><code># Fine as a comprehension — building a list
+names = [c["name"] for c in countries]
+
+# NOT a good fit — this is printing, not building a list.
+# Keep this as a normal for-loop:
+for c in countries:
+    print(f"{c['name']} is in {c['region']}")</code></pre>
+
 
 
     <hr class="section-divider" />
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Write a safe country lookup function that handles missing keys and invalid input using try/except, else, and finally, plus a function that raises its own exception.
+      <strong>Lab objective:</strong> Rewrite loop-based transforms and filters from Session 06 as list comprehensions, and combine both in one line.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>errors_lab.py</code>.</p>
+    <p>A file called <code>filters.py</code> operating on the country list from Session 06.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and the country data</strong></p>
+        <p><strong>Create the file and re-declare the country list</strong></p>
 
-        <pre><code># errors_lab.py
+        <pre><code># filters.py
 countries = [
     {"name": "Kenya", "region": "Africa", "population": 54000000},
-    {"name": "Ghana", "region": "Africa"},  # note: no population key
+    {"name": "Ghana", "region": "Africa", "population": 31000000},
+    {"name": "Peru", "region": "Americas", "population": 33000000},
+    {"name": "Japan", "region": "Asia", "population": 125000000},
 ]</code></pre>
       </div>
     </div>
@@ -241,63 +228,52 @@ countries = [
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Write a function that reads population safely with try/except</strong></p>
-
-        <pre><code>def get_population(country):
-    try:
-        return country["population"]
-    except KeyError:
-        return None
-
-print(get_population(countries[0]))  # 54000000
-print(get_population(countries[1]))  # None — no crash</code></pre>
+        <p><strong>Write the longhand for-loop version of extracting names</strong></p>
+        <p>Do this first, on purpose, before the comprehension — you need to see the shape being compressed.</p>
+        <pre><code>names_longhand = []
+for c in countries:
+    names_longhand.append(c["name"])
+print(names_longhand)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Add else and finally to see the full flow</strong></p>
+        <p><strong>Rewrite it as a comprehension and confirm identical output</strong></p>
 
-        <pre><code>def report_population(country):
-    try:
-        pop = country["population"]
-    except KeyError:
-        print(country["name"], "has no population on file")
-    else:
-        print(country["name"], "population is", pop)
-    finally:
-        print("Lookup complete for", country["name"])
-
-report_population(countries[0])
-report_population(countries[1])</code></pre>
+        <pre><code>names = [c["name"] for c in countries]
+print(names)
+print(names == names_longhand)  # True</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Write a function that raises ValueError on invalid input</strong></p>
+        <p><strong>Filter countries with population over 50 million</strong></p>
 
-        <pre><code>def set_population(country, value):
-    if not isinstance(value, int) or value &lt; 0:
-        raise ValueError(f"population must be a non-negative int, got {value!r}")
-    country["population"] = value
-
-set_population(countries[1], 31000000)  # fine
-print(countries[1])</code></pre>
+        <pre><code>large = [c for c in countries if c["population"] &gt; 50_000_000]
+print([c["name"] for c in large])</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Call set_population with bad input inside a try/except and confirm it is caught</strong></p>
+        <p><strong>Combine transform and filter in one comprehension</strong></p>
+        <p>Get just the names of Asian countries in a single line.</p>
+        <pre><code>asian_names = [c["name"] for c in countries if c["region"] == "Asia"]
+print(asian_names)</code></pre>
+      </div>
+    </div>
 
-        <pre><code>try:
-    set_population(countries[1], -5)
-except ValueError as e:
-    print("Rejected:", e)</code></pre>
+    <div class="step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <p><strong>Prove the original list is untouched</strong></p>
+
+        <pre><code>print("Original length still 4:", len(countries) == 4)</code></pre>
       </div>
     </div>
 
@@ -311,14 +287,14 @@ except ValueError as e:
         </thead>
         <tbody>
           <tr>
-            <td><code>errors_lab.py</code></td>
+            <td><code>filters.py</code></td>
             <td>Created</td>
-            <td>Demonstrates try/except/else/finally and raising a custom ValueError.</td>
+            <td>Demonstrates transform, filter, and combined comprehensions.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-07/index.html</code></td>
             <td>Created</td>
-            <td>This session document — Layer 1 gate.</td>
+            <td>This session document.</td>
           </tr>
         </tbody>
       </table>
@@ -332,11 +308,11 @@ except ValueError as e:
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add errors_lab.py docs/sessions/session-07/index.html
-git commit -m "session-07: handle missing keys with try/except and raise ValueError on invalid input"</code></pre>
+    <pre><code>git add filters.py docs/sessions/session-07/index.html
+git commit -m "session-07: transform and filter countries with list comprehensions"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why is catching KeyError specifically safer than catching Exception broadly?"
+      Do not commit until you can answer out loud: "What is the general shape [expression for item in iterable if condition], and can I read any comprehension back into a for-loop out loud?"
     </div>
 
     <hr class="section-divider" />
@@ -347,23 +323,23 @@ git commit -m "session-07: handle missing keys with try/except and raise ValueEr
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">get_population catches KeyError specifically, not a broad Exception</label>
+        <label for="c1">The longhand for-loop version is written first and kept in the file for comparison</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">else and finally are both demonstrated and their firing conditions are correct</label>
+        <label for="c2">A pure-transform comprehension is present ([expr for item in iterable])</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">set_population raises ValueError with a clear, informative message on invalid input</label>
+        <label for="c3">A pure-filter comprehension is present ([item for item in iterable if cond])</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">The raised ValueError is caught elsewhere with try/except ValueError as e</label>
+        <label for="c4">A combined transform+filter comprehension is present</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">No except clause in the file catches a bare Exception</label>
+        <label for="c5">The original list is proven unchanged after all comprehensions run</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -383,52 +359,52 @@ git commit -m "session-07: handle missing keys with try/except and raise ValueEr
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What happens when Python hits an error like <code>country["capital"]</code> on a dict with no "capital" key, if there is no try/except around it?</p>
-        <label class="quiz-option" data-val="a">It silently returns None</label>
-        <label class="quiz-option" data-val="b">It raises a KeyError, and the program stops (unless something up the call stack catches it)</label>
-        <label class="quiz-option" data-val="c">It logs a warning and continues to the next line</label>
-        <label class="quiz-option" data-val="d">It automatically retries with a default value</label>
-        <div class="explanation">An unhandled exception propagates up the call stack, printing a traceback, and stops the program (or whichever thread/request it happened in) once it reaches the top with nothing to catch it.</div>
+        <p>Given <code>names = [c["name"] for c in countries]</code>, what does this produce?</p>
+        <label class="quiz-option" data-val="a">It mutates <code>countries</code> to only contain names</label>
+        <label class="quiz-option" data-val="b">A new list containing just the "name" value from each dict in countries</label>
+        <label class="quiz-option" data-val="c">A single string of all names joined together</label>
+        <label class="quiz-option" data-val="d">A dictionary mapping names to countries</label>
+        <div class="explanation">A list comprehension always builds a brand-new list. <code>[c["name"] for c in countries]</code> is shorthand for looping over <code>countries</code> and collecting <code>c["name"]</code> from each item into a new list. <code>countries</code> itself is untouched.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given <code>try:\n    value = country["capital"]\nexcept KeyError:\n    value = "Unknown"</code>, what is <code>value</code> if "capital" is missing?</p>
-        <label class="quiz-option" data-val="a">The program crashes with a KeyError</label>
-        <label class="quiz-option" data-val="b">"Unknown" — the except block runs and assigns the fallback</label>
-        <label class="quiz-option" data-val="c">None</label>
-        <label class="quiz-option" data-val="d">An empty string, regardless of the except block</label>
-        <div class="explanation">The <code>try</code> block's <code>KeyError</code> is caught by the matching <code>except KeyError:</code> clause, which runs instead of crashing, assigning "Unknown" to <code>value</code>.</div>
+        <p>What does <code>[c for c in countries if c["region"] == "Africa"]</code> produce?</p>
+        <label class="quiz-option" data-val="a">A list of only the region strings that equal "Africa"</label>
+        <label class="quiz-option" data-val="b">A new list containing only the country dicts whose region is "Africa"</label>
+        <label class="quiz-option" data-val="c">True or False for each country</label>
+        <label class="quiz-option" data-val="d">A KeyError if any country lacks a region key</label>
+        <div class="explanation">The <code>if</code> clause at the end filters which items get included. Since the expression before <code>for</code> is just <code>c</code> (the whole dict), the result keeps entire country dicts, filtered down to African ones.</div>
       </div>
 
-      <div class="quiz-question" data-question="2" data-answer="b">
+      <div class="quiz-question" data-question="2" data-answer="a">
         <div class="question-num">Question 3 of 5</div>
-        <p>What is the difference between an except block's code and a finally block's code?</p>
-        <label class="quiz-option" data-val="a">They are identical — finally is just another name for except</label>
-        <label class="quiz-option" data-val="b">except only runs if a matching error occurred; finally always runs, whether an error occurred or not</label>
-        <label class="quiz-option" data-val="c">finally only runs if no error occurred</label>
-        <label class="quiz-option" data-val="d">except runs before the try block; finally runs after</label>
-        <div class="explanation"><code>except</code> is conditional on a matching exception being raised. <code>finally</code> is unconditional — it always executes, useful for cleanup like closing a file, regardless of whether an error happened.</div>
+        <p>Which for-loop is exactly equivalent to <code>squares = [n * n for n in [1, 2, 3]]</code>?</p>
+        <label class="quiz-option" data-val="a"><code>squares = []\nfor n in [1, 2, 3]:\n    squares.append(n * n)</code></label>
+        <label class="quiz-option" data-val="b"><code>squares = [1, 2, 3]\nfor n in squares:\n    n = n * n</code></label>
+        <label class="quiz-option" data-val="c"><code>squares = {}\nfor n in [1, 2, 3]:\n    squares[n] = n * n</code></label>
+        <label class="quiz-option" data-val="d">None of these are equivalent</label>
+        <div class="explanation">A comprehension is shorthand for: start with an empty list, loop, and append the transformed value each time. Option a is that exact loop written out longhand.</div>
       </div>
 
-      <div class="quiz-question" data-question="3" data-answer="b">
+      <div class="quiz-question" data-question="3" data-answer="a">
         <div class="question-num">Question 4 of 5</div>
-        <p>You write <code>raise ValueError("population must be positive")</code> inside a function. What happens?</p>
-        <label class="quiz-option" data-val="a">It prints the message and continues normally</label>
-        <label class="quiz-option" data-val="b">It immediately stops normal execution and raises a ValueError with that message, to be caught by a caller or crash the program</label>
-        <label class="quiz-option" data-val="c">It logs the message silently to a file</label>
-        <label class="quiz-option" data-val="d">It is a syntax error — raise cannot take a message</label>
-        <div class="explanation"><code>raise</code> deliberately triggers an exception. Execution of the current function stops immediately at that line, and the exception propagates up until something catches it (or the program crashes with that message).</div>
+        <p>You want the names of only the African countries in one line. Which comprehension does that?</p>
+        <label class="quiz-option" data-val="a"><code>[c["name"] for c in countries if c["region"] == "Africa"]</code></label>
+        <label class="quiz-option" data-val="b"><code>[c["name"] if c["region"] == "Africa" for c in countries]</code></label>
+        <label class="quiz-option" data-val="c"><code>[c for c["name"] in countries if region == "Africa"]</code></label>
+        <label class="quiz-option" data-val="d"><code>filter(c["name"] for c in countries)</code></label>
+        <div class="explanation">The syntax order is always <code>[expression for item in iterable if condition]</code>. Option a transforms to <code>c["name"]</code> and filters with <code>if c["region"] == "Africa"</code> in the correct positions.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is <code>except Exception:</code> (catching everything) usually considered a mistake?</p>
-        <label class="quiz-option" data-val="a">It is a syntax error in modern Python</label>
-        <label class="quiz-option" data-val="b">It silently swallows bugs you did not anticipate, hiding real problems (like a typo) behind the same fallback as expected errors</label>
-        <label class="quiz-option" data-val="c">It is slower than catching a specific exception</label>
-        <label class="quiz-option" data-val="d">Exception is not a real class in Python</label>
-        <div class="explanation">Catching everything means a genuine bug — like a typo'd variable name raising <code>NameError</code> — gets silently treated the same as an expected, recoverable error. This hides real problems instead of surfacing them. Catch the specific exception type you actually expect.</div>
+        <p>True or false: after running <code>names = [c["name"] for c in countries]</code>, the original <code>countries</code> list has been changed.</p>
+        <label class="quiz-option" data-val="a">True — comprehensions always mutate the source</label>
+        <label class="quiz-option" data-val="b">False — a comprehension never modifies the iterable it reads from</label>
+        <label class="quiz-option" data-val="c">True, but only if the list contains dictionaries</label>
+        <label class="quiz-option" data-val="d">It depends on whether <code>if</code> is used</label>
+        <div class="explanation">A comprehension only ever reads from the source iterable and builds a separate new list. <code>countries</code> is exactly as it was before, regardless of what the comprehension does.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -441,10 +417,10 @@ git commit -m "session-07: handle missing keys with try/except and raise ValueEr
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why does Python prefer "ask forgiveness" (try/except) over "look before you leap" (checking <code>if "capital" in country</code> first) in many cases? Can you think of an argument for each style?</li>
-        <li>What real production bug could <code>except Exception: pass</code> hide that a specific <code>except KeyError:</code> would not?</li>
-        <li>In the lab, what would happen if you called <code>set_population(countries[1], "fifty")</code> — a string instead of a number? Trace through the isinstance check.</li>
-        <li>How does raising your own exception with a clear message help the next person (including future you) debug faster than a generic crash?</li>
+        <li>Rewrite <code>[c["name"] for c in countries if c["region"] == "Africa"]</code> back into a longhand for-loop from memory. Does it match what you wrote in the lab?</li>
+        <li>Can you think of a loop body from Session 06 that would NOT translate well into a comprehension? Why not?</li>
+        <li>Why might a reviewer reject a deeply nested comprehension even though it "works"?</li>
+        <li>How is a list comprehension similar to the object destructuring pattern used in other languages you might know?</li>
       </ol>
     </div>
 
@@ -453,9 +429,9 @@ git commit -m "session-07: handle missing keys with try/except and raise ValueEr
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Silent data corruption:</strong> Catching too broadly (or not catching at all) means one bad record in a dataset can either crash your entire program or, worse, silently produce wrong results that are hard to trace back to their cause.</li>
-        <li><strong>Class validation (Layer 2):</strong> In Session 09, class constructors will validate their inputs the same way <code>set_population</code> does here — raising a clear exception is how a class protects itself from being created in an invalid state.</li>
-        <li><strong>Real API calls (Layer 7):</strong> In Session 38, a real network call can fail for a dozen reasons — no connection, bad response, rate limiting. Without this session, you cannot handle any of them gracefully, and one flaky network call would crash the whole application.</li>
+        <li><strong>Unreadable one-liners:</strong> Overusing comprehensions for anything with side effects (printing, mutating something else, multiple conditions) produces code that is technically correct but very hard to read. Knowing when NOT to use one is as important as knowing the syntax.</li>
+        <li><strong>Data-layer filtering (Layer 4):</strong> In Session 28 you will build a data-access layer that filters and searches a country list. That entire layer is built from the comprehension patterns in this session.</li>
+        <li><strong>Testing assertions (Layer 5):</strong> Tests frequently assert on filtered results, e.g. "the returned list contains only African countries." If you cannot read a comprehension, you cannot verify what the test is actually checking.</li>
       </ul>
     </div>
 
@@ -463,9 +439,9 @@ git commit -m "session-07: handle missing keys with try/except and raise ValueEr
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Exceptions — try/except/else/finally, raising your own exceptions with raise, and why catching narrowly matters.</p>
-      <p><strong>Unlocks:</strong> You can now write code that fails safely and predictably instead of crashing on the first messy input — the last Layer 1 skill before we start modelling real objects.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 08 — What Classes Are and Why</a>. Layer 2 begins. We stop passing raw dictionaries around and start modelling a Country as a class.</p>
+      <p><strong>Python concept mastered:</strong> List comprehensions — transform, filter, and combined forms, and when a plain loop is the better choice.</p>
+      <p><strong>Unlocks:</strong> You can now express "give me a new list built from this one" in a single readable line — the core operation of the whole project.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 08 — Functions and Lambda</a>. We will look at functions properly — defining reusable logic instead of repeating it, including the compact lambda syntax.</p>
     </div>
 
 

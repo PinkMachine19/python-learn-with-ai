@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 38 — Calling a Real API with requests — Python Learning</title>
+  <title>Session 38 — Building Utility Modules — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 7</span>
+      <span class="badge badge-layer">Layer 6</span>
       <span class="badge badge-current">Session 38</span>
-      <span style="color:var(--text-muted); font-size:13px;">Real World</span>
+      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
     </div>
-    <h1>Calling a Real API with requests</h1>
-    <p class="subtitle">We finally connect to a live, real network API — the REST Countries API — using the requests library, replacing our local file with genuinely external, unpredictable data.</p>
+    <h1>Building Utility Modules</h1>
+    <p class="subtitle">Beyond small extracted functions, some logic is genuinely cross-cutting — useful to many different parts of the application without belonging to any single class.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Install and use the requests library to make an HTTP GET request</li>
-        <li>Read a JSON response body and convert it to Python data structures</li>
-        <li>Check an HTTP status code before trusting a response</li>
-        <li>Map a real API's response shape onto our existing Country data contract</li>
-        <li>Swap CountryRepository's data source to a real API with minimal changes, proving Session 24's design once more</li>
+        <li>Design a utility module containing several related, standalone functions</li>
+        <li>Explain the difference between a utility function and a method that belongs on a class</li>
+        <li>Build a search-relevance utility used by both the repository and the explorer</li>
+        <li>Keep a utility module free of dependencies on any one specific class, keeping it broadly reusable</li>
+        <li>Test a utility module thoroughly, since it will be relied upon from multiple places</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What does <code>requests.get("https://restcountries.com/v3.1/all")</code> return?</p>
-        <label class="quiz-option" data-val="a">The raw JSON text as a plain string</label>
-        <label class="quiz-option" data-val="b">A Response object, which has a .status_code and a .json() method to parse the body</label>
-        <label class="quiz-option" data-val="c">A Python list directly</label>
-        <label class="quiz-option" data-val="d">Nothing — you must manually open a socket first</label>
-        <div class="explanation"><code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 25's json.load().</div>
+        <p>A function that checks whether a search term appears in a country's name, case-insensitively, is useful both inside CountryExplorer and potentially inside CountryRepository. Where should it live?</p>
+        <label class="quiz-option" data-val="a">Duplicated inside both classes separately</label>
+        <label class="quiz-option" data-val="b">As a standalone function in a utility module (e.g. search.py), imported by whichever class needs it, rather than tied to one specific class</label>
+        <label class="quiz-option" data-val="c">It must be a method on Country specifically, and nowhere else</label>
+        <label class="quiz-option" data-val="d">It cannot be reused across two different classes</label>
+        <div class="explanation">Logic that is genuinely useful to more than one class, and does not conceptually "belong" to any single one of them, is exactly what a utility module is for — a shared, standalone piece of logic multiple classes can import and use.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does an HTTP status code of 200 mean, versus 404?</p>
-        <label class="quiz-option" data-val="a">They mean the same thing</label>
-        <label class="quiz-option" data-val="b">200 means the request succeeded; 404 means the requested resource was not found — checking this before trusting the response body is essential</label>
-        <label class="quiz-option" data-val="c">200 means an error occurred; 404 means success</label>
-        <label class="quiz-option" data-val="d">Status codes are optional and rarely checked in practice</label>
-        <div class="explanation">HTTP status codes communicate the outcome of a request. 200 (and the broader 2xx range) means success. 404 means "not found." Checking the status code before calling .json() prevents trying to parse an error page as if it were valid data.</div>
+        <p>What is the key difference between a utility function like matches_search_term(name, term) and an instance method like Country.summary(self)?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two</label>
+        <label class="quiz-option" data-val="b">A method operates on a specific instance's own data via self; a utility function takes everything it needs as explicit arguments and does not belong to, or depend on, any particular class's internal structure</label>
+        <label class="quiz-option" data-val="c">Utility functions cannot take any arguments</label>
+        <label class="quiz-option" data-val="d">Methods are always faster than utility functions</label>
+        <div class="explanation">This connects back to Session 14's method-vs-function distinction: a method is bound to an instance's own data; a utility function is a plain, standalone function (Session 08) that takes its inputs explicitly, with no ties to any specific class.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A real API might return country data with different key names than our own contract (e.g. "name": {"common": "Kenya"} instead of a flat "name": "Kenya"). What is needed to use this data with our existing Country class?</p>
-        <label class="quiz-option" data-val="a">Country must be completely rewritten to match the API's exact shape</label>
-        <label class="quiz-option" data-val="b">A small adapter/mapping function that transforms the API's raw shape into our own contract's shape (Session 26), BEFORE constructing Country instances — Country itself needs no changes</label>
-        <label class="quiz-option" data-val="c">Nothing — Python automatically reconciles differing key names</label>
-        <label class="quiz-option" data-val="d">The API's data cannot be used at all if the shape differs</label>
-        <div class="explanation">This is exactly Session 26's "contract" concept in action: rather than reshaping our whole application around one specific external API's shape, we write a small adapter that translates the API's raw data into our OWN agreed contract, keeping Country and everything downstream of it completely unchanged.</div>
+        <p>Why should a utility module avoid importing or depending on a specific class like Country, if it can be avoided?</p>
+        <label class="quiz-option" data-val="a">It does not matter either way</label>
+        <label class="quiz-option" data-val="b">Keeping a utility function's inputs generic (e.g. taking a plain string, not a Country instance) makes it usable in more contexts and easier to test in complete isolation, without needing to construct unrelated objects</label>
+        <label class="quiz-option" data-val="c">Python forbids utility modules from importing other modules</label>
+        <label class="quiz-option" data-val="d">This would cause a circular import in every case</label>
+        <div class="explanation">A function like <code>matches_search_term(name: str, term: str)</code> is more broadly reusable and simpler to test than one that requires a full Country instance just to check a string match — genericity is a design choice that increases reusability.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Given Session 24's repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?</p>
-        <label class="quiz-option" data-val="a">CountryRepository's get_all() and find_by_region() methods must be rewritten from scratch</label>
-        <label class="quiz-option" data-val="b">Only how raw_data is obtained before being passed to the constructor — call requests.get(), adapt the shape, then pass the result in exactly like any other data source; the repository's own methods are unchanged</label>
-        <label class="quiz-option" data-val="c">CountryExplorer must be entirely rebuilt</label>
-        <label class="quiz-option" data-val="d">This is not possible without a major rewrite</label>
-        <div class="explanation">This is the fourth and most significant proof of Session 24's design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.</div>
+        <p>Why does a utility module deserve especially thorough test coverage, more so perhaps than a one-off helper used in only one place?</p>
+        <label class="quiz-option" data-val="a">It does not need any additional testing rigor</label>
+        <label class="quiz-option" data-val="b">Because it will be relied upon from multiple different parts of the codebase, a bug in a utility function has a wider blast radius — breaking every caller simultaneously, not just one</label>
+        <label class="quiz-option" data-val="c">Utility modules are exempt from testing by convention</label>
+        <label class="quiz-option" data-val="d">Only classes need tests, never standalone utility functions</label>
+        <div class="explanation">This connects to Session 31's testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is directly trusting the API response's data types without validation (skipping Session 26's discipline) risky for a REAL, external API in particular?</p>
-        <label class="quiz-option" data-val="a">It is not risky; real APIs always return perfectly-typed, reliable data</label>
-        <label class="quiz-option" data-val="b">An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 26's validate_country_record even more important here than it was for your own mock/file data</label>
-        <label class="quiz-option" data-val="c">Real APIs cannot return incorrect data by definition</label>
-        <label class="quiz-option" data-val="d">Validation is only needed for locally-generated data</label>
-        <div class="explanation">An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 26's validation discipline more important here than anywhere else in the project so far.</div>
+        <p>Where does this new search.py utility module fit into the package structure established in Session 36?</p>
+        <label class="quiz-option" data-val="a">It should replace models.py entirely</label>
+        <label class="quiz-option" data-val="b">As a new, additional focused module inside country_explorer/, following the same by-responsibility organization already established</label>
+        <label class="quiz-option" data-val="c">Utility modules cannot exist inside a package</label>
+        <label class="quiz-option" data-val="d">It must be placed outside the country_explorer package entirely</label>
+        <div class="explanation">This is a natural extension of Session 36's package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 37.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,63 +141,79 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Calling a Real API</h2>
-
-    <h3>Making an HTTP request with requests</h3>
-    <p>The requests library (installed via pip) provides a simple interface for making HTTP calls — a GET request fetches data from a URL.</p>
-    <pre><code># pip install requests
-import requests
-
-response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
-print(response.status_code)  # 200 means success
-
-data = response.json()  # parses the JSON body into Python data structures
-print(type(data))         # &lt;class 'list'&gt;
-print(len(data))          # a few hundred countries</code></pre>
-
-    <h3>Checking the status code before trusting the response</h3>
-    <p>Just like Session 07's validation-before-use discipline, always check that a request actually succeeded before trying to use its data.</p>
-    <pre><code>response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
-
-if response.status_code == 200:
-    data = response.json()
-else:
-    print(f"API request failed with status {response.status_code}")
-    data = []</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">status 200</span>trust the body</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">status 4xx/5xx</span>do NOT parse
-as success</div>
-      <div class="diagram-caption">Check the status code before trusting the body — a failed request's "body" might not even be valid JSON at all.</div>
+    <h2>3. The Concept — Utility Modules</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">METHOD</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">needs self</text><text x="86" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">(an instance)</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">UTILITY FUNCTION</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">needs only</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">its arguments</text>
+      </svg>
+      <p class="diagram-caption-text">A method needs an instance (self) to run. A utility function only needs its explicit arguments — usable anywhere, by anything.</p>
     </div>
 
-    <h3>Adapting the API's shape to our own contract</h3>
-    <p>The REST Countries API returns country data with its own shape — different from our simple flat contract. An adapter function bridges the gap, so Country itself never needs to change.</p>
-    <pre><code>def adapt_api_record(raw):
-    # The real API nests the name field, unlike our flat contract
-    return {
-        "name": raw["name"]["common"],
-        "region": raw.get("region", "Unknown"),
-        "population": raw.get("population", 0),
-    }
 
-api_records = [
-    {"name": {"common": "Kenya"}, "region": "Africa", "population": 54000000},
-]
-adapted = [adapt_api_record(r) for r in api_records]
-print(adapted)  # [{'name': 'Kenya', 'region': 'Africa', 'population': 54000000}]
-# Now this matches OUR contract exactly, and Country.from_dict() works unchanged</code></pre>
+    <h3>Logic that belongs to no single class</h3>
+    <p>Some logic is genuinely cross-cutting — useful in more than one place, but not naturally "owned" by any one class's data. This is exactly what a utility module is for.</p>
+    <pre><code># country_explorer/search.py
+def matches_search_term(name, term):
+    """Check whether a search term appears in a name, case-insensitively.
 
-    <h3>Pointing the repository at the real API</h3>
-    <p>Session 24's design proves itself for the third time: only how raw_data is obtained changes.</p>
-    <pre><code>def fetch_countries_from_api():
-    response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
-    if response.status_code != 200:
-        return []
-    return [adapt_api_record(r) for r in response.json()]
+    Args:
+        name: the string to search within.
+        term: the search term.
+    Returns:
+        True if term appears anywhere in name, ignoring case.
+    """
+    return term.lower() in name.lower()</code></pre>
 
-repo = CountryRepository(raw_data=fetch_countries_from_api())
-print(len(repo.get_all()))  # real, live data — get_all() itself is completely unchanged</code></pre>
+    <h3>Method vs standalone utility function</h3>
+    <p>A method (Session 14) is bound to a specific instance's data via self. A utility function takes everything it needs as plain, explicit arguments, with no ties to any one class — this makes it broadly reusable.</p>
+    <pre><code># Method — bound to a specific Country instance
+class Country:
+    def name_matches(self, term):
+        return term.lower() in self.name.lower()
+
+# Utility function — takes explicit arguments, usable anywhere a string is available
+def matches_search_term(name, term):
+    return term.lower() in name.lower()
+
+# The utility version works even without a Country instance at all:
+print(matches_search_term("Kenya", "ken"))   # True — no Country object needed</code></pre>
+
+    <h3>Using the utility from multiple places</h3>
+    <p>Both CountryExplorer and CountryRepository can use the same search utility without either one owning it or duplicating the logic.</p>
+    <pre><code># models.py
+from .search import matches_search_term
+
+class CountryExplorer:
+    def search(self, term):
+        return [c for c in self.countries if matches_search_term(c.name, term)]
+
+# repository.py
+from .search import matches_search_term
+
+class CountryRepository:
+    def search(self, term):
+        return [c for c in self.get_all() if matches_search_term(c.name, term)]</code></pre>
+
+    <h3>Thorough testing for widely-used utilities</h3>
+    <p>Because this function will be relied upon from multiple places, it deserves especially thorough test coverage — a bug here has a wide blast radius.</p>
+    <pre><code># tests/test_search.py
+from country_explorer.search import matches_search_term
+
+def test_matches_exact():
+    assert matches_search_term("Kenya", "Kenya") is True
+
+def test_matches_partial():
+    assert matches_search_term("Kenya", "ken") is True
+
+def test_matches_case_insensitive():
+    assert matches_search_term("KENYA", "kenya") is True
+
+def test_no_match():
+    assert matches_search_term("Kenya", "xyz") is False
+
+def test_empty_term_matches_everything():
+    assert matches_search_term("Kenya", "") is True  # an empty string is "in" every string</code></pre>
 
 
 
@@ -205,94 +221,100 @@ print(len(repo.get_all()))  # real, live data — get_all() itself is completely
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Call the real REST Countries API, adapt its shape to our contract, and construct a working CountryRepository from genuinely live data.
+      <strong>Lab objective:</strong> Build a thoroughly tested search.py utility module, and use it from both CountryExplorer and CountryRepository.
     </div>
 
     <h3>What you will build</h3>
-    <p>A file called <code>real_api_lab.py</code>.</p>
+    <p>A new module <code>country_explorer/search.py</code> plus <code>tests/test_search.py</code>.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create the file and make a basic request, checking the status code</strong></p>
+        <p><strong>Create search.py with matches_search_term and a clear docstring</strong></p>
 
-        <pre><code># real_api_lab.py
-import requests
+        <pre><code># country_explorer/search.py
+def matches_search_term(name, term):
+    """Check whether a search term appears in a name, case-insensitively.
 
-response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
-print("Status code:", response.status_code)
-
-if response.status_code == 200:
-    raw_data = response.json()
-    print("Received", len(raw_data), "records")
-else:
-    raw_data = []
-    print("Request failed")</code></pre>
+    Args:
+        name: the string to search within.
+        term: the search term.
+    Returns:
+        True if term appears anywhere in name, ignoring case.
+    """
+    return term.lower() in name.lower()</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Inspect one raw record's actual shape</strong></p>
-        <p>Print the first record and note how it differs from our own contract.</p>
-        <pre><code>if raw_data:
-    print(raw_data[0])</code></pre>
+        <p><strong>Add a search() method to CountryExplorer using the utility</strong></p>
+
+        <pre><code># country_explorer/models.py
+from .search import matches_search_term
+
+class CountryExplorer:
+    # ... existing code ...
+    def search(self, term):
+        return [c for c in self.countries if matches_search_term(c.name, term)]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Write adapt_api_record and adapt the whole batch</strong></p>
+        <p><strong>Add a search() method to CountryRepository using the same utility</strong></p>
 
-        <pre><code>def adapt_api_record(raw):
-    return {
-        "name": raw["name"]["common"],
-        "region": raw.get("region", "Unknown"),
-        "population": raw.get("population", 0),
-    }
+        <pre><code># country_explorer/repository.py
+from .search import matches_search_term
 
-adapted_records = [adapt_api_record(r) for r in raw_data]
-print(adapted_records[0])  # now matches our own flat contract</code></pre>
+class CountryRepository:
+    # ... existing code ...
+    def search(self, term):
+        return [c for c in self.get_all() if matches_search_term(c.name, term)]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Build a CountryRepository from the adapted, real data</strong></p>
+        <p><strong>Write thorough tests for matches_search_term covering multiple cases</strong></p>
 
-        <pre><code>from country_explorer import CountryRepository
+        <pre><code># tests/test_search.py
+from country_explorer.search import matches_search_term
 
-repo = CountryRepository(raw_data=adapted_records)
-print(len(repo.get_all()))
-print(repo.get_all()[0].summary())</code></pre>
+def test_matches_exact():
+    assert matches_search_term("Kenya", "Kenya") is True
+
+def test_matches_partial():
+    assert matches_search_term("Kenya", "ken") is True
+
+def test_matches_case_insensitive():
+    assert matches_search_term("KENYA", "kenya") is True
+
+def test_no_match():
+    assert matches_search_term("Kenya", "xyz") is False</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Wrap the whole fetch in a function with status-code handling, and reuse Session 26's validation on a sample record</strong></p>
+        <p><strong>Add tests confirming CountryExplorer.search() and CountryRepository.search() both use it correctly</strong></p>
 
-        <pre><code>from country_explorer import validate_country_record
+        <pre><code># tests/test_search_integration.py
+from country_explorer import Country, CountryExplorer, CountryRepository
 
-def fetch_and_build_repository():
-    response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
-    if response.status_code != 200:
-        print(f"API request failed with status {response.status_code}")
-        return CountryRepository(raw_data=[])
-    adapted = [adapt_api_record(r) for r in response.json()]
-    return CountryRepository(raw_data=adapted)
+def test_explorer_search_uses_matches_search_term():
+    explorer = CountryExplorer(countries=[Country(name="Kenya", region="Africa", population=1)])
+    assert [c.name for c in explorer.search("ken")] == ["Kenya"]
 
-repo = fetch_and_build_repository()
-sample = repo._raw_data[0] if repo._raw_data else None
-if sample:
-    validate_country_record(sample)  # confirms the real, adapted data honors our contract
-    print("Sample record honors the contract")</code></pre>
+def test_repository_search_uses_matches_search_term():
+    repo = CountryRepository(raw_data=[{"name": "Kenya", "region": "Africa", "population": 1}])
+    assert [c.name for c in repo.search("ken")] == ["Kenya"]</code></pre>
       </div>
     </div>
 
@@ -306,9 +328,29 @@ if sample:
         </thead>
         <tbody>
           <tr>
-            <td><code>real_api_lab.py</code></td>
+            <td><code>country_explorer/search.py</code></td>
             <td>Created</td>
-            <td>Fetches real data from the REST Countries API, adapts its shape, and builds a working repository.</td>
+            <td>A generic, class-independent search-matching utility.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/models.py</code></td>
+            <td>Modified</td>
+            <td>CountryExplorer.search() uses the shared utility.</td>
+          </tr>
+          <tr>
+            <td><code>country_explorer/repository.py</code></td>
+            <td>Modified</td>
+            <td>CountryRepository.search() uses the same shared utility.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_search.py</code></td>
+            <td>Created</td>
+            <td>Thorough, direct tests for the utility function itself.</td>
+          </tr>
+          <tr>
+            <td><code>tests/test_search_integration.py</code></td>
+            <td>Created</td>
+            <td>Confirms both classes correctly use the shared utility.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-38/index.html</code></td>
@@ -320,18 +362,18 @@ if sample:
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 2 files.
+      If you find yourself editing any other file, stop. This session touches exactly 6 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add real_api_lab.py docs/sessions/session-38/index.html
-git commit -m "session-38: fetch real data from the REST Countries API and adapt it to our contract"</code></pre>
+    <pre><code>git add country_explorer/search.py country_explorer/models.py country_explorer/repository.py tests/test_search.py tests/test_search_integration.py docs/sessions/session-38/index.html
+git commit -m "session-38: build a shared search utility used by both CountryExplorer and CountryRepository"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What did adapt_api_record() have to do, and why did Country and CountryRepository not need any changes at all?"
+      Do not commit until you can answer out loud: "Why does matches_search_term take plain strings as arguments instead of a Country instance?"
     </div>
 
     <hr class="section-divider" />
@@ -342,23 +384,23 @@ git commit -m "session-38: fetch real data from the REST Countries API and adapt
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">The API response's status_code is checked before parsing its body as JSON</label>
+        <label for="c1">matches_search_term takes plain string arguments, with no dependency on Country or any other class</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">adapt_api_record() correctly transforms the real API's nested name field into our flat contract</label>
+        <label for="c2">Both CountryExplorer.search() and CountryRepository.search() import and use the same utility function</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">A working CountryRepository is constructed from real, live, adapted API data</label>
+        <label for="c3">matches_search_term has direct, thorough tests covering exact match, partial match, case-insensitivity, and no-match</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">Session 26's validate_country_record() is run against a real adapted record to confirm the contract is honored</label>
+        <label for="c4">Both classes' search() methods have integration tests confirming they correctly use the shared logic</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">Country and CountryRepository required zero code changes for this new real data source</label>
+        <label for="c5">No search-matching logic is duplicated between the two classes</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -378,52 +420,52 @@ git commit -m "session-38: fetch real data from the REST Countries API and adapt
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>What does <code>requests.get("https://restcountries.com/v3.1/all")</code> return?</p>
-        <label class="quiz-option" data-val="a">The raw JSON text as a plain string</label>
-        <label class="quiz-option" data-val="b">A Response object, which has a .status_code and a .json() method to parse the body</label>
-        <label class="quiz-option" data-val="c">A Python list directly</label>
-        <label class="quiz-option" data-val="d">Nothing — you must manually open a socket first</label>
-        <div class="explanation"><code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 25's json.load().</div>
+        <p>A function that checks whether a search term appears in a country's name, case-insensitively, is useful both inside CountryExplorer and potentially inside CountryRepository. Where should it live?</p>
+        <label class="quiz-option" data-val="a">Duplicated inside both classes separately</label>
+        <label class="quiz-option" data-val="b">As a standalone function in a utility module (e.g. search.py), imported by whichever class needs it, rather than tied to one specific class</label>
+        <label class="quiz-option" data-val="c">It must be a method on Country specifically, and nowhere else</label>
+        <label class="quiz-option" data-val="d">It cannot be reused across two different classes</label>
+        <div class="explanation">Logic that is genuinely useful to more than one class, and does not conceptually "belong" to any single one of them, is exactly what a utility module is for — a shared, standalone piece of logic multiple classes can import and use.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does an HTTP status code of 200 mean, versus 404?</p>
-        <label class="quiz-option" data-val="a">They mean the same thing</label>
-        <label class="quiz-option" data-val="b">200 means the request succeeded; 404 means the requested resource was not found — checking this before trusting the response body is essential</label>
-        <label class="quiz-option" data-val="c">200 means an error occurred; 404 means success</label>
-        <label class="quiz-option" data-val="d">Status codes are optional and rarely checked in practice</label>
-        <div class="explanation">HTTP status codes communicate the outcome of a request. 200 (and the broader 2xx range) means success. 404 means "not found." Checking the status code before calling .json() prevents trying to parse an error page as if it were valid data.</div>
+        <p>What is the key difference between a utility function like matches_search_term(name, term) and an instance method like Country.summary(self)?</p>
+        <label class="quiz-option" data-val="a">There is no real difference between the two</label>
+        <label class="quiz-option" data-val="b">A method operates on a specific instance's own data via self; a utility function takes everything it needs as explicit arguments and does not belong to, or depend on, any particular class's internal structure</label>
+        <label class="quiz-option" data-val="c">Utility functions cannot take any arguments</label>
+        <label class="quiz-option" data-val="d">Methods are always faster than utility functions</label>
+        <div class="explanation">This connects back to Session 14's method-vs-function distinction: a method is bound to an instance's own data; a utility function is a plain, standalone function (Session 08) that takes its inputs explicitly, with no ties to any specific class.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>A real API might return country data with different key names than our own contract (e.g. "name": {"common": "Kenya"} instead of a flat "name": "Kenya"). What is needed to use this data with our existing Country class?</p>
-        <label class="quiz-option" data-val="a">Country must be completely rewritten to match the API's exact shape</label>
-        <label class="quiz-option" data-val="b">A small adapter/mapping function that transforms the API's raw shape into our own contract's shape (Session 26), BEFORE constructing Country instances — Country itself needs no changes</label>
-        <label class="quiz-option" data-val="c">Nothing — Python automatically reconciles differing key names</label>
-        <label class="quiz-option" data-val="d">The API's data cannot be used at all if the shape differs</label>
-        <div class="explanation">This is exactly Session 26's "contract" concept in action: rather than reshaping our whole application around one specific external API's shape, we write a small adapter that translates the API's raw data into our OWN agreed contract, keeping Country and everything downstream of it completely unchanged.</div>
+        <p>Why should a utility module avoid importing or depending on a specific class like Country, if it can be avoided?</p>
+        <label class="quiz-option" data-val="a">It does not matter either way</label>
+        <label class="quiz-option" data-val="b">Keeping a utility function's inputs generic (e.g. taking a plain string, not a Country instance) makes it usable in more contexts and easier to test in complete isolation, without needing to construct unrelated objects</label>
+        <label class="quiz-option" data-val="c">Python forbids utility modules from importing other modules</label>
+        <label class="quiz-option" data-val="d">This would cause a circular import in every case</label>
+        <div class="explanation">A function like <code>matches_search_term(name: str, term: str)</code> is more broadly reusable and simpler to test than one that requires a full Country instance just to check a string match — genericity is a design choice that increases reusability.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Given Session 24's repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?</p>
-        <label class="quiz-option" data-val="a">CountryRepository's get_all() and find_by_region() methods must be rewritten from scratch</label>
-        <label class="quiz-option" data-val="b">Only how raw_data is obtained before being passed to the constructor — call requests.get(), adapt the shape, then pass the result in exactly like any other data source; the repository's own methods are unchanged</label>
-        <label class="quiz-option" data-val="c">CountryExplorer must be entirely rebuilt</label>
-        <label class="quiz-option" data-val="d">This is not possible without a major rewrite</label>
-        <div class="explanation">This is the fourth and most significant proof of Session 24's design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.</div>
+        <p>Why does a utility module deserve especially thorough test coverage, more so perhaps than a one-off helper used in only one place?</p>
+        <label class="quiz-option" data-val="a">It does not need any additional testing rigor</label>
+        <label class="quiz-option" data-val="b">Because it will be relied upon from multiple different parts of the codebase, a bug in a utility function has a wider blast radius — breaking every caller simultaneously, not just one</label>
+        <label class="quiz-option" data-val="c">Utility modules are exempt from testing by convention</label>
+        <label class="quiz-option" data-val="d">Only classes need tests, never standalone utility functions</label>
+        <div class="explanation">This connects to Session 31's testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Why is directly trusting the API response's data types without validation (skipping Session 26's discipline) risky for a REAL, external API in particular?</p>
-        <label class="quiz-option" data-val="a">It is not risky; real APIs always return perfectly-typed, reliable data</label>
-        <label class="quiz-option" data-val="b">An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 26's validate_country_record even more important here than it was for your own mock/file data</label>
-        <label class="quiz-option" data-val="c">Real APIs cannot return incorrect data by definition</label>
-        <label class="quiz-option" data-val="d">Validation is only needed for locally-generated data</label>
-        <div class="explanation">An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 26's validation discipline more important here than anywhere else in the project so far.</div>
+        <p>Where does this new search.py utility module fit into the package structure established in Session 36?</p>
+        <label class="quiz-option" data-val="a">It should replace models.py entirely</label>
+        <label class="quiz-option" data-val="b">As a new, additional focused module inside country_explorer/, following the same by-responsibility organization already established</label>
+        <label class="quiz-option" data-val="c">Utility modules cannot exist inside a package</label>
+        <label class="quiz-option" data-val="d">It must be placed outside the country_explorer package entirely</label>
+        <div class="explanation">This is a natural extension of Session 36's package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 37.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -436,10 +478,10 @@ git commit -m "session-38: fetch real data from the REST Countries API and adapt
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Why did the real API's raw shape (nested name.common) not require rewriting Country itself? What design decision from earlier sessions made this possible?</li>
-        <li>What would happen in your current code if the REST Countries API were temporarily down (status code other than 200)? Is that handled gracefully right now?</li>
-        <li>How does adapt_api_record() relate to Session 26's concept of a "contract" — is the adapter enforcing the contract, or something else?</li>
-        <li>This is the third data source CountryRepository has been pointed at (mock, JSON file, real API). What does that consistency tell you about the value of Session 24's original design decision?</li>
+        <li>Why does making matches_search_term take plain strings (rather than a Country instance) make it more broadly reusable than it would otherwise be?</li>
+        <li>If matches_search_term had a bug, how many parts of the application would be affected? How does that compare to a bug in a method used by only one class?</li>
+        <li>Why do you think this session tested the utility function directly AND wrote separate integration tests for each class that uses it — rather than only testing one or the other?</li>
+        <li>Can you think of another piece of logic in the project that might deserve its own class-independent utility module, following this same pattern?</li>
       </ol>
     </div>
 
@@ -448,9 +490,9 @@ git commit -m "session-38: fetch real data from the REST Countries API and adapt
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Trusting an untrustworthy response:</strong> Skipping the status-code check means a failed request (e.g. a 500 server error, whose body might not even be valid JSON) could crash the program trying to call .json() on something that was never a successful response in the first place.</li>
-        <li><strong>Graceful degradation (Session 39):</strong> The next session builds proper loading and error states around exactly this kind of network call — right now, a slow or failed API call has no user-facing feedback at all, which the next session addresses.</li>
-        <li><strong>The capstone review (Session 40):</strong> This session is the culmination of Layer 4's entire mock-data philosophy: everything built against fake data throughout the project now works, unmodified, against a real, live, external data source.</li>
+        <li><strong>Duplicated search logic drifting apart:</strong> Without a shared utility, CountryExplorer and CountryRepository would each implement their own version of "does this term match this name" — and a future improvement (like trimming whitespace before comparing) could easily be applied to one and forgotten in the other.</li>
+        <li><strong>The prop drilling problem (Session 39):</strong> The next session examines what happens when data needs to be threaded through many layers just to reach where it is needed — a related but distinct architecture problem from the code-duplication issue this session solved.</li>
+        <li><strong>Architecture review (Session 40):</strong> This session's search.py is a concrete example of the "focused, well-tested, broadly reusable module" pattern that Session 40's architecture review will assess the whole project against.</li>
       </ul>
     </div>
 
@@ -458,9 +500,9 @@ git commit -m "session-38: fetch real data from the REST Countries API and adapt
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Making real HTTP requests with the requests library, checking status codes, and adapting an external API's shape to our own internal data contract.</p>
-      <p><strong>Unlocks:</strong> The Country Explorer can now pull genuinely live, real-world data — proving every layer of the architecture built since Layer 4 was worth the investment.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 39 — Handling Errors and Edge Cases Gracefully</a>. We add proper loading and error feedback around this real network call, instead of a program that just silently hangs or fails.</p>
+      <p><strong>Python concept mastered:</strong> Designing and thoroughly testing a standalone, class-independent utility module, and understanding when logic belongs to a class versus a shared utility.</p>
+      <p><strong>Unlocks:</strong> The application now has a genuinely shared, well-tested search capability used consistently across multiple parts of the codebase, with zero duplication.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 39 — The Prop Drilling Problem</a>. We deliberately design ourselves into an architecture problem — data that needs to be threaded through several layers just to reach where it is actually used.</p>
     </div>
 
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Session 33 — Reusable Functions and Modules — Python Learning</title>
+  <title>Session 33 — Testing Functions and Return Values — Python Learning</title>
   <link rel="stylesheet" href="../../styles.css" />
   <link rel="stylesheet" href="../../notes-widget.css" />
   <link rel="stylesheet" href="../../bookmark-widget.css" />
@@ -54,12 +54,12 @@
 
     <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
-      <span class="badge badge-layer">Layer 6</span>
+      <span class="badge badge-layer">Layer 5</span>
       <span class="badge badge-current">Session 33</span>
-      <span style="color:var(--text-muted); font-size:13px;">Architecture</span>
+      <span style="color:var(--text-muted); font-size:13px;">Testing</span>
     </div>
-    <h1>Reusable Functions and Modules</h1>
-    <p class="subtitle">With a clean package structure in place, we identify genuinely reusable logic scattered across the project and extract it into shared, well-tested functions.</p>
+    <h1>Testing Functions and Return Values</h1>
+    <p class="subtitle">We systematically test return values across the project, including edge cases: empty inputs, boundary values, and the exact examples used in each session's own concept explanation.</p>
 
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
@@ -69,11 +69,11 @@
     <div class="card">
       <p>By the end of this session you will be able to:</p>
       <ul>
-        <li>Identify duplicated or near-duplicated logic across different parts of the project</li>
-        <li>Extract that logic into a single, well-named, reusable function</li>
-        <li>Write a docstring that documents a function's parameters, return value, and behavior clearly</li>
-        <li>Add tests for the newly extracted function to close a coverage gap</li>
-        <li>Distinguish "reusable" from "premature abstraction" — extracting too early or unnecessarily</li>
+        <li>Write multiple test functions covering a normal case, an edge case, and a boundary case for one function</li>
+        <li>Use pytest parametrization to run the same test logic across several inputs</li>
+        <li>Test a list comprehension's output by checking exact contents, not just length</li>
+        <li>Test the from_dict classmethod from Session 18 with both valid and malformed input</li>
+        <li>Identify what "edge case" means concretely, using examples from this project</li>
       </ul>
     </div>
 
@@ -87,52 +87,52 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
-        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
-        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
-        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
-        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
-        <div class="explanation">This is Session 06's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
+        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
+        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
+        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
+        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
+        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
+        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 17).</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="b">
+      <div class="quiz-question" data-question="1" data-answer="a">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
-        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
-        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
-        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
-        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
-        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
+        <p>What does @pytest.mark.parametrize let you do?</p>
+        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
+        <label class="quiz-option" data-val="b">Skip a test entirely</label>
+        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
+        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
+        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
-        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
-        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
-        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
-        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
-        <div class="explanation">A focused, direct test of the extracted function (following Session 29's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
+        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
+        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
+        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
+        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
+        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
+        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
-        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
-        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
-        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
-        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
-        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
+        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
+        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
+        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
+        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
+        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
+        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Where is the most sensible place, given Session 32's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
-        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
-        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 32</label>
-        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
-        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
-        <div class="explanation">This follows directly from Session 32's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
+        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
+        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
+        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
+        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
+        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
+        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -141,61 +141,77 @@
 
     <hr class="section-divider" />
 
-    <h2>3. The Concept — Extracting Reusable Logic</h2>
-
-    <h3>Spotting duplicated logic</h3>
-    <p>As a project grows, similar formatting or calculation logic tends to appear in more than one place. The first step is noticing it — comparing what several pieces of code are actually doing, not just how they look on the surface.</p>
-    <pre><code># Duplication scattered across the project:
-
-# models.py
-def summary(self):
-    return f"{self.name} ({self.region}): pop. {self.population:,}"
-
-# some future report-generation code, formatting the same kind of number again
-def population_report_line(name, population):
-    return f"{name}: {population:,} people"</code></pre>
-
-    <h3>Extracting one shared function</h3>
-    <p>Once genuine, ongoing duplication is identified, extract it into one well-named function, and update every call site to use it — exactly the "one place to change" principle from Session 06.</p>
-    <pre><code># country_explorer/formatting.py
-def format_population(value):
-    """Format a population count with comma separators.
-
-    Args:
-        value: the population as an int.
-    Returns:
-        A string like "54,000,000".
-    """
-    return f"{value:,}"
-
-# models.py
-from .formatting import format_population
-
-def summary(self):
-    return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
-    <div class="diagram">
-      <div class="diagram-box"><span class="diagram-label">summary()</span>f"{pop:,}"</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box"><span class="diagram-label">report line</span>f"{pop:,}"</div><span class="diagram-arrow">→</span>
-      <div class="diagram-box accent"><span class="diagram-label">format_population()</span>one shared function</div>
-      <div class="diagram-caption">Two near-identical formatting expressions collapse into one shared, tested, documented function.</div>
+    <h2>3. The Concept — Testing Return Values Systematically</h2>
+    <div class="diagram-svg diagram-svg-opening">
+      <svg viewBox="0 0 366 138" width="366" height="138" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="366" height="138" fill="#111111" />
+        <text x="22" y="18" font-family="monospace" font-size="9" fill="#8b949e" letter-spacing="0.06em">TEST BODY</text><rect x="12" y="26" width="148" height="78" rx="4" fill="none" stroke="#ffffff" stroke-width="1.5" /><text x="86" y="69" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">written once</text><line x1="166" y1="65" x2="200" y2="65" stroke="#58a6ff" stroke-width="1.5" /><polygon points="196,61 204,65 196,69" fill="#58a6ff" /><text x="216" y="18" font-family="monospace" font-size="9" fill="#ff5ca8" letter-spacing="0.06em">PARAMETRIZE</text><rect x="206" y="26" width="148" height="78" rx="4" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="280" y="61.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">4 cases</text><text x="280" y="76.5" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">run automatically</text>
+      </svg>
+      <p class="diagram-caption-text">One test body, run automatically once per parametrized case — no copy-pasted near-duplicate test functions.</p>
     </div>
 
-    <h3>Documenting the extracted function with a docstring</h3>
-    <p>A function meant to be reused across the project deserves clear documentation of what it takes and what it returns, directly alongside the code — readable via help() and by anyone reading the source.</p>
 
-    <h3>Testing the extracted function directly</h3>
-    <p>A focused test of the standalone function is simpler than relying on it being indirectly exercised through summary() or other larger tests.</p>
-    <pre><code># tests/test_formatting.py
-from country_explorer.formatting import format_population
+    <h3>Three kinds of cases: normal, edge, and boundary</h3>
+    <p>A thorough test suite for a function covers its normal, expected use; edge cases (empty inputs, zero matches); and boundary cases (values right at a validation limit, like exactly 0).</p>
+    <pre><code># country.py additions
+def find_by_region(countries, region):
+    return [c for c in countries if c.region == region]
 
-def test_format_population_adds_commas():
-    assert format_population(54000000) == "54,000,000"
+# tests/test_find_by_region.py
+from country import Country, find_by_region
 
-def test_format_population_small_number():
-    assert format_population(5) == "5"</code></pre>
+def test_find_by_region_normal_case():
+    countries = [
+        Country(name="Kenya", region="Africa", population=54000000),
+        Country(name="Peru", region="Americas", population=33000000),
+    ]
+    result = find_by_region(countries, "Africa")
+    assert [c.name for c in result] == ["Kenya"]  # exact contents, not just length
 
-    <h3>When NOT to extract — premature abstraction</h3>
-    <p>If two pieces of code happen to look similar right now, but represent genuinely different concepts likely to change independently, forcing them into a shared function adds coupling without a real benefit. Extraction should follow real, ongoing duplication of one actual idea — not surface-level resemblance.</p>
+def test_find_by_region_no_matches_returns_empty_list():
+    countries = [Country(name="Kenya", region="Africa", population=54000000)]
+    result = find_by_region(countries, "Antarctica")
+    assert result == []  # Session 17's guarantee, verified
+
+def test_find_by_region_empty_source_list():
+    result = find_by_region([], "Africa")
+    assert result == []</code></pre>
+
+    <h3>Parametrizing repetitive test logic</h3>
+    <p>When the same test logic needs to run against several input/output pairs, @pytest.mark.parametrize avoids copy-pasting near-identical test functions.</p>
+    <pre><code>import pytest
+from country import Country
+
+@pytest.mark.parametrize("value,expected_valid", [
+    (54000000, True),
+    (0, True),         # boundary — exactly zero should be valid
+    (-1, False),        # boundary — just below zero should be invalid
+    (-999999, False),
+])
+def test_set_population_validity(value, expected_valid):
+    k = Country(name="Kenya", region="Africa", population=1)
+    if expected_valid:
+        k.set_population(value)
+        assert k.population == value
+    else:
+        with pytest.raises(ValueError):
+            k.set_population(value)</code></pre>
+
+    <h3>Testing from_dict with valid and malformed input</h3>
+    <p>Session 18's classmethod is a natural place for edge-case testing: what happens with correct data, and what happens with a missing required field.</p>
+    <pre><code>import pytest
+from country import Country
+
+def test_from_dict_builds_correct_instance():
+    data = {"name": "Kenya", "region": "Africa", "population": 54000000}
+    k = Country.from_dict(data)
+    assert k.name == "Kenya"
+    assert k.population == 54000000
+
+def test_from_dict_missing_field_raises():
+    data = {"name": "Ghost Nation"}  # missing region and population
+    with pytest.raises(TypeError):
+        Country.from_dict(data)</code></pre>
 
 
 
@@ -203,78 +219,102 @@ def test_format_population_small_number():
 
     <h2>4. Lab</h2>
     <div class="alert alert-success">
-      <strong>Lab objective:</strong> Extract a shared, documented, tested format_population function, and identify (without necessarily extracting) a case of premature abstraction.
+      <strong>Lab objective:</strong> Write a systematic test suite covering normal, edge, and boundary cases for find_by_region, from_dict, and set_population, using parametrization.
     </div>
 
     <h3>What you will build</h3>
-    <p>A new module <code>country_explorer/formatting.py</code> plus <code>tests/test_formatting.py</code>.</p>
+    <p>A file called <code>tests/test_return_values.py</code>, building on Session 32's country.py.</p>
 
     <h3>Step-by-step instructions</h3>
 
     <div class="step">
       <div class="step-num">1</div>
       <div class="step-body">
-        <p><strong>Create formatting.py with format_population and a clear docstring</strong></p>
+        <p><strong>Add find_by_region and from_dict to country.py if not already present</strong></p>
 
-        <pre><code># country_explorer/formatting.py
-def format_population(value):
-    """Format a population count with comma separators.
+        <pre><code># country.py (additions)
+def find_by_region(countries, region):
+    return [c for c in countries if c.region == region]
 
-    Args:
-        value: the population as an int.
-    Returns:
-        A string like "54,000,000".
-    """
-    return f"{value:,}"</code></pre>
+class Country:
+    # ... existing __init__, summary, set_population, grow_population ...
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(**data)</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
-        <p><strong>Update models.py's summary() to use the extracted function</strong></p>
+        <p><strong>Write normal-case and exact-content tests for find_by_region</strong></p>
 
-        <pre><code># country_explorer/models.py
-from .formatting import format_population
+        <pre><code># tests/test_return_values.py
+import pytest
+from country import Country, find_by_region
 
-class Country:
-    # ... existing code ...
-    def summary(self):
-        return f"{self.name} ({self.region}): pop. {format_population(self.population)}"</code></pre>
+def test_find_by_region_returns_exact_matches():
+    countries = [
+        Country(name="Kenya", region="Africa", population=54000000),
+        Country(name="Ghana", region="Africa", population=31000000),
+        Country(name="Peru", region="Americas", population=33000000),
+    ]
+    result = find_by_region(countries, "Africa")
+    assert [c.name for c in result] == ["Kenya", "Ghana"]</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
-        <p><strong>Write direct tests for format_population</strong></p>
+        <p><strong>Add edge case tests: no matches, empty source</strong></p>
 
-        <pre><code># tests/test_formatting.py
-from country_explorer.formatting import format_population
+        <pre><code>def test_find_by_region_no_matches():
+    countries = [Country(name="Kenya", region="Africa", population=54000000)]
+    assert find_by_region(countries, "Antarctica") == []
 
-def test_format_population_adds_commas():
-    assert format_population(54000000) == "54,000,000"
-
-def test_format_population_small_number():
-    assert format_population(0) == "0"</code></pre>
+def test_find_by_region_empty_source():
+    assert find_by_region([], "Africa") == []</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <p><strong>Run the full test suite, confirming summary()'s existing tests still pass unchanged</strong></p>
-        <p>This proves the extraction was behavior-preserving.</p>
-        <pre><code># pytest -v</code></pre>
+        <p><strong>Add from_dict tests, valid and malformed</strong></p>
+
+        <pre><code>def test_from_dict_valid():
+    k = Country.from_dict({"name": "Kenya", "region": "Africa", "population": 54000000})
+    assert k.name == "Kenya"
+    assert k.population == 54000000
+
+def test_from_dict_missing_field_raises():
+    with pytest.raises(TypeError):
+        Country.from_dict({"name": "Ghost Nation"})</code></pre>
       </div>
     </div>
 
     <div class="step">
       <div class="step-num">5</div>
       <div class="step-body">
-        <p><strong>Write a short comment describing a case of near-identical-looking code you deliberately did NOT merge, and why</strong></p>
-        <p>This exercises the "premature abstraction" judgment call — invent a plausible example if needed, e.g. two functions that both happen to check "value > 0" but for conceptually different reasons.</p>
+        <p><strong>Add a parametrized boundary test for set_population</strong></p>
 
+        <pre><code>@pytest.mark.parametrize("value,should_succeed", [
+    (54000000, True),
+    (0, True),
+    (-1, False),
+])
+def test_set_population_boundaries(value, should_succeed):
+    k = Country(name="Kenya", region="Africa", population=1)
+    if should_succeed:
+        k.set_population(value)
+        assert k.population == value
+    else:
+        with pytest.raises(ValueError):
+            k.set_population(value)
+
+# Run: pytest -v   (the -v flag shows each parametrized case individually)</code></pre>
       </div>
     </div>
 
@@ -288,19 +328,14 @@ def test_format_population_small_number():
         </thead>
         <tbody>
           <tr>
-            <td><code>country_explorer/formatting.py</code></td>
-            <td>Created</td>
-            <td>A shared, documented, reusable population formatting function.</td>
-          </tr>
-          <tr>
-            <td><code>country_explorer/models.py</code></td>
+            <td><code>country.py</code></td>
             <td>Modified</td>
-            <td>summary() now uses the extracted, shared function.</td>
+            <td>Adds find_by_region and from_dict if not already present.</td>
           </tr>
           <tr>
-            <td><code>tests/test_formatting.py</code></td>
+            <td><code>tests/test_return_values.py</code></td>
             <td>Created</td>
-            <td>Direct, focused tests for the extracted function.</td>
+            <td>Systematic normal/edge/boundary test coverage, including parametrized cases.</td>
           </tr>
           <tr>
             <td><code>docs/sessions/session-33/index.html</code></td>
@@ -312,18 +347,18 @@ def test_format_population_small_number():
     </div>
 
     <div class="alert alert-warning">
-      If you find yourself editing any other file, stop. This session touches exactly 4 files.
+      If you find yourself editing any other file, stop. This session touches exactly 3 files.
     </div>
 
     <hr class="section-divider" />
 
     <h2>6. Commit Checkpoint</h2>
     <p>Once the lab is complete and you can explain every line, make this exact commit:</p>
-    <pre><code>git add country_explorer/formatting.py country_explorer/models.py tests/test_formatting.py docs/sessions/session-33/index.html
-git commit -m "session-33: extract and test a reusable format_population function"</code></pre>
+    <pre><code>git add country.py tests/test_return_values.py docs/sessions/session-33/index.html
+git commit -m "session-33: systematically test return values, including edge and boundary cases"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "How did I confirm this extraction was purely a refactor and did not change summary()'s existing observable behavior?"
+      Do not commit until you can answer out loud: "Why does test_find_by_region_returns_exact_matches check the exact list of names instead of just the count?"
     </div>
 
     <hr class="section-divider" />
@@ -334,23 +369,23 @@ git commit -m "session-33: extract and test a reusable format_population functio
     <div class="card">
       <div class="checklist-item">
         <input type="checkbox" id="c1" />
-        <label for="c1">format_population has a clear docstring describing its argument and return value</label>
+        <label for="c1">find_by_region is tested for exact contents, no matches, and an empty source list</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c2" />
-        <label for="c2">models.py's summary() calls the extracted function instead of duplicating the formatting inline</label>
+        <label for="c2">from_dict is tested for both valid construction and a malformed record raising TypeError</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c3" />
-        <label for="c3">test_formatting.py directly and independently tests format_population</label>
+        <label for="c3">set_population's boundary (exactly 0 vs -1) is tested using @pytest.mark.parametrize</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c4" />
-        <label for="c4">The full pre-existing test suite (Sessions 27-32) still passes after this change</label>
+        <label for="c4">pytest -v is run and each parametrized case is visible individually in the output</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c5" />
-        <label for="c5">A written comment identifies a plausible case of premature abstraction that was deliberately NOT merged</label>
+        <label for="c5">All new tests pass</label>
       </div>
       <div class="checklist-item">
         <input type="checkbox" id="c6" />
@@ -370,52 +405,52 @@ git commit -m "session-33: extract and test a reusable format_population functio
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?</p>
-        <label class="quiz-option" data-val="a">Leave both copies as-is; duplication is always fine</label>
-        <label class="quiz-option" data-val="b">Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once</label>
-        <label class="quiz-option" data-val="c">Delete one of the two features entirely</label>
-        <label class="quiz-option" data-val="d">Rewrite everything in a different language</label>
-        <div class="explanation">This is Session 06's "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.</div>
+        <p>For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?</p>
+        <label class="quiz-option" data-val="a">Only ever testing with exactly 3 countries</label>
+        <label class="quiz-option" data-val="b">Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely</label>
+        <label class="quiz-option" data-val="c">Edge cases do not apply to this kind of function</label>
+        <label class="quiz-option" data-val="d">Testing it twice with identical inputs</label>
+        <div class="explanation">Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 17).</div>
       </div>
 
-      <div class="quiz-question" data-question="1" data-answer="b">
+      <div class="quiz-question" data-question="1" data-answer="a">
         <div class="question-num">Question 2 of 5</div>
-        <p>What is the purpose of a docstring like <code>"""Format a population count with comma separators.\n\nArgs:\n    value: the population as an int\nReturns:\n    A string like '54,000,000'\n"""</code> right under a function definition?</p>
-        <label class="quiz-option" data-val="a">It has no functional purpose and is purely decorative</label>
-        <label class="quiz-option" data-val="b">It documents what the function does, its parameters, and its return value directly alongside the code, readable by both humans and many tooling/help systems</label>
-        <label class="quiz-option" data-val="c">It is required for the function to run at all</label>
-        <label class="quiz-option" data-val="d">It replaces the need for type hints entirely</label>
-        <div class="explanation">A docstring is documentation that lives directly with the code it describes, readable via <code>help(function_name)</code> and by anyone reading the source — especially valuable for a function meant to be reused by other parts of the project.</div>
+        <p>What does @pytest.mark.parametrize let you do?</p>
+        <label class="quiz-option" data-val="a">Run one test function repeatedly with different sets of input/expected-output values, without copy-pasting the test body for each case</label>
+        <label class="quiz-option" data-val="b">Skip a test entirely</label>
+        <label class="quiz-option" data-val="c">Automatically generate random test inputs</label>
+        <label class="quiz-option" data-val="d">Mark a test as expected to fail permanently</label>
+        <div class="explanation"><code>@pytest.mark.parametrize</code> decorates a test function with a list of input/expected pairs, and pytest runs the same test body once per pair — avoiding duplicated test functions that differ only in their specific values.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?</p>
-        <label class="quiz-option" data-val="a">It is unnecessary; existing tests already cover it completely</label>
-        <label class="quiz-option" data-val="b">A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from</label>
-        <label class="quiz-option" data-val="c">Tests are only needed for classes, never for standalone functions</label>
-        <label class="quiz-option" data-val="d">Extracted functions cannot be tested with pytest</label>
-        <div class="explanation">A focused, direct test of the extracted function (following Session 29's return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function's contract clearly on its own.</div>
+        <p>You want to test that [c.name for c in explorer.find_by_region("Africa")] returns exactly ["Kenya", "Ghana"]. Why is asserting the exact list better than just asserting len(result) == 2?</p>
+        <label class="quiz-option" data-val="a">There is no difference — length is always sufficient</label>
+        <label class="quiz-option" data-val="b">Checking exact contents catches bugs where the right NUMBER of items is returned but the WRONG items are included (e.g. filtering by the wrong field)</label>
+        <label class="quiz-option" data-val="c">Checking length is always better practice</label>
+        <label class="quiz-option" data-val="d">Exact-content assertions are not supported by pytest</label>
+        <div class="explanation">A length-only check would pass even if find_by_region accidentally returned two European countries instead of two African ones — checking exact contents is what actually verifies the filtering logic works correctly.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>What is "premature abstraction," and why is it a real risk when looking for things to extract?</p>
-        <label class="quiz-option" data-val="a">It refers to extracting code too slowly, which is never a real problem</label>
-        <label class="quiz-option" data-val="b">Extracting a shared function for logic that only appears once, or that only coincidentally looks similar in two places but actually serves different purposes, adding unnecessary complexity for no real benefit</label>
-        <label class="quiz-option" data-val="c">It only applies to classes, never to functions</label>
-        <label class="quiz-option" data-val="d">It is a term with no real meaning in software design</label>
-        <div class="explanation">Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.</div>
+        <p>Testing Country.from_dict() with a dict missing the "population" key should do what?</p>
+        <label class="quiz-option" data-val="a">Silently succeed with population set to 0</label>
+        <label class="quiz-option" data-val="b">Be tested with pytest.raises(TypeError), confirming the missing required argument is correctly rejected rather than silently accepted</label>
+        <label class="quiz-option" data-val="c">This case is not worth testing since it "should never happen"</label>
+        <label class="quiz-option" data-val="d">Always return None instead of raising</label>
+        <div class="explanation">Malformed input is exactly the kind of edge case worth testing explicitly — pytest.raises(TypeError) confirms the failure mode is the expected, controlled one (a clear TypeError) rather than something confusing happening downstream.</div>
       </div>
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Where is the most sensible place, given Session 32's new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?</p>
-        <label class="quiz-option" data-val="a">Duplicated inline in every file that needs it</label>
-        <label class="quiz-option" data-val="b">A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 32</label>
-        <label class="quiz-option" data-val="c">Directly inside the Country class as a private method, hidden from everything else</label>
-        <label class="quiz-option" data-val="d">It does not matter where reusable code lives</label>
-        <div class="explanation">This follows directly from Session 32's package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.</div>
+        <p>Why is it valuable for a test to use the EXACT same example from a session's own concept explanation, rather than an unrelated new example?</p>
+        <label class="quiz-option" data-val="a">It is not more valuable; any example works equally well</label>
+        <label class="quiz-option" data-val="b">It directly verifies the claim made in the teaching material is actually true in the running code, keeping the lesson and the implementation honest and in sync</label>
+        <label class="quiz-option" data-val="c">pytest requires tests to match documentation examples exactly</label>
+        <label class="quiz-option" data-val="d">This wastes test-writing effort by not exploring new cases</label>
+        <div class="explanation">This connects directly to the feedback that shaped this whole course: a test built from the exact material just taught verifies the real behavior matches what was claimed, rather than testing an disconnected, arbitrary scenario.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -428,10 +463,10 @@ git commit -m "session-33: extract and test a reusable format_population functio
     <p>Think through these after the post-quiz. No right answer — they are for discussion.</p>
     <div class="card">
       <ol>
-        <li>Before this session, summary()'s formatting logic was only tested indirectly through summary()'s own tests. Why is a direct test of format_population still valuable now that it exists?</li>
-        <li>Can you find another piece of logic anywhere in the project (Sessions 1-32) that is duplicated and could benefit from this same extraction treatment?</li>
-        <li>What is the cost of extracting something too early, before a second real use case actually exists? Contrast that with the cost of NOT extracting genuinely duplicated logic.</li>
-        <li>How does docstring documentation differ in purpose from the reflection comments you've written throughout this curriculum?</li>
+        <li>Why does testing the boundary value 0 for set_population matter specifically, given the validation rule is value < 0?</li>
+        <li>Could a bug exist where find_by_region returns the correct COUNT of countries but the WRONG countries? Design a scenario where only an exact-content test would catch it.</li>
+        <li>How did parametrizing the set_population boundary test compare, in terms of clarity, to writing three separate test functions?</li>
+        <li>Which of today's tests would have caught a real bug from an earlier session, if that bug had existed?</li>
       </ol>
     </div>
 
@@ -440,9 +475,9 @@ git commit -m "session-33: extract and test a reusable format_population functio
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Silent formatting drift:</strong> Without extracting shared formatting logic, a future change to how numbers should display (e.g. adding a currency symbol) risks being applied in one place and forgotten in another, producing visibly inconsistent output across the application.</li>
-        <li><strong>Utility modules (Session 34):</strong> The next session builds on this exact pattern, extracting more substantial, cross-cutting utility logic into its own dedicated module — formatting.py is the first, smallest example of that broader pattern.</li>
-        <li><strong>Recognizing coupling problems (Session 35):</strong> Learning to correctly judge WHEN to extract (and when NOT to, per premature abstraction) is a prerequisite for Session 35's harder judgment call: recognizing when a class has taken on too much responsibility.</li>
+        <li><strong>False confidence from weak assertions:</strong> A test suite full of length-only or existence-only checks gives a false sense of safety — it can pass while the actual returned data is subtly wrong, exactly the gap exact-content assertions close.</li>
+        <li><strong>Testing state changes (Session 34):</strong> This session focused on return VALUES. The next session tests state CHANGES on an object over time — a related but distinct testing skill, since not every method returns something meaningful; some just mutate.</li>
+        <li><strong>Regression safety for the whole project:</strong> Every function and method tested in this session is now protected against silent regressions in every remaining session of the curriculum — this is the payoff of investing in test coverage now.</li>
       </ul>
     </div>
 
@@ -450,9 +485,9 @@ git commit -m "session-33: extract and test a reusable format_population functio
 
     <h2>11. What We Learned</h2>
     <div class="card" style="border-color: var(--green);">
-      <p><strong>Python concept mastered:</strong> Identifying genuine duplication, extracting it into a documented, tested, reusable function, and recognizing premature abstraction as a real risk to avoid.</p>
-      <p><strong>Unlocks:</strong> You can now confidently spot and safely extract reusable logic from a growing codebase, backed by tests that prove the extraction changed nothing about behavior.</p>
-      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 34 — Building Utility Modules</a>. We build a more substantial, standalone utility module — logic that supports the whole application without being tied to any one class.</p>
+      <p><strong>Python concept mastered:</strong> Systematic testing of return values — normal, edge, and boundary cases, exact-content assertions, and pytest parametrization.</p>
+      <p><strong>Unlocks:</strong> The project's core data-returning functions are now protected by a thorough, systematic test suite, not just a handful of happy-path checks.</p>
+      <p><strong>Next session:</strong> <a href="../../sessions/index.html">Session 34 — Testing Classes and State Changes</a>. We test the other half of the picture: methods that change an object's state over time, rather than returning a value.</p>
     </div>
 
 
