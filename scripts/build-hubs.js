@@ -46,7 +46,7 @@ function buildHome() {
       <div class="progress-wrap">
         <div class="progress-label">
           <span>Sessions completed</span>
-          <span id="progress-text">0 / 40</span>
+          <span id="progress-text">0 / ${sessions.length}</span>
         </div>
         <div class="progress-bar-bg">
           <div class="progress-bar" style="width: 0%"></div>
@@ -55,14 +55,14 @@ function buildHome() {
       <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:10px;">
         <span class="badge badge-complete">Complete: 0</span>
         <span class="badge badge-current">Active: Session 1</span>
-        <span class="badge badge-locked">Locked: 39</span>
+        <span class="badge badge-locked">Locked: ${sessions.length - 1}</span>
       </div>
     </div>
 
     <div class="alert alert-info" style="margin-bottom: 32px;">
       <strong>Active session:</strong>
-      <a href="sessions/session-01/index.html">Session 01 — Dictionaries</a>
-      &nbsp;·&nbsp; Layer 1: Python Foundations
+      <a href="sessions/session-01/index.html">Session 01 — ${sessions[0].title}</a>
+      &nbsp;·&nbsp; Layer 0: ${layers[0].name}
     </div>
 
     <h2>Documentation Sections</h2>
@@ -70,7 +70,7 @@ function buildHome() {
     <div class="nav-grid">
       <a class="nav-card" href="syllabus/index.html">
         <div class="nav-card-title">Syllabus</div>
-        <div class="nav-card-desc">All 40 sessions, layer breakdown, unlock gates, and dependency ordering.</div>
+        <div class="nav-card-desc">All ${sessions.length} sessions, layer breakdown, unlock gates, and dependency ordering.</div>
       </a>
       <a class="nav-card" href="sessions/index.html">
         <div class="nav-card-title">Sessions</div>
@@ -171,8 +171,9 @@ function buildSyllabus() {
         })
         .join('\n');
 
+      const isFinalLayer = l.num === layers[layers.length - 1].num;
       return `    <div class="layer-header">
-      <span class="badge badge-current">${l.num === 1 ? 'Active' : 'Open'}</span>
+      <span class="badge badge-current">${l.num === 0 ? 'Active' : 'Open'}</span>
       <span class="layer-title">Layer ${l.num} — ${l.name}</span>
     </div>
     <p class="layer-desc">${l.desc}</p>
@@ -195,13 +196,13 @@ ${rows}
     </div>
 
     <div class="alert alert-info">
-      <strong>Layer ${l.num} Gate:</strong> Recommended self-check — score ≥ 80% on the Layer ${l.num} review quiz before starting Layer ${l.num + 1 <= 7 ? l.num + 1 : 'the next'} labs.
+      ${isFinalLayer ? `<strong>Curriculum complete:</strong> This is the final layer. The core curriculum (Layers 1-7) ends at its own capstone; this layer is optional, bonus material beyond it.` : `<strong>Layer ${l.num} Gate:</strong> Recommended self-check score ${String.fromCharCode(8805)} 80% on the Layer ${l.num} review quiz before starting Layer ${l.num + 1} labs.`}
     </div>
 `;
     })
     .join('\n');
 
-  const body = `    <h1>40-Session Curriculum</h1>
+  const body = `    <h1>${sessions.length}-Session Curriculum</h1>
     <p class="subtitle">
       Sessions must be completed in order. Each layer unlocks only after the previous layer's
       final quiz scores ≥ 80%. A session is not complete until the commit is made and reviewed.
@@ -218,7 +219,9 @@ ${layerBlocks}
 
     <h2>Dependency Ordering</h2>
     <p>Each row depends on everything above it. Nothing skips a level.</p>
-    <pre><code>Dictionaries → Lists → Comprehensions → Functions/Lambda → Unpacking/*args
+    <pre><code>Basics: print/vars → Operators/Strings → Conditionals → Loops
+                  ↓
+              Dictionaries → Lists → Comprehensions → Functions/Lambda → Unpacking/*args
   → Modules/Imports → Errors/Exceptions
                   ↓
               Classes → Attributes → Methods → Constructors → Composition
@@ -233,7 +236,10 @@ ${layerBlocks}
                                               ↓
                                          Packages → Reusable Modules → Utilities → Prop Drilling → Architecture Review
                                                         ↓
-                                                   File I/O → Real API → Robust Errors → Capstone</code></pre>
+                                                   File I/O → Real API → Robust Errors → Capstone
+                                                                  ↓
+                                                        (optional) Decorators → Generators/Context
+                                                                  Managers → Packaging/venv</code></pre>
 `;
 
   write('syllabus/index.html', page({ title: 'Syllabus', depth: 1, active: 'syllabus', bodyHtml: body }));
@@ -268,7 +274,7 @@ ${rows}
     </p>
 
     <div class="alert alert-info">
-      <strong>All 40 sessions have full lesson docs.</strong> Work through sessions in order;
+      <strong>All ${sessions.length} sessions have full lesson docs.</strong> Work through sessions in order;
       layer gate quizzes are recommended self-checks. See the
       <a href="../syllabus/index.html">Syllabus</a> for core concepts and milestones.
     </div>
@@ -382,7 +388,7 @@ function buildArchitecture() {
       When we make a new structural decision — where a file goes, why a module is split,
       why a pattern was chosen — it gets recorded here before or immediately after the commit.
       The full, evolving record lives in <code>ARCHITECTURE.md</code> at the project root,
-      built out across Sessions 32 and 36, and finalized in Session 40.
+      built out across Sessions 36 and 40, and finalized in Session 44.
     </div>
 
     <h2>Entry Format</h2>
@@ -483,8 +489,8 @@ function buildSessionNotes() {
       generated. No code written yet.</p>
       <p><strong>Decisions made:</strong> pip, minimal CSS dark theme (reused from the source course), plain
       Python (no external framework), static HTML docs, mock data before real APIs, a single running
-      project — the Country Explorer — built incrementally across all 40 sessions.</p>
-      <p><strong>Next:</strong> Session 01 — Dictionaries.</p>
+      project — the Country Explorer — built incrementally across the 44-session core curriculum (plus 3 optional bonus sessions).</p>
+      <p><strong>Next:</strong> Session 01 — Hello, World & Variables.</p>
     </div>
 
 ${layerEntries}

@@ -4,19 +4,69 @@ function layerForSession(layers, num) {
   return layers.find((l) => num >= l.range[0] && num <= l.range[1]);
 }
 
-function renderDiagram(d) {
+function escXml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// Real, hand-laid-out inline SVG diagrams — boxes with wrapped multi-line text,
+// connected by arrows, matching the source course's illustration style instead
+// of styled CSS divs.
+function renderDiagram(d, opts = {}) {
   if (!d) return '';
-  const boxes = d.boxes
+  const boxW = 148;
+  const boxH = 78;
+  const gap = 46;
+  const padTop = 26;
+  const n = d.boxes.length;
+  const totalW = n * boxW + (n - 1) * gap + 24;
+  const totalH = padTop + boxH + 34;
+
+  const boxesSvg = d.boxes
     .map((b, i) => {
-      const arrow = i < d.boxes.length - 1 ? '<span class="diagram-arrow">→</span>' : '';
-      return `      <div class="diagram-box${b.accent ? ' accent' : ''}">${
-        b.label ? `<span class="diagram-label">${b.label}</span>` : ''
-      }${b.text}</div>${arrow}`;
+      const x = 12 + i * (boxW + gap);
+      const y = padTop;
+      const stroke = b.accent ? '#ff5ca8' : '#ffffff';
+      const lines = String(b.text).split('\n');
+      const labelSvg = b.label
+        ? `<text x="${x + 10}" y="${y - 8}" font-family="monospace" font-size="9" fill="${
+            b.accent ? '#ff5ca8' : '#8b949e'
+          }" letter-spacing="0.06em">${escXml(b.label.toUpperCase())}</text>`
+        : '';
+      const lineHeight = 15;
+      const textStartY = y + boxH / 2 - ((lines.length - 1) * lineHeight) / 2 + 4;
+      const linesSvg = lines
+        .map(
+          (line, li) =>
+            `<text x="${x + boxW / 2}" y="${textStartY + li * lineHeight}" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3">${escXml(
+              line
+            )}</text>`
+        )
+        .join('');
+      const arrow =
+        i < n - 1
+          ? `<line x1="${x + boxW + 6}" y1="${y + boxH / 2}" x2="${x + boxW + gap - 6}" y2="${
+              y + boxH / 2
+            }" stroke="#58a6ff" stroke-width="1.5" /><polygon points="${x + boxW + gap - 10},${
+              y + boxH / 2 - 4
+            } ${x + boxW + gap - 2},${y + boxH / 2} ${x + boxW + gap - 10},${
+              y + boxH / 2 + 4
+            }" fill="#58a6ff" />`
+          : '';
+      return `${labelSvg}<rect x="${x}" y="${y}" width="${boxW}" height="${boxH}" rx="4" fill="none" stroke="${stroke}" stroke-width="1.5" />${linesSvg}${arrow}`;
     })
-    .join('\n');
-  return `    <div class="diagram">
-${boxes}
-${d.caption ? `      <div class="diagram-caption">${d.caption}</div>` : ''}
+    .join('');
+
+  const cls = opts.opening ? ' class="diagram-svg diagram-svg-opening"' : ' class="diagram-svg"';
+
+  return `    <div${cls}>
+      <svg viewBox="0 0 ${totalW} ${totalH}" width="${totalW}" height="${totalH}" xmlns="http://www.w3.org/2000/svg" style="max-width:100%; height:auto; display:block; margin:0 auto;">
+        <rect width="${totalW}" height="${totalH}" fill="#111111" />
+        ${boxesSvg}
+      </svg>
+      ${d.caption ? `<p class="diagram-caption-text">${d.caption}</p>` : ''}
     </div>
 `;
 }
@@ -45,12 +95,21 @@ ${qs}
     </div>`;
 }
 
-function renderConceptSections(sections) {
+// Finds the diagram used as the session's opening visual (the first one that
+// appears anywhere in the concept sections) so it isn't rendered a second
+// time inline where it originally lived.
+function findOpeningDiagram(s) {
+  if (s.openingDiagram) return { diagram: s.openingDiagram, sectionIndex: -1 };
+  const idx = s.sections.findIndex((sec) => sec.diagram);
+  return idx === -1 ? null : { diagram: s.sections[idx].diagram, sectionIndex: idx };
+}
+
+function renderConceptSections(sections, skipDiagramIndex) {
   return sections
-    .map((s) => {
+    .map((s, i) => {
       const paras = s.paragraphs.map((p) => `    <p>${p}</p>`).join('\n');
       const code = s.code ? `    <pre><code>${escCode(s.code)}</code></pre>\n` : '';
-      const diagram = s.diagram ? renderDiagram(s.diagram) : '';
+      const diagram = s.diagram && i !== skipDiagramIndex ? renderDiagram(s.diagram) : '';
       return `    <h3>${s.h3}</h3>
 ${paras}
 ${code}${diagram}`;
@@ -108,7 +167,7 @@ ${items
     </div>`;
 }
 
-function renderSession(s, layers) {
+function renderSession(s, layers, totalSessions) {
   const layer = layerForSession(layers, s.num);
   const slug = `session-${pad2(s.num)}`;
   const isGate = layer.range[1] === s.num;
@@ -141,7 +200,7 @@ function renderSession(s, layers) {
     .checklist-item input[type="checkbox"] { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--accent); flex-shrink: 0; }
   </style>`;
 
-  const next = s.num < 40 ? `<a href="../../sessions/index.html">Session ${pad2(s.num + 1)} — ${s.nextTitle}</a>` : null;
+  const next = s.num < totalSessions ? `<a href="../../sessions/index.html">Session ${pad2(s.num + 1)} — ${s.nextTitle}</a>` : null;
 
   const body = `    <!-- Header -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:6px;">
@@ -175,8 +234,12 @@ ${renderQuiz('pre', s.quiz)}
     <hr class="section-divider" />
 
     <h2>3. The Concept — ${s.conceptTitle}</h2>
+${(() => {
+  const opening = findOpeningDiagram(s);
+  return opening ? renderDiagram(opening.diagram, { opening: true }) : '';
+})()}
 ${s.conceptIntro ? `    <p>${s.conceptIntro}</p>\n` : ''}
-${renderConceptSections(s.sections)}
+${renderConceptSections(s.sections, findOpeningDiagram(s)?.sectionIndex)}
 ${
   s.callout
     ? `    <div class="alert alert-warning">
@@ -260,7 +323,7 @@ ${s.whatBreaks.map((w) => `        <li><strong>${w.title}:</strong> ${w.text}</l
     <div class="card" style="border-color: var(--green);">
       <p><strong>Python concept mastered:</strong> ${s.learnedConcept}</p>
       <p><strong>Unlocks:</strong> ${s.learnedUnlocks}</p>
-      ${next ? `<p><strong>Next session:</strong> ${next}. ${s.nextTeaser || ''}</p>` : `<p><strong>This is the capstone.</strong> The curriculum is complete.</p>`}
+      ${next ? `<p><strong>Next session:</strong> ${next}. ${s.nextTeaser || ''}</p>` : `<p><strong>This is the final session.</strong> The curriculum, core and bonus layers alike, is complete.</p>`}
     </div>
 `;
 

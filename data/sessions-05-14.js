@@ -2,7 +2,7 @@ module.exports = [
 
 // ── SESSION 01 ─────────────────────────────────────────────────────
 {
-  num: 1,
+  num: 5,
   title: 'Dictionaries',
   nextTitle: 'Lists and Iteration',
   subtitle: 'Before we can model a country, a class, or any structured data in Python, we must deeply understand dictionaries — the container every later session builds on.',
@@ -144,7 +144,7 @@ print(country["location"]["coordinates"]["lat"])    # -0.0236`,
     },
   ],
   callout: null,
-  closing: 'We are not writing classes yet, but when we do in Session 08, you will recognise this pattern immediately: an object\'s internal attributes are stored and looked up the same way you just looked up dictionary keys.',
+  closing: 'We are not writing classes yet, but when we do in Session 12, you will recognise this pattern immediately: an object\'s internal attributes are stored and looked up the same way you just looked up dictionary keys.',
   lab: {
     objective: 'Create a single Python file that defines one country as a dictionary, reads its values two different ways, and prints the results.',
     whatYouBuild: 'A file called <code>country.py</code> that demonstrates every dictionary concept from this session. Nothing more.',
@@ -182,9 +182,9 @@ print("Latitude:", country["location"]["coordinates"]["lat"])` },
   },
   filesChanged: [
     { file: 'country.py', action: 'Created', why: 'The only file for this session. Plain Python, no imports.' },
-    { file: 'docs/sessions/session-01/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-05/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country.py docs/sessions/session-01/index.html\ngit commit -m "session-01: define country as a dict, explore lookup and reference behaviour"',
+  commitCmd: 'git add country.py docs/sessions/session-05/index.html\ngit commit -m "session-05: define country as a dict, explore lookup and reference behaviour"',
   commitQuestion: 'What is the difference between bracket access and .get(), and when would I use each?',
   checklist: [
     'The dictionary uses <code>{}</code> literal syntax, not <code>dict()</code>',
@@ -203,8 +203,8 @@ print("Latitude:", country["location"]["coordinates"]["lat"])` },
   ],
   whatBreaks: [
     { title: 'Silent state bugs', text: 'If you believe dictionaries are copied when assigned, you will be confused when a function\'s changes to a dictionary affect the caller\'s copy too. This is the single most common source of "spooky action at a distance" bugs in Python.' },
-    { title: 'Class attributes (Layer 2)', text: 'In Session 08, you will learn that every Python object stores its attributes in a dictionary-like structure internally. Understanding key-value lookup here is the entire foundation for understanding <code>self.name</code> later.' },
-    { title: 'JSON and APIs (Layer 4 and 7)', text: 'Every JSON API response you will parse in Session 38 becomes a Python dictionary. Missing this session means you cannot read real API data.' },
+    { title: 'Class attributes (Layer 2)', text: 'In Session 12, you will learn that every Python object stores its attributes in a dictionary-like structure internally. Understanding key-value lookup here is the entire foundation for understanding <code>self.name</code> later.' },
+    { title: 'JSON and APIs (Layer 4 and 7)', text: 'Every JSON API response you will parse in Session 42 becomes a Python dictionary. Missing this session means you cannot read real API data.' },
   ],
   learnedConcept: 'Dictionaries — key-value containers, bracket access vs .get(), mutability, reference semantics, nesting.',
   learnedUnlocks: 'You now understand the data structure Python uses everywhere: function keyword arguments, JSON, and (soon) object attributes.',
@@ -213,7 +213,7 @@ print("Latitude:", country["location"]["coordinates"]["lat"])` },
 
 // ── SESSION 02 ─────────────────────────────────────────────────────
 {
-  num: 2,
+  num: 6,
   title: 'Lists and Iteration',
   nextTitle: 'List Comprehensions',
   subtitle: 'A single country dictionary is not a country explorer. We need to hold many of them — that means lists, indexing, and loops.',
@@ -318,7 +318,7 @@ print(result)    # [1, 2, 3] — new list`,
     },
     {
       h3: 'A list of dictionaries — our project\'s core data shape',
-      paragraphs: ['Combining what we learned in Session 01 with lists gives us exactly what a real application needs: a collection of structured records.'],
+      paragraphs: ['Combining what we learned in Session 05 with lists gives us exactly what a real application needs: a collection of structured records.'],
       code: `countries = [
     {"name": "Kenya", "region": "Africa", "population": 54000000},
     {"name": "Ghana", "region": "Africa", "population": 31000000},
@@ -339,10 +339,10 @@ for country in countries:
   closing: null,
   lab: {
     objective: 'Store three countries as a list of dictionaries, iterate over it, and prove the mutating vs non-mutating distinction.',
-    whatYouBuild: 'A file called <code>countries.py</code> that builds on Session 01\'s single dictionary.',
+    whatYouBuild: 'A file called <code>countries.py</code> that builds on Session 05\'s single dictionary.',
     steps: [
       { title: 'Create the file', body: [], code: '# countries.py' },
-      { title: 'Build a list of at least 3 country dictionaries', body: ['Reuse the shape from Session 01 — each item needs at least name, region, and population.'], code: `countries = [
+      { title: 'Build a list of at least 3 country dictionaries', body: ['Reuse the shape from Session 05 — each item needs at least name, region, and population.'], code: `countries = [
     {"name": "Kenya", "region": "Africa", "population": 54000000},
     {"name": "Ghana", "region": "Africa", "population": 31000000},
     {"name": "Peru",  "region": "Americas", "population": 33000000},
@@ -364,9 +364,9 @@ print("Sorted copy:", sorted_names)` },
   },
   filesChanged: [
     { file: 'countries.py', action: 'Created', why: 'Builds a list of dictionaries and demonstrates iteration.' },
-    { file: 'docs/sessions/session-02/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-06/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add countries.py docs/sessions/session-02/index.html\ngit commit -m "session-02: store countries in a list, iterate, and separate mutating from non-mutating ops"',
+  commitCmd: 'git add countries.py docs/sessions/session-06/index.html\ngit commit -m "session-06: store countries in a list, iterate, and separate mutating from non-mutating ops"',
   commitQuestion: 'What is the difference between .sort() and sorted(), and why does it matter?',
   checklist: [
     'The list is declared with <code>[]</code> literal syntax containing at least 3 dictionaries',
@@ -385,7 +385,7 @@ print("Sorted copy:", sorted_names)` },
   ],
   whatBreaks: [
     { title: 'The append-return bug', text: 'A very common beginner mistake is writing <code>x = some_list.append(item)</code>, expecting <code>x</code> to be the updated list. It is actually <code>None</code>, because mutating methods return nothing. This trips people up for years if never explained explicitly.' },
-    { title: 'List comprehensions (Session 03)', text: 'The next session builds directly on for-loop iteration. If you cannot trace what a for loop does step by step, list comprehensions will look like meaningless syntax instead of a shorthand for something you already understand.' },
+    { title: 'List comprehensions (Session 07)', text: 'The next session builds directly on for-loop iteration. If you cannot trace what a for loop does step by step, list comprehensions will look like meaningless syntax instead of a shorthand for something you already understand.' },
     { title: 'Testing (Layer 5)', text: 'Later, you will write tests that assert on list contents and order. Without understanding indexing and iteration, you cannot reason about what a test assertion is actually checking.' },
   ],
   learnedConcept: 'Lists — indexing (including negative), len(), for-loop iteration, enumerate(), mutating vs non-mutating operations.',
@@ -395,7 +395,7 @@ print("Sorted copy:", sorted_names)` },
 
 // ── SESSION 03 ─────────────────────────────────────────────────────
 {
-  num: 3,
+  num: 7,
   title: 'List Comprehensions',
   nextTitle: 'Functions and Lambda',
   subtitle: 'Manually writing a for-loop to build a new list every time is repetitive. List comprehensions are Python\'s built-in shorthand for exactly that pattern.',
@@ -443,7 +443,7 @@ print("Sorted copy:", sorted_names)` },
   sections: [
     {
       h3: 'From for-loop to comprehension — the transform case',
-      paragraphs: ['Recall from Session 02: building a new list from an old one always follows the same shape — start empty, loop, append the transformed value.'],
+      paragraphs: ['Recall from Session 06: building a new list from an old one always follows the same shape — start empty, loop, append the transformed value.'],
       code: `countries = [
     {"name": "Kenya", "region": "Africa"},
     {"name": "Ghana", "region": "Africa"},
@@ -461,8 +461,8 @@ print(names)  # ['Kenya', 'Ghana', 'Peru']`,
       diagram: {
         caption: 'Both approaches read every item and collect a transformed value — the comprehension is the loop, compressed onto one line.',
         boxes: [
-          { label: '4 lines', text: 'names = []\nfor c in countries:\n  names.append(c["name"])' },
-          { label: '1 line', text: '[c["name"] for c in countries]', accent: true },
+          { label: '4 lines', text: 'names = []\nfor c in countries:\n  names.append(\n    c["name"])' },
+          { label: '1 line', text: '[c["name"]\nfor c in countries]', accent: true },
         ],
       },
     },
@@ -503,8 +503,8 @@ for c in countries:
   callout: null,
   closing: null,
   lab: {
-    objective: 'Rewrite loop-based transforms and filters from Session 02 as list comprehensions, and combine both in one line.',
-    whatYouBuild: 'A file called <code>filters.py</code> operating on the country list from Session 02.',
+    objective: 'Rewrite loop-based transforms and filters from Session 06 as list comprehensions, and combine both in one line.',
+    whatYouBuild: 'A file called <code>filters.py</code> operating on the country list from Session 06.',
     steps: [
       { title: 'Create the file and re-declare the country list', body: [], code: `# filters.py
 countries = [
@@ -529,9 +529,9 @@ print(asian_names)` },
   },
   filesChanged: [
     { file: 'filters.py', action: 'Created', why: 'Demonstrates transform, filter, and combined comprehensions.' },
-    { file: 'docs/sessions/session-03/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-07/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add filters.py docs/sessions/session-03/index.html\ngit commit -m "session-03: transform and filter countries with list comprehensions"',
+  commitCmd: 'git add filters.py docs/sessions/session-07/index.html\ngit commit -m "session-07: transform and filter countries with list comprehensions"',
   commitQuestion: 'What is the general shape [expression for item in iterable if condition], and can I read any comprehension back into a for-loop out loud?',
   checklist: [
     'The longhand for-loop version is written first and kept in the file for comparison',
@@ -543,13 +543,13 @@ print(asian_names)` },
   ],
   reflection: [
     'Rewrite <code>[c["name"] for c in countries if c["region"] == "Africa"]</code> back into a longhand for-loop from memory. Does it match what you wrote in the lab?',
-    'Can you think of a loop body from Session 02 that would NOT translate well into a comprehension? Why not?',
+    'Can you think of a loop body from Session 06 that would NOT translate well into a comprehension? Why not?',
     'Why might a reviewer reject a deeply nested comprehension even though it "works"?',
     'How is a list comprehension similar to the object destructuring pattern used in other languages you might know?',
   ],
   whatBreaks: [
     { title: 'Unreadable one-liners', text: 'Overusing comprehensions for anything with side effects (printing, mutating something else, multiple conditions) produces code that is technically correct but very hard to read. Knowing when NOT to use one is as important as knowing the syntax.' },
-    { title: 'Data-layer filtering (Layer 4)', text: 'In Session 24 you will build a data-access layer that filters and searches a country list. That entire layer is built from the comprehension patterns in this session.' },
+    { title: 'Data-layer filtering (Layer 4)', text: 'In Session 28 you will build a data-access layer that filters and searches a country list. That entire layer is built from the comprehension patterns in this session.' },
     { title: 'Testing assertions (Layer 5)', text: 'Tests frequently assert on filtered results, e.g. "the returned list contains only African countries." If you cannot read a comprehension, you cannot verify what the test is actually checking.' },
   ],
   learnedConcept: 'List comprehensions — transform, filter, and combined forms, and when a plain loop is the better choice.',
@@ -559,7 +559,7 @@ print(asian_names)` },
 
 // ── SESSION 04 ─────────────────────────────────────────────────────
 {
-  num: 4,
+  num: 8,
   title: 'Functions and Lambda',
   nextTitle: 'Unpacking and *args/**kwargs',
   subtitle: 'Every piece of logic we have written so far has been repeated inline. Functions let us name a piece of logic once and reuse it — the basis for everything from here forward.',
@@ -709,9 +709,9 @@ print([c["name"] for c in by_population_desc])` },
   },
   filesChanged: [
     { file: 'functions_lab.py', action: 'Created', why: 'Demonstrates function definitions, defaults, return vs print, and lambda with sorted().' },
-    { file: 'docs/sessions/session-04/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-08/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add functions_lab.py docs/sessions/session-04/index.html\ngit commit -m "session-04: define reusable functions and sort with a lambda key"',
+  commitCmd: 'git add functions_lab.py docs/sessions/session-08/index.html\ngit commit -m "session-08: define reusable functions and sort with a lambda key"',
   commitQuestion: 'Why did show_population() print the value but return None, and why does that matter?',
   checklist: [
     'At least one function uses a default parameter value',
@@ -729,7 +729,7 @@ print([c["name"] for c in by_population_desc])` },
   ],
   whatBreaks: [
     { title: 'The forgotten-return bug', text: 'Forgetting <code>return</code> is one of the most common beginner mistakes. The function appears to work (it prints correctly) but every caller that tries to use its result gets <code>None</code> instead — a bug that only shows up downstream.' },
-    { title: 'Data-layer functions (Layer 4)', text: 'Session 24 builds a data-access layer entirely out of functions like the ones in this lab. If return values are not understood, that entire layer will silently pass <code>None</code> around.' },
+    { title: 'Data-layer functions (Layer 4)', text: 'Session 28 builds a data-access layer entirely out of functions like the ones in this lab. If return values are not understood, that entire layer will silently pass <code>None</code> around.' },
     { title: 'Sorting and filtering UI logic', text: 'Nearly every "sort by X" or "filter by Y" feature in real software is built on exactly the <code>key=lambda</code> pattern from this session.' },
   ],
   learnedConcept: 'Functions — def, parameters, defaults, return vs print, and lambda expressions used as sort keys.',
@@ -739,7 +739,7 @@ print([c["name"] for c in by_population_desc])` },
 
 // ── SESSION 05 ─────────────────────────────────────────────────────
 {
-  num: 5,
+  num: 9,
   title: 'Unpacking and *args/**kwargs',
   nextTitle: 'Modules and Imports',
   subtitle: 'Python has compact syntax for pulling values out of collections, and for functions that accept a flexible number of arguments. Both patterns appear constantly in real code.',
@@ -837,8 +837,8 @@ describe(name="Kenya", region="Africa")
       diagram: {
         caption: '*args gathers positional extras into a tuple; **kwargs gathers keyword extras into a dict.',
         boxes: [
-          { label: 'positional', text: 'total(1, 2, 3)\n→ args = (1, 2, 3)' },
-          { label: 'keyword', text: 'describe(name=..)\n→ kwargs = {name: ..}', accent: true },
+          { label: 'positional', text: 'total(1, 2, 3)\nargs = (1, 2, 3)' },
+          { label: 'keyword', text: 'describe(name=..)\nkwargs = {name: ..}', accent: true },
         ],
       },
     },
@@ -886,9 +886,9 @@ print(summarize(**data))` },
   },
   filesChanged: [
     { file: 'unpacking_lab.py', action: 'Created', why: 'Demonstrates unpacking, *rest, *args, **kwargs, and ** spreading.' },
-    { file: 'docs/sessions/session-05/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-09/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add unpacking_lab.py docs/sessions/session-05/index.html\ngit commit -m "session-05: unpack sequences and use *args/**kwargs for flexible functions"',
+  commitCmd: 'git add unpacking_lab.py docs/sessions/session-09/index.html\ngit commit -m "session-09: unpack sequences and use *args/**kwargs for flexible functions"',
   commitQuestion: 'What is the type of args inside a function that uses *args, and what is the type of kwargs inside one that uses **kwargs?',
   checklist: [
     'A tuple is unpacked into three named variables',
@@ -916,7 +916,7 @@ print(summarize(**data))` },
 
 // ── SESSION 06 ─────────────────────────────────────────────────────
 {
-  num: 6,
+  num: 10,
   title: 'Modules and Imports',
   nextTitle: 'Errors and Exceptions',
   subtitle: 'Our country data and our logic have been living in one file. Real projects split code into modules — this session is about how Python finds, loads, and shares code across files.',
@@ -1067,9 +1067,9 @@ print(search("Africa"))` },
   filesChanged: [
     { file: 'country_data.py', action: 'Created', why: 'The reusable module — data and functions, with a __main__ guard.' },
     { file: 'explorer.py', action: 'Created', why: 'Imports and uses country_data two different ways.' },
-    { file: 'docs/sessions/session-06/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-10/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_data.py explorer.py docs/sessions/session-06/index.html\ngit commit -m "session-06: split data into a module, import it two ways, add a __main__ guard"',
+  commitCmd: 'git add country_data.py explorer.py docs/sessions/session-10/index.html\ngit commit -m "session-10: split data into a module, import it two ways, add a __main__ guard"',
   commitQuestion: 'Why did the __main__ block run when I executed country_data.py directly, but not when explorer.py imported it?',
   checklist: [
     'country_data.py contains the list, at least one function, and a __main__ guard',
@@ -1083,12 +1083,12 @@ print(search("Africa"))` },
     'Why would putting a "demo" print statement at the top level of country_data.py (outside the guard) have caused a problem in explorer.py?',
     'When would you prefer <code>import module</code> over <code>from module import name</code>, given that the second saves typing?',
     'What real-world project structure benefit comes from every module only executing once, even if imported from many places?',
-    'How does a Python module\'s import caching remind you of anything else you\'ve learned about references and shared state (Session 01)?',
+    'How does a Python module\'s import caching remind you of anything else you\'ve learned about references and shared state (Session 05)?',
   ],
   whatBreaks: [
     { title: 'Demo code leaking into imports', text: 'Without the <code>__main__</code> guard, any print statements, test calls, or demo code at the top level of a module will fire every single time that module is imported anywhere — cluttering output and sometimes causing real side effects in production code.' },
     { title: 'Circular imports', text: 'Once code is split across files, it becomes possible for module A to import module B while B tries to import A — a circular import error. Understanding how imports execute (once, top to bottom) is the first step to debugging this later.' },
-    { title: 'Project architecture (Layer 6)', text: 'Sessions 32–36 are entirely about organizing a growing codebase into modules and packages. Everything there assumes you are comfortable splitting files and importing between them.' },
+    { title: 'Project architecture (Layer 6)', text: 'Sessions 36–40 are entirely about organizing a growing codebase into modules and packages. Everything there assumes you are comfortable splitting files and importing between them.' },
   ],
   learnedConcept: 'Modules and the import system — import vs from-import, aliasing, and the __main__ guard.',
   learnedUnlocks: 'You can now split growing code across multiple files instead of one giant script — the basis for any real Python project structure.',
@@ -1097,7 +1097,7 @@ print(search("Africa"))` },
 
 // ── SESSION 07 ─────────────────────────────────────────────────────
 {
-  num: 7,
+  num: 11,
   title: 'Errors and Exceptions',
   nextTitle: 'What Classes Are and Why',
   subtitle: 'This is the Layer 1 gate. Real data is messy — missing keys, wrong types, invalid input. We learn to handle failure deliberately instead of letting the whole program crash.',
@@ -1267,9 +1267,9 @@ except ValueError as e:
   },
   filesChanged: [
     { file: 'errors_lab.py', action: 'Created', why: 'Demonstrates try/except/else/finally and raising a custom ValueError.' },
-    { file: 'docs/sessions/session-07/index.html', action: 'Created', why: 'This session document — Layer 1 gate.' },
+    { file: 'docs/sessions/session-11/index.html', action: 'Created', why: 'This session document — Layer 1 gate.' },
   ],
-  commitCmd: 'git add errors_lab.py docs/sessions/session-07/index.html\ngit commit -m "session-07: handle missing keys with try/except and raise ValueError on invalid input"',
+  commitCmd: 'git add errors_lab.py docs/sessions/session-11/index.html\ngit commit -m "session-11: handle missing keys with try/except and raise ValueError on invalid input"',
   commitQuestion: 'Why is catching KeyError specifically safer than catching Exception broadly?',
   checklist: [
     'get_population catches KeyError specifically, not a broad Exception',
@@ -1287,8 +1287,8 @@ except ValueError as e:
   ],
   whatBreaks: [
     { title: 'Silent data corruption', text: 'Catching too broadly (or not catching at all) means one bad record in a dataset can either crash your entire program or, worse, silently produce wrong results that are hard to trace back to their cause.' },
-    { title: 'Class validation (Layer 2)', text: 'In Session 09, class constructors will validate their inputs the same way <code>set_population</code> does here — raising a clear exception is how a class protects itself from being created in an invalid state.' },
-    { title: 'Real API calls (Layer 7)', text: 'In Session 38, a real network call can fail for a dozen reasons — no connection, bad response, rate limiting. Without this session, you cannot handle any of them gracefully, and one flaky network call would crash the whole application.' },
+    { title: 'Class validation (Layer 2)', text: 'In Session 13, class constructors will validate their inputs the same way <code>set_population</code> does here — raising a clear exception is how a class protects itself from being created in an invalid state.' },
+    { title: 'Real API calls (Layer 7)', text: 'In Session 42, a real network call can fail for a dozen reasons — no connection, bad response, rate limiting. Without this session, you cannot handle any of them gracefully, and one flaky network call would crash the whole application.' },
   ],
   learnedConcept: 'Exceptions — try/except/else/finally, raising your own exceptions with raise, and why catching narrowly matters.',
   learnedUnlocks: 'You can now write code that fails safely and predictably instead of crashing on the first messy input — the last Layer 1 skill before we start modelling real objects.',
@@ -1297,7 +1297,7 @@ except ValueError as e:
 
 // ── SESSION 08 ─────────────────────────────────────────────────────
 {
-  num: 8,
+  num: 12,
   title: 'What Classes Are and Why',
   nextTitle: 'Class Anatomy — __init__ and Attributes',
   subtitle: 'Layer 2 begins. A dictionary describes data. A class describes a kind of thing — data plus the behavior that belongs with it. This is why we are switching.',
@@ -1389,7 +1389,7 @@ print(c1 is c2)  # False — two separate instances, even though both are Countr
     {
       h3: 'What this unlocks',
       paragraphs: [
-        'Right now <code>Country</code> is an empty shell — it does nothing a dictionary couldn\'t already do. Over the next several sessions we will give it attributes (Session 09), methods (Session 10), a proper constructor (Session 11), and eventually a whole tree of related classes (Session 12) — building toward a real Country Explorer application.',
+        'Right now <code>Country</code> is an empty shell — it does nothing a dictionary couldn\'t already do. Over the next several sessions we will give it attributes (Session 13), methods (Session 14), a proper constructor (Session 15), and eventually a whole tree of related classes (Session 16) — building toward a real Country Explorer application.',
       ],
     },
   ],
@@ -1420,9 +1420,9 @@ print(isinstance(c2, Country))  # True` },
   },
   filesChanged: [
     { file: 'country_class.py', action: 'Created', why: 'An empty Country class and proof that instances are independent.' },
-    { file: 'docs/sessions/session-08/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-12/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_class.py docs/sessions/session-08/index.html\ngit commit -m "session-08: define an empty Country class and confirm instances are independent"',
+  commitCmd: 'git add country_class.py docs/sessions/session-12/index.html\ngit commit -m "session-12: define an empty Country class and confirm instances are independent"',
   commitQuestion: 'In my own words, what is the difference between the Country class and a Country instance?',
   checklist: [
     'The class is defined with class Country: pass',
@@ -1440,7 +1440,7 @@ print(isinstance(c2, Country))  # True` },
   ],
   whatBreaks: [
     { title: 'Confusing the class with an instance', text: 'If you don\'t internalize the class/instance distinction now, later sessions (attributes, methods, inheritance) will feel like memorized syntax instead of a coherent mental model — and debugging "why does every instance share this value" bugs becomes very hard.' },
-    { title: 'Attribute sessions ahead', text: 'Session 09 immediately builds on this by giving Country actual data via __init__. Without today\'s "class = blueprint, instance = built thing" model, __init__ will look like arbitrary magic syntax instead of a logical next step.' },
+    { title: 'Attribute sessions ahead', text: 'Session 13 immediately builds on this by giving Country actual data via __init__. Without today\'s "class = blueprint, instance = built thing" model, __init__ will look like arbitrary magic syntax instead of a logical next step.' },
   ],
   learnedConcept: 'The class vs instance distinction, and the motivation for bundling data with behavior instead of using loose dicts and functions.',
   learnedUnlocks: 'You have a mental model for what a class is FOR. Every remaining Layer 2 session builds directly on top of this.',
@@ -1449,7 +1449,7 @@ print(isinstance(c2, Country))  # True` },
 
 // ── SESSION 09 ─────────────────────────────────────────────────────
 {
-  num: 9,
+  num: 13,
   title: 'Class Anatomy — __init__ and Attributes',
   nextTitle: 'Instance Methods',
   subtitle: 'An empty class is not useful. This session gives every Country instance its own data, using the constructor method __init__ and instance attributes.',
@@ -1459,7 +1459,7 @@ print(isinstance(c2, Country))  # True` },
     'Explain what self refers to and why every method needs it as the first parameter',
     'Create multiple instances with different attribute values and confirm they do not interfere with each other',
     'Read and update an instance attribute from outside the class',
-    'Compare attribute access (dot notation) to the dictionary bracket access from Session 01',
+    'Compare attribute access (dot notation) to the dictionary bracket access from Session 05',
   ],
   quiz: [
     {
@@ -1484,7 +1484,7 @@ print(isinstance(c2, Country))  # True` },
       q: 'How do you read an instance attribute from outside the class, e.g. on a variable <code>k</code>?',
       options: { a: '<code>k["name"]</code> — same as a dictionary', b: '<code>k.name</code> — dot notation', c: '<code>k.get("name")</code>', d: '<code>Country.name</code>' },
       answer: 'b',
-      explain: 'Instance attributes are read with dot notation, not bracket access — this is the key syntactic difference from the dictionaries in Session 01, even though the underlying idea (a named slot holding a value) is conceptually similar.',
+      explain: 'Instance attributes are read with dot notation, not bracket access — this is the key syntactic difference from the dictionaries in Session 05, even though the underlying idea (a named slot holding a value) is conceptually similar.',
     },
     {
       q: 'Can you change an instance attribute after construction, e.g. <code>k.name = "Kenya (updated)"</code>?',
@@ -1527,7 +1527,7 @@ k = Country("Kenya")
         caption: 'Country("Kenya") silently becomes __init__(new_blank_instance, "Kenya") — self IS that new instance.',
         boxes: [
           { label: 'you write', text: 'Country("Kenya")' },
-          { label: 'Python runs', text: '__init__(self, "Kenya")', accent: true },
+          { label: 'Python runs', text: '__init__(self,\n"Kenya")', accent: true },
         ],
       },
     },
@@ -1543,9 +1543,9 @@ print(k.name)  # "Kenya"
 print(g.name)  # "Ghana" — completely independent of k.name`,
     },
     {
-      h3: 'Dot notation vs Session 01\'s bracket notation',
+      h3: 'Dot notation vs Session 05\'s bracket notation',
       paragraphs: [
-        'Recall reading a dictionary value: <code>country["name"]</code>. An instance attribute is read the same conceptual way, but with dot notation instead of brackets, and no risk of a KeyError — accessing an attribute that truly doesn\'t exist raises AttributeError instead, which we\'ll handle the same way we handled KeyError in Session 07.',
+        'Recall reading a dictionary value: <code>country["name"]</code>. An instance attribute is read the same conceptual way, but with dot notation instead of brackets, and no risk of a KeyError — accessing an attribute that truly doesn\'t exist raises AttributeError instead, which we\'ll handle the same way we handled KeyError in Session 11.',
       ],
       code: `country_dict = {"name": "Kenya"}
 print(country_dict["name"])   # dict — bracket access
@@ -1585,15 +1585,15 @@ print("peru.population:", peru.population)    # still 33000000 — unaffected` }
 
 CountryDebug("Kenya")
 CountryDebug("Peru")` },
-      { title: 'Read one attribute with dot notation and compare it to Session 01\'s dict syntax in a comment', body: [], code: `print(kenya.name)
-# Compare to Session 01: country_dict["name"] — same idea, different syntax` },
+      { title: 'Read one attribute with dot notation and compare it to Session 05\'s dict syntax in a comment', body: [], code: `print(kenya.name)
+# Compare to Session 05: country_dict["name"] — same idea, different syntax` },
     ],
   },
   filesChanged: [
     { file: 'country_init.py', action: 'Created', why: 'A real Country class with __init__ and instance attributes.' },
-    { file: 'docs/sessions/session-09/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-13/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_init.py docs/sessions/session-09/index.html\ngit commit -m "session-09: give Country real attributes via __init__"',
+  commitCmd: 'git add country_init.py docs/sessions/session-13/index.html\ngit commit -m "session-13: give Country real attributes via __init__"',
   commitQuestion: 'What does self actually refer to inside __init__, and why does mutating kenya.population not affect peru.population?',
   checklist: [
     '__init__ takes name, region, and population as parameters, all assigned to self',
@@ -1607,12 +1607,12 @@ CountryDebug("Peru")` },
     'If you forgot to write <code>self.name = name</code> and just wrote <code>name = name</code> inside __init__, what do you predict would happen when you tried <code>kenya.name</code> afterward? Try it.',
     'Why does Python require self to be listed explicitly as the first parameter instead of making it implicit like some other languages do?',
     'What is the practical difference between a dictionary\'s keys and a class instance\'s attributes, now that you\'ve used both?',
-    'Can you think of a rule (like Session 07\'s population validation) that __init__ should probably enforce, that it does not yet?',
+    'Can you think of a rule (like Session 11\'s population validation) that __init__ should probably enforce, that it does not yet?',
   ],
   whatBreaks: [
     { title: 'The self.x = x omission bug', text: 'Forgetting <code>self.</code> in an assignment inside __init__ is an extremely common beginner mistake — the value is assigned to a local variable that vanishes when the method returns, and the instance ends up with no such attribute at all, causing an AttributeError later when you try to read it.' },
-    { title: 'Methods (Session 10)', text: 'Every method you write from the next session forward relies on the exact same self mechanism you just learned. If self is not solid now, method definitions will look like unexplained boilerplate.' },
-    { title: 'Constructor validation (Layer 4 data contracts)', text: 'In Session 26 we will formalize what a "valid" Country looks like using type hints and dataclasses — that entire session assumes you deeply understand what __init__ is actually doing today.' },
+    { title: 'Methods (Session 14)', text: 'Every method you write from the next session forward relies on the exact same self mechanism you just learned. If self is not solid now, method definitions will look like unexplained boilerplate.' },
+    { title: 'Constructor validation (Layer 4 data contracts)', text: 'In Session 30 we will formalize what a "valid" Country looks like using type hints and dataclasses — that entire session assumes you deeply understand what __init__ is actually doing today.' },
   ],
   learnedConcept: '__init__ as the constructor, self as the reference to the instance being built, and instance attributes as independent per-instance data.',
   learnedUnlocks: 'Country instances can now hold real, independent data — the foundation every remaining session in the project builds on.',
@@ -1621,7 +1621,7 @@ CountryDebug("Peru")` },
 
 // ── SESSION 10 ─────────────────────────────────────────────────────
 {
-  num: 10,
+  num: 14,
   title: 'Instance Methods',
   nextTitle: 'Passing Data via the Constructor',
   subtitle: 'A class with only attributes is still just a fancier dictionary. Methods are functions that live on the class and operate on an instance\'s own data through self.',
@@ -1631,7 +1631,7 @@ CountryDebug("Peru")` },
     'Call a method on an instance using dot notation',
     'Write a method that both reads and updates self attributes',
     'Explain why a method does not need its data passed in as an argument, unlike the standalone functions from Layer 1',
-    'Compare a method call to the equivalent standalone-function call from Session 04',
+    'Compare a method call to the equivalent standalone-function call from Session 08',
   ],
   quiz: [
     {
@@ -1644,7 +1644,7 @@ CountryDebug("Peru")` },
       q: 'Why does calling k.summary() not require you to pass k as an argument yourself, e.g. summary(k)?',
       options: { a: 'Because summary() secretly has no parameters at all', b: 'Because Python automatically passes k as the self argument when you call it via dot notation on k', c: 'Because summary() is a class-level constant, not a real function', d: 'It does require that — k.summary() is shorthand for summary(k) written incorrectly' },
       answer: 'b',
-      explain: 'The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 09 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.',
+      explain: 'The dot-call syntax <code>k.summary()</code> is exactly the mechanism from Session 13 in reverse: Python automatically supplies <code>k</code> as the first argument (<code>self</code>) to <code>summary</code>. You only supply the remaining arguments explicitly.',
     },
     {
       q: 'Given a method <code>def grow_population(self, amount):\\n    self.population += amount</code>, what does <code>k.grow_population(1000000)</code> do?',
@@ -1653,7 +1653,7 @@ CountryDebug("Peru")` },
       explain: 'Just like a dictionary or list, mutating <code>self.population</code> inside a method changes the actual instance <code>k</code> — the same instance you called the method on, in place. Nothing needs to be reassigned.',
     },
     {
-      q: 'Compare method calls to the Layer 1 approach: In Session 04 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?',
+      q: 'Compare method calls to the Layer 1 approach: In Session 08 we wrote <code>get_population(country_dict)</code>. What is the equivalent as a method?',
       options: { a: '<code>get_population(k)</code> — methods work exactly the same way', b: '<code>k.get_population()</code> — the instance itself is passed implicitly instead of explicitly', c: '<code>k.get_population(k)</code> — you must still pass k explicitly', d: 'Methods cannot replace standalone functions like get_population' },
       answer: 'b',
       explain: 'This is the whole point of the shift: instead of passing the data as an explicit argument to a standalone function, the data (self) is now implicit, because the method lives on the object that owns the data.',
@@ -1687,7 +1687,7 @@ print(k.summary())  # "Kenya (Africa): pop. 54,000,000"`,
     {
       h3: 'What the dot-call actually does',
       paragraphs: [
-        'When you write <code>k.summary()</code>, Python translates this into <code>Country.summary(k)</code> behind the scenes — <code>k</code> is automatically supplied as <code>self</code>. This is the exact same mechanism from Session 09\'s __init__, just used for a different method.',
+        'When you write <code>k.summary()</code>, Python translates this into <code>Country.summary(k)</code> behind the scenes — <code>k</code> is automatically supplied as <code>self</code>. This is the exact same mechanism from Session 13\'s __init__, just used for a different method.',
       ],
       diagram: {
         caption: 'The dot-call is shorthand: k.summary() and Country.summary(k) are the same call.',
@@ -1719,7 +1719,7 @@ print(k.population)  # 55000000 — mutated in place, no reassignment needed`,
     {
       h3: 'Standalone function (Layer 1) vs method (Layer 2) — side by side',
       paragraphs: ['This is the entire conceptual leap of Layer 2: the data moved inside the object, so the function moved with it.'],
-      code: `# Layer 1 style — Session 04
+      code: `# Layer 1 style — Session 08
 def get_population(country_dict):
     return country_dict["population"]
 
@@ -1754,7 +1754,7 @@ class Country:
       { title: 'Create an instance and call summary()', body: [], code: `kenya = Country("Kenya", "Africa", 54000000)
 print(kenya.summary())` },
       { title: 'Prove k.summary() and Country.summary(k) are the same call', body: [], code: `print(kenya.summary() == Country.summary(kenya))  # True` },
-      { title: 'Add a mutating grow_population method with validation', body: ['Reuse the ValueError pattern from Session 07.'], code: `class Country:
+      { title: 'Add a mutating grow_population method with validation', body: ['Reuse the ValueError pattern from Session 11.'], code: `class Country:
     def __init__(self, name, region, population):
         self.name = name
         self.region = region
@@ -1771,7 +1771,7 @@ print(kenya.summary())` },
 kenya = Country("Kenya", "Africa", 54000000)
 kenya.grow_population(1000000)
 print(kenya.summary())` },
-      { title: 'Call grow_population with a negative amount inside try/except', body: ['Reuse the try/except pattern from Session 07 — confirm the exception is raised and caught.'], code: `try:
+      { title: 'Call grow_population with a negative amount inside try/except', body: ['Reuse the try/except pattern from Session 11 — confirm the exception is raised and caught.'], code: `try:
     kenya.grow_population(-500)
 except ValueError as e:
     print("Rejected:", e)` },
@@ -1779,15 +1779,15 @@ except ValueError as e:
   },
   filesChanged: [
     { file: 'country_methods.py', action: 'Created', why: 'Adds summary() and grow_population() instance methods to Country.' },
-    { file: 'docs/sessions/session-10/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-14/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_methods.py docs/sessions/session-10/index.html\ngit commit -m "session-10: add summary and grow_population instance methods"',
-  commitQuestion: 'Why does grow_population not need the country passed in as an argument the way Session 04\'s functions did?',
+  commitCmd: 'git add country_methods.py docs/sessions/session-14/index.html\ngit commit -m "session-14: add summary and grow_population instance methods"',
+  commitQuestion: 'Why does grow_population not need the country passed in as an argument the way Session 08\'s functions did?',
   checklist: [
     'summary() reads only self attributes and returns a formatted string',
     'kenya.summary() is proven equal to Country.summary(kenya)',
     'grow_population() mutates self.population in place',
-    'grow_population() raises ValueError on a negative amount, reusing Session 07\'s pattern',
+    'grow_population() raises ValueError on a negative amount, reusing Session 11\'s pattern',
     'The raised exception is caught with try/except elsewhere in the file',
     'I can explain every line without looking at the concept section',
   ],
@@ -1799,8 +1799,8 @@ except ValueError as e:
   ],
   whatBreaks: [
     { title: 'Missing self bugs', text: 'Forgetting <code>self</code> as a method\'s first parameter produces a confusing TypeError about argument counts when the method is called normally — a very common early mistake that this session should immunize you against.' },
-    { title: 'Passing data (Session 11)', text: 'Right now every instance is built by passing all fields directly to __init__. In the next session, we formalize this as "props" flowing into an object at construction time, drawing an explicit line back to the original React course\'s prop pattern.' },
-    { title: 'Testing methods (Layer 5)', text: 'Every unit test you write from Session 29 onward calls methods on instances exactly the way this lab does. If method calls are not second nature, reading test code will be much harder.' },
+    { title: 'Passing data (Session 15)', text: 'Right now every instance is built by passing all fields directly to __init__. In the next session, we formalize this as "props" flowing into an object at construction time, drawing an explicit line back to the original React course\'s prop pattern.' },
+    { title: 'Testing methods (Layer 5)', text: 'Every unit test you write from Session 33 onward calls methods on instances exactly the way this lab does. If method calls are not second nature, reading test code will be much harder.' },
   ],
   learnedConcept: 'Instance methods — self-bound functions that read and mutate an instance\'s own data without needing it passed in explicitly.',
   learnedUnlocks: 'Country is now a genuine object: data plus the behavior that belongs with it. This is the last piece needed before we start composing objects together.',

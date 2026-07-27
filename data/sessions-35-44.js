@@ -2,7 +2,7 @@ module.exports = [
 
 // ── SESSION 31 ─────────────────────────────────────────────────────
 {
-  num: 31,
+  num: 35,
   title: 'Testing the Data Layer with Mocks',
   nextTitle: 'Package and Folder Organization',
   subtitle: 'This is the Layer 5 gate. We test CountryRepository in complete isolation, using a small, controlled fake dataset — no real files, no real network, ever.',
@@ -17,21 +17,21 @@ module.exports = [
   quiz: [
     {
       q: 'Why does testing CountryRepository with a small hand-written fake dataset (not the real mock_countries.py or countries.json) make the tests more reliable?',
-      options: { a: 'It does not — using the real data is always better for tests', b: 'A small, controlled dataset built specifically for the test keeps the test focused, fast, and independent of the size or future changes of the real mock/JSON data — this is Session 24\'s repository design paying off directly', c: 'pytest requires all test data to be under 5 records', d: 'Fake data is required by law for testing' },
+      options: { a: 'It does not — using the real data is always better for tests', b: 'A small, controlled dataset built specifically for the test keeps the test focused, fast, and independent of the size or future changes of the real mock/JSON data — this is Session 28\'s repository design paying off directly', c: 'pytest requires all test data to be under 5 records', d: 'Fake data is required by law for testing' },
       answer: 'b',
-      explain: 'This is exactly why CountryRepository was designed (Session 24) to accept any data source through its constructor: a test can build one around a tiny, purpose-built dataset with known values, making the test fast, focused, and immune to unrelated changes in the real mock data file.',
+      explain: 'This is exactly why CountryRepository was designed (Session 28) to accept any data source through its constructor: a test can build one around a tiny, purpose-built dataset with known values, making the test fast, focused, and immune to unrelated changes in the real mock data file.',
     },
     {
       q: 'A test constructs CountryRepository(raw_data=[{"name": "Testland", "region": "Testregion", "population": 1}]) and calls repo.get_all(). What should it assert?',
       options: { a: 'That the repository object itself equals the raw_data list', b: 'That the returned list contains exactly one Country instance with name=="Testland", confirming from_dict conversion happened correctly', c: 'Nothing — repositories cannot be meaningfully tested', d: 'That get_all() returns the string "Testland"' },
       answer: 'b',
-      explain: 'This verifies the repository\'s actual job: fetching raw data AND converting it into proper Country instances (Session 24\'s get_all implementation). Checking the specific resulting instance\'s fields confirms the conversion is correct.',
+      explain: 'This verifies the repository\'s actual job: fetching raw data AND converting it into proper Country instances (Session 28\'s get_all implementation). Checking the specific resulting instance\'s fields confirms the conversion is correct.',
     },
     {
-      q: 'How would you test that validate_country_record (Session 26) correctly rejects a record with population as a string instead of an int?',
+      q: 'How would you test that validate_country_record (Session 30) correctly rejects a record with population as a string instead of an int?',
       options: { a: 'Call it and manually read the printed output', b: 'Use pytest.raises(TypeError) around the call, with a record deliberately containing a wrong-typed population value', c: 'This cannot be tested with pytest', d: 'Only valid records can be used in tests' },
       answer: 'b',
-      explain: 'This is the same technique from Session 28/29 applied to Session 26\'s validation function — pytest.raises(TypeError) confirms the specific, correct failure mode occurs for a deliberately malformed input.',
+      explain: 'This is the same technique from Session 32/33 applied to Session 30\'s validation function — pytest.raises(TypeError) confirms the specific, correct failure mode occurs for a deliberately malformed input.',
     },
     {
       q: 'Why is testing the data layer this way (in-memory fake data, zero files, zero network) considered a genuine unit test rather than a slower integration test?',
@@ -43,14 +43,14 @@ module.exports = [
       q: 'A test suite for this project now spans country.py\'s Country and CountryExplorer classes plus CountryRepository — around a dozen test functions total. What has this Layer 5 investment actually purchased for Layer 6 (Architecture, next)?',
       options: { a: 'Nothing directly useful for refactoring', b: 'The ability to refactor the project\'s internal structure confidently, because the test suite will immediately flag if a refactor accidentally changes any tested behavior', c: 'Tests have no relationship to future refactoring work', d: 'Tests make future features impossible to add' },
       answer: 'b',
-      explain: 'This is the payoff promised back in Session 27: a real, working test suite is what makes Layer 6\'s architecture refactoring sessions safe to approach boldly, since any accidental behavior change during a reorganization will be caught immediately.',
+      explain: 'This is the payoff promised back in Session 31: a real, working test suite is what makes Layer 6\'s architecture refactoring sessions safe to approach boldly, since any accidental behavior change during a reorganization will be caught immediately.',
     },
   ],
   conceptTitle: 'Testing the Data Layer in Isolation',
   sections: [
     {
       h3: 'Building the repository around fake, in-memory data',
-      paragraphs: ['Session 24\'s design — accepting any raw_data through the constructor — is exactly what makes this possible: a test can supply a tiny, purpose-built dataset instead of the real mock file or a real JSON file.'],
+      paragraphs: ['Session 28\'s design — accepting any raw_data through the constructor — is exactly what makes this possible: a test can supply a tiny, purpose-built dataset instead of the real mock file or a real JSON file.'],
       code: `from country import Country, CountryRepository
 
 def test_get_all_converts_raw_data_to_country_instances():
@@ -68,7 +68,7 @@ def test_get_all_converts_raw_data_to_country_instances():
     },
     {
       h3: 'Testing find_by_region against a known fake dataset',
-      paragraphs: ['A small, deliberately crafted dataset — with known regions — makes it trivial to assert on exact results, following Session 29\'s exact-content discipline.'],
+      paragraphs: ['A small, deliberately crafted dataset — with known regions — makes it trivial to assert on exact results, following Session 33\'s exact-content discipline.'],
       code: `def test_find_by_region_filters_correctly():
     fake_data = [
         {"name": "Testland", "region": "Africa", "population": 1},
@@ -91,7 +91,7 @@ def test_get_all_converts_raw_data_to_country_instances():
     },
     {
       h3: 'Testing validate_country_record with good and bad records',
-      paragraphs: ['Session 26\'s validation function is tested the same way as any other function — normal case, and edge/error cases using pytest.raises.'],
+      paragraphs: ['Session 30\'s validation function is tested the same way as any other function — normal case, and edge/error cases using pytest.raises.'],
       code: `import pytest
 from country import validate_country_record
 
@@ -175,34 +175,34 @@ def test_validate_rejects_missing_field():
 def test_validate_rejects_wrong_type():
     with pytest.raises(TypeError):
         validate_country_record({"name": "Kenya", "region": "Africa", "population": "fifty-four"})` },
-      { title: 'Run the full project test suite and confirm everything passes together', body: ['Run pytest with no arguments from the project root — every test file from Sessions 28-31 should be discovered and pass.'], code: '# pytest -v' },
+      { title: 'Run the full project test suite and confirm everything passes together', body: ['Run pytest with no arguments from the project root — every test file from Sessions 32-35 should be discovered and pass.'], code: '# pytest -v' },
     ],
   },
   filesChanged: [
     { file: 'country.py', action: 'Modified', why: 'Ensures CountryRepository and validate_country_record are present as real, importable code.' },
     { file: 'tests/test_repository.py', action: 'Created', why: 'A complete, isolated test suite for the data-access layer using in-memory fake data.' },
-    { file: 'docs/sessions/session-31/index.html', action: 'Created', why: 'This session document — Layer 5 gate.' },
+    { file: 'docs/sessions/session-35/index.html', action: 'Created', why: 'This session document — Layer 5 gate.' },
   ],
-  commitCmd: 'git add country.py tests/test_repository.py docs/sessions/session-31/index.html\ngit commit -m "session-31: test the repository and validation logic in complete isolation"',
+  commitCmd: 'git add country.py tests/test_repository.py docs/sessions/session-35/index.html\ngit commit -m "session-35: test the repository and validation logic in complete isolation"',
   commitQuestion: 'Why do none of these tests need a real file on disk or a network connection to run?',
   checklist: [
     'CountryRepository tests construct it around a small, purpose-built fake dataset, not the real mock or JSON data',
     'get_all() is tested for correct conversion into Country instances with correct field values',
     'find_by_region() is tested for exact matches and for a no-match case',
     'validate_country_record() is tested for a valid record, a missing field, and a wrong type',
-    'The entire project test suite (Sessions 28-31) passes together with a single pytest run',
+    'The entire project test suite (Sessions 32-35) passes together with a single pytest run',
     'I can explain every line without looking at the concept section',
   ],
   reflection: [
     'Why would testing CountryRepository against the REAL mock_countries.py file (instead of a small fake dataset built in the test) make the test more fragile over time?',
     'How many total tests have you written across Layer 5? What parts of the project (from Sessions 1-26) still have zero test coverage, and would they be worth adding tests for?',
-    'What is the relationship between this session\'s "inject fake data through the constructor" technique and Session 11\'s "explicit constructor arguments, not hidden global state" principle?',
-    'If you had to explain to someone why this project is now safer to refactor than it was at Session 20, what would you point to specifically?',
+    'What is the relationship between this session\'s "inject fake data through the constructor" technique and Session 15\'s "explicit constructor arguments, not hidden global state" principle?',
+    'If you had to explain to someone why this project is now safer to refactor than it was at Session 24, what would you point to specifically?',
   ],
   whatBreaks: [
     { title: 'Fragile, slow tests', text: 'Testing against real files or real APIs makes tests slow, flaky (network can fail for reasons unrelated to your code), and dependent on external state being correctly set up — exactly what isolated unit testing with fake data avoids.' },
     { title: 'Unsafe refactoring (Layer 6)', text: 'Without this session\'s test coverage of the data layer specifically, Layer 6\'s folder reorganization sessions would risk silently breaking how data flows through the repository, with nothing to catch it.' },
-    { title: 'Real APIs without a safety net (Layer 7)', text: 'When Session 38 introduces a genuinely real, unreliable external API, having the repository\'s OWN logic already fully tested in isolation means only the new real-API-specific code needs new testing attention, not the whole data layer again.' },
+    { title: 'Real APIs without a safety net (Layer 7)', text: 'When Session 42 introduces a genuinely real, unreliable external API, having the repository\'s OWN logic already fully tested in isolation means only the new real-API-specific code needs new testing attention, not the whole data layer again.' },
   ],
   learnedConcept: 'Testing a data-access layer in complete isolation using small, purpose-built fake datasets injected through the constructor — true unit testing, not integration testing.',
   learnedUnlocks: 'The entire application — Country, CountryExplorer, CountryRepository, and validation — is now covered by a real, isolated, fast test suite. Layer 6\'s refactoring can proceed with confidence.',
@@ -211,13 +211,13 @@ def test_validate_rejects_wrong_type():
 
 // ── SESSION 32 ─────────────────────────────────────────────────────
 {
-  num: 32,
+  num: 36,
   title: 'Package and Folder Organization',
   nextTitle: 'Reusable Functions and Modules',
   subtitle: 'Layer 6 begins. Our project has grown past what flat files can comfortably hold. We reorganize into a proper Python package structure.',
   timeEstimate: '35–40 minutes',
   objectives: [
-    'Explain the difference between a module (Session 06) and a package',
+    'Explain the difference between a module (Session 10) and a package',
     'Create a package using an __init__.py file',
     'Reorganize country.py\'s growing classes into a package with focused submodules',
     'Update import statements across the project to match the new structure',
@@ -225,10 +225,10 @@ def test_validate_rejects_wrong_type():
   ],
   quiz: [
     {
-      q: 'What is the difference between a module (Session 06) and a package?',
+      q: 'What is the difference between a module (Session 10) and a package?',
       options: { a: 'They are exactly the same thing with different names', b: 'A module is a single .py file; a package is a directory containing multiple related modules, marked with an __init__.py file', c: 'A package can only contain classes, never functions', d: 'A module can contain other modules; a package cannot' },
       answer: 'b',
-      explain: 'A module (Session 06) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).',
+      explain: 'A module (Session 10) is one file. A package is a directory of related modules, grouped together and marked as an importable unit by an <code>__init__.py</code> file (which can be empty or can re-export names for convenience).',
     },
     {
       q: 'What is the minimum required for a directory to be treated as a regular Python package?',
@@ -249,10 +249,10 @@ def test_validate_rejects_wrong_type():
       explain: 'This is Layer 5\'s entire payoff: a reorganization SHOULD change nothing about behavior, only structure. Running the test suite immediately after confirms that promise held — if any test fails, an import was missed or something subtly broke.',
     },
     {
-      q: 'What is a reasonable way to split country.py\'s growing content across a package, based on Session 24\'s separation of concerns?',
+      q: 'What is a reasonable way to split country.py\'s growing content across a package, based on Session 28\'s separation of concerns?',
       options: { a: 'Randomly, by alphabetical order of the code inside each file', b: 'By responsibility — e.g. models.py for Country/CountryExplorer, repository.py for CountryRepository, validators.py for validation logic — mirroring the conceptual separations already established', c: 'Every single function and class must go in its own separate file, no matter how small', d: 'Splitting should wait until the project is finished' },
       answer: 'b',
-      explain: 'Good package organization follows the conceptual boundaries already established by the project\'s design (Session 24\'s repository vs explorer distinction, Session 20\'s separate validators module) — grouping by responsibility, not arbitrarily.',
+      explain: 'Good package organization follows the conceptual boundaries already established by the project\'s design (Session 28\'s repository vs explorer distinction, Session 24\'s separate validators module) — grouping by responsibility, not arbitrarily.',
     },
   ],
   conceptTitle: 'Modules vs Packages',
@@ -287,7 +287,7 @@ from .validators import validate_country_record
     },
     {
       h3: 'Splitting by responsibility',
-      paragraphs: ['Following the conceptual boundaries already established in the project — Session 24\'s repository/explorer split, Session 20\'s separate validators — gives a natural, sensible package layout.'],
+      paragraphs: ['Following the conceptual boundaries already established in the project — Session 28\'s repository/explorer split, Session 24\'s separate validators — gives a natural, sensible package layout.'],
       code: `# country_explorer/models.py
 class Country:
     ...
@@ -404,9 +404,9 @@ def validate_country_record(data):
     { file: 'country_explorer/validators.py', action: 'Created', why: 'validate_country_record, moved from country.py.' },
     { file: 'country.py', action: 'Deleted', why: 'Replaced by the new country_explorer package.' },
     { file: 'tests/*.py', action: 'Modified', why: 'Import paths updated to the new package structure.' },
-    { file: 'docs/sessions/session-32/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-36/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_explorer/ tests/ docs/sessions/session-32/index.html\ngit rm country.py\ngit commit -m "session-32: reorganize into a country_explorer package with focused submodules"',
+  commitCmd: 'git add country_explorer/ tests/ docs/sessions/session-36/index.html\ngit rm country.py\ngit commit -m "session-36: reorganize into a country_explorer package with focused submodules"',
   commitQuestion: 'Why did running the full test suite right after this reorganization matter more than after almost any previous session?',
   checklist: [
     'country_explorer/ is a real package with __init__.py re-exporting the key names',
@@ -419,13 +419,13 @@ def validate_country_record(data):
   reflection: [
     'Did any test fail immediately after the reorganization? If so, what did that reveal about a missed import? If not, what does that tell you about how thorough Layer 5\'s coverage really was?',
     'Why does __init__.py re-export names instead of requiring every caller to know the exact submodule (models, repository, validators) a given class lives in?',
-    'How does this package split reflect the conceptual boundaries you\'ve been building since Session 24 (repository) and Session 20 (validators), rather than an arbitrary split?',
+    'How does this package split reflect the conceptual boundaries you\'ve been building since Session 28 (repository) and Session 24 (validators), rather than an arbitrary split?',
     'What would you do differently if you needed to add a FOURTH responsibility to this package later — how would you decide whether it deserves its own submodule?',
   ],
   whatBreaks: [
     { title: 'Import errors from a rushed reorganization', text: 'Reorganizing files without updating every import reference (and without a test suite to catch the ones you miss) is one of the most common sources of "it worked yesterday" bugs in real projects.' },
-    { title: 'Reusable modules (Session 33)', text: 'The next session builds genuinely reusable utility functions — having a clean package structure in place first makes it obvious where new shared code should live.' },
-    { title: 'God objects and tight coupling (Session 35)', text: 'A clean package split makes it much easier to SEE when one module starts doing too much or reaching too deeply into another\'s internals — the problem Session 35 addresses directly.' },
+    { title: 'Reusable modules (Session 37)', text: 'The next session builds genuinely reusable utility functions — having a clean package structure in place first makes it obvious where new shared code should live.' },
+    { title: 'God objects and tight coupling (Session 39)', text: 'A clean package split makes it much easier to SEE when one module starts doing too much or reaching too deeply into another\'s internals — the problem Session 39 addresses directly.' },
   ],
   learnedConcept: 'Packages vs modules, creating a package with __init__.py, and safely reorganizing a growing codebase with a test suite as a safety net.',
   learnedUnlocks: 'The project now has a real, scalable package structure instead of one growing flat file — and you have proven, with tests, that the reorganization changed nothing about behavior.',
@@ -434,7 +434,7 @@ def validate_country_record(data):
 
 // ── SESSION 33 ─────────────────────────────────────────────────────
 {
-  num: 33,
+  num: 37,
   title: 'Reusable Functions and Modules',
   nextTitle: 'Building Utility Modules',
   subtitle: 'With a clean package structure in place, we identify genuinely reusable logic scattered across the project and extract it into shared, well-tested functions.',
@@ -451,7 +451,7 @@ def validate_country_record(data):
       q: 'Both summary() (formatting a country) and a hypothetical future feature might need to format a large number with comma separators, like 54,000,000. If this formatting appears in two places with near-identical code, what should you do?',
       options: { a: 'Leave both copies as-is; duplication is always fine', b: 'Extract the shared formatting logic into one function both call, so a future change (like switching to a different number format) only needs to happen once', c: 'Delete one of the two features entirely', d: 'Rewrite everything in a different language' },
       answer: 'b',
-      explain: 'This is Session 06\'s "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.',
+      explain: 'This is Session 10\'s "one place to change" principle applied specifically to duplicated logic — extracting shared behavior into one function prevents the two copies from silently drifting apart when one gets updated and the other is forgotten.',
     },
     {
       q: 'What is the purpose of a docstring like <code>"""Format a population count with comma separators.\\n\\nArgs:\\n    value: the population as an int\\nReturns:\\n    A string like \'54,000,000\'\\n"""</code> right under a function definition?',
@@ -463,7 +463,7 @@ def validate_country_record(data):
       q: 'Why should a newly extracted reusable function get its own tests, even if the code it was extracted FROM was already tested indirectly?',
       options: { a: 'It is unnecessary; existing tests already cover it completely', b: 'A direct test of the reusable function in isolation is faster to write, easier to understand, and will catch bugs specifically in that function without needing to go through the whole original context it was extracted from', c: 'Tests are only needed for classes, never for standalone functions', d: 'Extracted functions cannot be tested with pytest' },
       answer: 'b',
-      explain: 'A focused, direct test of the extracted function (following Session 29\'s return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function\'s contract clearly on its own.',
+      explain: 'A focused, direct test of the extracted function (following Session 33\'s return-value testing techniques) is simpler and more precise than relying on it being indirectly exercised through some other, larger test — and it documents the function\'s contract clearly on its own.',
     },
     {
       q: 'What is "premature abstraction," and why is it a real risk when looking for things to extract?',
@@ -472,10 +472,10 @@ def validate_country_record(data):
       explain: 'Not all similar-looking code should be merged — if two pieces of logic happen to look alike now but serve genuinely different purposes and are likely to diverge, forcing them into one shared function adds complexity and coupling without a real benefit. Extraction should follow genuine, ongoing duplication of ONE actual concept.',
     },
     {
-      q: 'Where is the most sensible place, given Session 32\'s new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?',
-      options: { a: 'Duplicated inline in every file that needs it', b: 'A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 32', c: 'Directly inside the Country class as a private method, hidden from everything else', d: 'It does not matter where reusable code lives' },
+      q: 'Where is the most sensible place, given Session 36\'s new package structure, to put a genuinely reusable formatting function used across multiple parts of the project?',
+      options: { a: 'Duplicated inline in every file that needs it', b: 'A new, focused module — e.g. country_explorer/formatting.py — following the same by-responsibility organization established in Session 36', c: 'Directly inside the Country class as a private method, hidden from everything else', d: 'It does not matter where reusable code lives' },
       answer: 'b',
-      explain: 'This follows directly from Session 32\'s package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.',
+      explain: 'This follows directly from Session 36\'s package organization principle: a genuinely reusable, standalone piece of logic gets its own focused module, consistent with how models.py, repository.py, and validators.py were each split out by responsibility.',
     },
   ],
   conceptTitle: 'Extracting Reusable Logic',
@@ -495,7 +495,7 @@ def population_report_line(name, population):
     },
     {
       h3: 'Extracting one shared function',
-      paragraphs: ['Once genuine, ongoing duplication is identified, extract it into one well-named function, and update every call site to use it — exactly the "one place to change" principle from Session 06.'],
+      paragraphs: ['Once genuine, ongoing duplication is identified, extract it into one well-named function, and update every call site to use it — exactly the "one place to change" principle from Session 10.'],
       code: `# country_explorer/formatting.py
 def format_population(value):
     """Format a population count with comma separators.
@@ -581,15 +581,15 @@ def test_format_population_small_number():
     { file: 'country_explorer/formatting.py', action: 'Created', why: 'A shared, documented, reusable population formatting function.' },
     { file: 'country_explorer/models.py', action: 'Modified', why: 'summary() now uses the extracted, shared function.' },
     { file: 'tests/test_formatting.py', action: 'Created', why: 'Direct, focused tests for the extracted function.' },
-    { file: 'docs/sessions/session-33/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-37/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_explorer/formatting.py country_explorer/models.py tests/test_formatting.py docs/sessions/session-33/index.html\ngit commit -m "session-33: extract and test a reusable format_population function"',
+  commitCmd: 'git add country_explorer/formatting.py country_explorer/models.py tests/test_formatting.py docs/sessions/session-37/index.html\ngit commit -m "session-37: extract and test a reusable format_population function"',
   commitQuestion: 'How did I confirm this extraction was purely a refactor and did not change summary()\'s existing observable behavior?',
   checklist: [
     'format_population has a clear docstring describing its argument and return value',
     'models.py\'s summary() calls the extracted function instead of duplicating the formatting inline',
     'test_formatting.py directly and independently tests format_population',
-    'The full pre-existing test suite (Sessions 27-32) still passes after this change',
+    'The full pre-existing test suite (Sessions 31-36) still passes after this change',
     'A written comment identifies a plausible case of premature abstraction that was deliberately NOT merged',
     'I can explain every line without looking at the concept section',
   ],
@@ -601,8 +601,8 @@ def test_format_population_small_number():
   ],
   whatBreaks: [
     { title: 'Silent formatting drift', text: 'Without extracting shared formatting logic, a future change to how numbers should display (e.g. adding a currency symbol) risks being applied in one place and forgotten in another, producing visibly inconsistent output across the application.' },
-    { title: 'Utility modules (Session 34)', text: 'The next session builds on this exact pattern, extracting more substantial, cross-cutting utility logic into its own dedicated module — formatting.py is the first, smallest example of that broader pattern.' },
-    { title: 'Recognizing coupling problems (Session 35)', text: 'Learning to correctly judge WHEN to extract (and when NOT to, per premature abstraction) is a prerequisite for Session 35\'s harder judgment call: recognizing when a class has taken on too much responsibility.' },
+    { title: 'Utility modules (Session 38)', text: 'The next session builds on this exact pattern, extracting more substantial, cross-cutting utility logic into its own dedicated module — formatting.py is the first, smallest example of that broader pattern.' },
+    { title: 'Recognizing coupling problems (Session 39)', text: 'Learning to correctly judge WHEN to extract (and when NOT to, per premature abstraction) is a prerequisite for Session 39\'s harder judgment call: recognizing when a class has taken on too much responsibility.' },
   ],
   learnedConcept: 'Identifying genuine duplication, extracting it into a documented, tested, reusable function, and recognizing premature abstraction as a real risk to avoid.',
   learnedUnlocks: 'You can now confidently spot and safely extract reusable logic from a growing codebase, backed by tests that prove the extraction changed nothing about behavior.',
@@ -611,7 +611,7 @@ def test_format_population_small_number():
 
 // ── SESSION 34 ─────────────────────────────────────────────────────
 {
-  num: 34,
+  num: 38,
   title: 'Building Utility Modules',
   nextTitle: 'The Prop Drilling Problem',
   subtitle: 'Beyond small extracted functions, some logic is genuinely cross-cutting — useful to many different parts of the application without belonging to any single class.',
@@ -634,7 +634,7 @@ def test_format_population_small_number():
       q: 'What is the key difference between a utility function like matches_search_term(name, term) and an instance method like Country.summary(self)?',
       options: { a: 'There is no real difference between the two', b: 'A method operates on a specific instance\'s own data via self; a utility function takes everything it needs as explicit arguments and does not belong to, or depend on, any particular class\'s internal structure', c: 'Utility functions cannot take any arguments', d: 'Methods are always faster than utility functions' },
       answer: 'b',
-      explain: 'This connects back to Session 10\'s method-vs-function distinction: a method is bound to an instance\'s own data; a utility function is a plain, standalone function (Session 04) that takes its inputs explicitly, with no ties to any specific class.',
+      explain: 'This connects back to Session 14\'s method-vs-function distinction: a method is bound to an instance\'s own data; a utility function is a plain, standalone function (Session 08) that takes its inputs explicitly, with no ties to any specific class.',
     },
     {
       q: 'Why should a utility module avoid importing or depending on a specific class like Country, if it can be avoided?',
@@ -646,13 +646,13 @@ def test_format_population_small_number():
       q: 'Why does a utility module deserve especially thorough test coverage, more so perhaps than a one-off helper used in only one place?',
       options: { a: 'It does not need any additional testing rigor', b: 'Because it will be relied upon from multiple different parts of the codebase, a bug in a utility function has a wider blast radius — breaking every caller simultaneously, not just one', c: 'Utility modules are exempt from testing by convention', d: 'Only classes need tests, never standalone utility functions' },
       answer: 'b',
-      explain: 'This connects to Session 27\'s testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.',
+      explain: 'This connects to Session 31\'s testing-priority discussion: code that many other parts of the application depend on deserves the most thorough test coverage, since a bug there affects everything that relies on it.',
     },
     {
-      q: 'Where does this new search.py utility module fit into the package structure established in Session 32?',
+      q: 'Where does this new search.py utility module fit into the package structure established in Session 36?',
       options: { a: 'It should replace models.py entirely', b: 'As a new, additional focused module inside country_explorer/, following the same by-responsibility organization already established', c: 'Utility modules cannot exist inside a package', d: 'It must be placed outside the country_explorer package entirely' },
       answer: 'b',
-      explain: 'This is a natural extension of Session 32\'s package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 33.',
+      explain: 'This is a natural extension of Session 36\'s package structure — a new, focused responsibility gets its own module inside the existing package, exactly like formatting.py did in Session 37.',
     },
   ],
   conceptTitle: 'Utility Modules',
@@ -674,7 +674,7 @@ def matches_search_term(name, term):
     },
     {
       h3: 'Method vs standalone utility function',
-      paragraphs: ['A method (Session 10) is bound to a specific instance\'s data via self. A utility function takes everything it needs as plain, explicit arguments, with no ties to any one class — this makes it broadly reusable.'],
+      paragraphs: ['A method (Session 14) is bound to a specific instance\'s data via self. A utility function takes everything it needs as plain, explicit arguments, with no ties to any one class — this makes it broadly reusable.'],
       code: `# Method — bound to a specific Country instance
 class Country:
     def name_matches(self, term):
@@ -796,9 +796,9 @@ def test_repository_search_uses_matches_search_term():
     { file: 'country_explorer/repository.py', action: 'Modified', why: 'CountryRepository.search() uses the same shared utility.' },
     { file: 'tests/test_search.py', action: 'Created', why: 'Thorough, direct tests for the utility function itself.' },
     { file: 'tests/test_search_integration.py', action: 'Created', why: 'Confirms both classes correctly use the shared utility.' },
-    { file: 'docs/sessions/session-34/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-38/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country_explorer/search.py country_explorer/models.py country_explorer/repository.py tests/test_search.py tests/test_search_integration.py docs/sessions/session-34/index.html\ngit commit -m "session-34: build a shared search utility used by both CountryExplorer and CountryRepository"',
+  commitCmd: 'git add country_explorer/search.py country_explorer/models.py country_explorer/repository.py tests/test_search.py tests/test_search_integration.py docs/sessions/session-38/index.html\ngit commit -m "session-38: build a shared search utility used by both CountryExplorer and CountryRepository"',
   commitQuestion: 'Why does matches_search_term take plain strings as arguments instead of a Country instance?',
   checklist: [
     'matches_search_term takes plain string arguments, with no dependency on Country or any other class',
@@ -816,8 +816,8 @@ def test_repository_search_uses_matches_search_term():
   ],
   whatBreaks: [
     { title: 'Duplicated search logic drifting apart', text: 'Without a shared utility, CountryExplorer and CountryRepository would each implement their own version of "does this term match this name" — and a future improvement (like trimming whitespace before comparing) could easily be applied to one and forgotten in the other.' },
-    { title: 'The prop drilling problem (Session 35)', text: 'The next session examines what happens when data needs to be threaded through many layers just to reach where it is needed — a related but distinct architecture problem from the code-duplication issue this session solved.' },
-    { title: 'Architecture review (Session 36)', text: 'This session\'s search.py is a concrete example of the "focused, well-tested, broadly reusable module" pattern that Session 36\'s architecture review will assess the whole project against.' },
+    { title: 'The prop drilling problem (Session 39)', text: 'The next session examines what happens when data needs to be threaded through many layers just to reach where it is needed — a related but distinct architecture problem from the code-duplication issue this session solved.' },
+    { title: 'Architecture review (Session 40)', text: 'This session\'s search.py is a concrete example of the "focused, well-tested, broadly reusable module" pattern that Session 40\'s architecture review will assess the whole project against.' },
   ],
   learnedConcept: 'Designing and thoroughly testing a standalone, class-independent utility module, and understanding when logic belongs to a class versus a shared utility.',
   learnedUnlocks: 'The application now has a genuinely shared, well-tested search capability used consistently across multiple parts of the codebase, with zero duplication.',
@@ -826,7 +826,7 @@ def test_repository_search_uses_matches_search_term():
 
 // ── SESSION 35 ─────────────────────────────────────────────────────
 {
-  num: 35,
+  num: 39,
   title: 'The Prop Drilling Problem',
   nextTitle: 'Architecture Review',
   subtitle: 'We add a small "favorites" feature and deliberately experience the pain of threading a value through several layers of objects just to reach where it is actually needed.',
@@ -855,26 +855,26 @@ def test_repository_search_uses_matches_search_term():
       q: 'Why is a growing chain of "pass this reference down another level, just in case something deeper needs it" considered a code smell, even if it technically works?',
       options: { a: 'It is not a real problem — this is the correct and only way to structure any Python program', b: 'As more layers are added, every intermediate layer accumulates parameters and forwarding logic unrelated to its own actual responsibility, making the codebase harder to understand and change — the connection between where a value originates and where it is used becomes obscured', c: 'It always causes a runtime error in Python', d: 'This pattern is specific to only the "favorites" feature and cannot generalize' },
       answer: 'b',
-      explain: 'This directly threatens the "focused, single-responsibility classes" principle from Sessions 12, 24, and 32 — intermediate classes end up cluttered with forwarding logic for values they conceptually have nothing to do with, purely as plumbing.',
+      explain: 'This directly threatens the "focused, single-responsibility classes" principle from Sessions 16, 28, and 36 — intermediate classes end up cluttered with forwarding logic for values they conceptually have nothing to do with, purely as plumbing.',
     },
     {
       q: 'Why does this session deliberately NOT fully solve the prop drilling problem, only make you experience and name it?',
-      options: { a: 'Because the problem has no solution in Python at all', b: 'Because — following the same "concept before implementation" pattern used throughout this curriculum — genuinely understanding the pain and its cause is the prerequisite for correctly evaluating any solution (e.g. a shared/global-ish state object) in a future project, rather than reaching for a fix without understanding what problem it solves', c: 'Because this is not actually a real problem worth understanding', d: 'Because it was already fully solved in Session 34' },
+      options: { a: 'Because the problem has no solution in Python at all', b: 'Because — following the same "concept before implementation" pattern used throughout this curriculum — genuinely understanding the pain and its cause is the prerequisite for correctly evaluating any solution (e.g. a shared/global-ish state object) in a future project, rather than reaching for a fix without understanding what problem it solves', c: 'Because this is not actually a real problem worth understanding', d: 'Because it was already fully solved in Session 38' },
       answer: 'b',
-      explain: 'This mirrors the source React course\'s Session 35 exactly — deliberately experiencing the pain of a real architecture problem, by name, is what makes any future solution (whether a shared context object, dependency injection, or something else) make genuine sense later, instead of being memorized syntax for a problem never truly felt.',
+      explain: 'This mirrors the source React course\'s Session 39 exactly — deliberately experiencing the pain of a real architecture problem, by name, is what makes any future solution (whether a shared context object, dependency injection, or something else) make genuine sense later, instead of being memorized syntax for a problem never truly felt.',
     },
     {
       q: 'How does this Python session\'s "prop drilling" problem relate to the concept of the same name in the original React course this curriculum is modeled on?',
       options: { a: 'It is completely unrelated; the term is coincidentally reused', b: 'It is the exact same underlying architecture problem — data or a reference having to be threaded through layers that do not themselves use it — just expressed here through composed Python classes instead of nested React components', c: 'Python cannot have this problem because it does not use JSX', d: 'This problem only exists in JavaScript, never in Python' },
       answer: 'b',
-      explain: 'This is a deliberate, direct parallel: the original React course\'s Session 35 covers "prop drilling" through nested components; this session recreates the identical underlying architecture problem using composed Python classes, since the root cause (a value needed deep in a structure, threaded through uninvolved intermediate layers) is language-independent.',
+      explain: 'This is a deliberate, direct parallel: the original React course\'s Session 39 covers "prop drilling" through nested components; this session recreates the identical underlying architecture problem using composed Python classes, since the root cause (a value needed deep in a structure, threaded through uninvolved intermediate layers) is language-independent.',
     },
   ],
   conceptTitle: 'Experiencing the Prop Drilling Problem',
   sections: [
     {
       h3: 'Adding a feature that needs a deep reference',
-      paragraphs: ['We want to toggle a country as a "favorite." The natural place for that state is on CountryExplorer (Session 12), but the trigger — a user action — originates from an outer App class, two composition layers up.'],
+      paragraphs: ['We want to toggle a country as a "favorite." The natural place for that state is on CountryExplorer (Session 16), but the trigger — a user action — originates from an outer App class, two composition layers up.'],
       code: `class CountryExplorer:
     def __init__(self, countries):
         self.countries = countries
@@ -987,9 +987,9 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
   },
   filesChanged: [
     { file: 'prop_drilling_lab.py', action: 'Created', why: 'Deliberately recreates and documents the prop-drilling problem using composed classes.' },
-    { file: 'docs/sessions/session-35/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-39/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add prop_drilling_lab.py docs/sessions/session-35/index.html\ngit commit -m "session-35: deliberately experience and document the prop drilling problem"',
+  commitCmd: 'git add prop_drilling_lab.py docs/sessions/session-39/index.html\ngit commit -m "session-39: deliberately experience and document the prop drilling problem"',
   commitQuestion: 'What do MenuSection and NavigationPanel actually have to do with the favorites feature, conceptually?',
   checklist: [
     'CountryExplorer has a working toggle_favorite() method using a set',
@@ -1001,13 +1001,13 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
   ],
   reflection: [
     'If a FOURTH layer were added between App and NavigationPanel, what would have to change, and in how many places?',
-    'Why does this problem specifically hurt the "single responsibility" principle established since Session 12, even though the code technically works correctly?',
+    'Why does this problem specifically hurt the "single responsibility" principle established since Session 16, even though the code technically works correctly?',
     'Can you think of a real Python project structure (not necessarily this one) where you might have already experienced something like this?',
     'Without fully implementing a fix, sketch in words what a "shared reference every layer can reach directly" solution might look like, and what new problem THAT might introduce.',
   ],
   whatBreaks: [
     { title: 'Coupling that resists change', text: 'Every intermediate layer forced to forward an unrelated reference becomes harder to change independently — modifying MenuSection\'s constructor signature now risks breaking the entire favorites feature, even though MenuSection has nothing conceptually to do with favorites.' },
-    { title: 'Architecture review (Session 36)', text: 'This deliberately-felt problem becomes one of the concrete case studies documented in the next session\'s full architecture review — a real, working example of a design tension worth recording and reasoning about.' },
+    { title: 'Architecture review (Session 40)', text: 'This deliberately-felt problem becomes one of the concrete case studies documented in the next session\'s full architecture review — a real, working example of a design tension worth recording and reasoning about.' },
     { title: 'Recognizing this pattern in real projects', text: 'Having genuinely experienced this friction firsthand means you will recognize it immediately in a future real project, rather than accumulating unrelated forwarded parameters without noticing the underlying pattern.' },
   ],
   learnedConcept: 'The prop drilling problem — threading a value or reference through composition layers that do not themselves use it, and why that couples unrelated classes together.',
@@ -1017,7 +1017,7 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
 
 // ── SESSION 36 ─────────────────────────────────────────────────────
 {
-  num: 36,
+  num: 40,
   title: 'Architecture Review',
   nextTitle: 'File I/O Deep Dive',
   subtitle: 'This is the Layer 6 gate. We step back and review every major structural decision made across the whole project, documenting the reasoning the way a real engineering team would.',
@@ -1027,7 +1027,7 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
     'Review the current package structure end to end and assess whether it still makes sense',
     'Identify one thing you would do differently if starting the project over, and explain why',
     'Confirm the full test suite still passes as a final Layer 6 checkpoint',
-    'Explicitly connect the prop drilling problem from Session 35 to a documented architectural tradeoff',
+    'Explicitly connect the prop drilling problem from Session 39 to a documented architectural tradeoff',
   ],
   quiz: [
     {
@@ -1037,22 +1037,22 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
       explain: 'A useful ADR captures not just WHAT was decided, but WHY — including what else was considered and rejected, and what the decision commits the project to going forward. This is what makes it useful to someone (including future-you) revisiting the decision later.',
     },
     {
-      q: 'Why is it valuable to document that Session 24\'s repository pattern was chosen SPECIFICALLY to support later testing (Session 31) and later real-API integration (Session 38), rather than just noting "we added a repository class"?',
+      q: 'Why is it valuable to document that Session 28\'s repository pattern was chosen SPECIFICALLY to support later testing (Session 35) and later real-API integration (Session 42), rather than just noting "we added a repository class"?',
       options: { a: 'It is not valuable; the code speaks for itself', b: 'Recording the REASONING behind a decision preserves context that the code alone cannot show — a future reader (or future you) can understand not just what exists, but why it was built that way, and whether that reasoning still holds', c: 'This information is automatically embedded in Python bytecode', d: 'ADRs are only useful for decisions made by teams larger than one person' },
       answer: 'b',
-      explain: 'This is precisely why Session 24\'s WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.',
+      explain: 'This is precisely why Session 28\'s WHY mattered as much as the WHAT throughout this curriculum — code shows current state, but not the reasoning that led to it. An ADR preserves that reasoning explicitly, for anyone (including future you) trying to understand or reconsider the decision later.',
     },
     {
-      q: 'Reviewing the prop drilling problem from Session 35, what should an honest architecture review document about it?',
+      q: 'Reviewing the prop drilling problem from Session 39, what should an honest architecture review document about it?',
       options: { a: 'Nothing — it was fully solved and no longer matters', b: 'That it is a real, currently-unresolved tradeoff of the current composition structure, worth noting explicitly as a known limitation rather than pretending the project has no rough edges', c: 'That composed objects should never be used again anywhere', d: 'That the problem does not actually exist in Python' },
       answer: 'b',
-      explain: 'A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 35\'s deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.',
+      explain: 'A genuine architecture review does not pretend a project is flawless — documenting a KNOWN, understood limitation (like Session 39\'s deliberately-felt prop drilling problem) honestly is more valuable than silence, since it gives a clear, named starting point for future work.',
     },
     {
-      q: 'Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 32 already ran it after the package reorganization?',
-      options: { a: 'It is redundant and unnecessary busywork', b: 'Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 33-35) also preserved correct behavior, not just the reorganization itself', c: 'pytest results expire after one session and must be re-verified', d: 'This is only for show; the actual result does not matter' },
+      q: 'Why does this session explicitly re-run the full test suite as one of its checkpoints, given that Session 36 already ran it after the package reorganization?',
+      options: { a: 'It is redundant and unnecessary busywork', b: 'Confirming the suite still passes at this final Layer 6 checkpoint verifies that everything since the reorganization (Sessions 37-39) also preserved correct behavior, not just the reorganization itself', c: 'pytest results expire after one session and must be re-verified', d: 'This is only for show; the actual result does not matter' },
       answer: 'b',
-      explain: 'This is Layer 5\'s safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 33, 34, 35, and now 36) gives ongoing confidence that Layer 6\'s reorganization work has been behavior-preserving throughout, not just at one checkpoint.',
+      explain: 'This is Layer 5\'s safety net doing its job continuously, not just once — confirming the suite still passes after EVERY structural session (Sessions 37, 38, 39, and now 40) gives ongoing confidence that Layer 6\'s reorganization work has been behavior-preserving throughout, not just at one checkpoint.',
     },
     {
       q: 'What is the value of explicitly asking "what would I do differently if starting over" as part of this review, rather than only documenting decisions as unquestionably correct?',
@@ -1066,6 +1066,15 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
     {
       h3: 'The ADR format',
       paragraphs: ['An Architecture Decision Record captures a real decision, its context, its reasoning, the alternatives considered, and its ongoing consequences — turning tacit reasoning into a durable, readable record.'],
+      diagram: {
+        caption: 'Four questions turn a silent choice into a durable, readable record future-you can actually use.',
+        boxes: [
+          { label: 'decision', text: 'what we\nchose' },
+          { label: 'why', text: 'the reasoning', accent: true },
+          { label: 'alternatives', text: 'what else we\nconsidered' },
+          { label: 'consequence', text: 'what it commits\nus to' },
+        ],
+      },
       code: `# ADR-001 — Repository Pattern for Data Access
 #
 # Decision: Wrap all data access behind a CountryRepository class with a
@@ -1076,19 +1085,19 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
 # Why: Application logic should not need to know or care whether data comes
 # from an in-memory mock list, a JSON file, or eventually a real API. This
 # separation lets each of those be swapped in independently, and lets tests
-# (Session 31) inject small, controlled fake datasets without touching real
+# (Session 35) inject small, controlled fake datasets without touching real
 # files or the network.
 #
 # Alternatives considered: Letting every part of the app import mock data
 # directly. Rejected — this would tightly couple application logic to one
 # specific data source, and make testing much harder.
 #
-# Consequence: Any future data source (Session 38's real API) must be
+# Consequence: Any future data source (Session 42's real API) must be
 # adapted to return data in the same raw shape the repository expects.`,
     },
     {
       h3: 'Reviewing the current package structure',
-      paragraphs: ['Session 32 split the project into country_explorer/models.py, repository.py, validators.py, formatting.py, and search.py. A genuine review asks: does this grouping still make sense, now that the project has grown further?'],
+      paragraphs: ['Session 36 split the project into country_explorer/models.py, repository.py, validators.py, formatting.py, and search.py. A genuine review asks: does this grouping still make sense, now that the project has grown further?'],
       code: `# country_explorer/
 #   __init__.py     — re-exports the package's public interface
 #   models.py        — Country, CountryExplorer (data + core behavior)
@@ -1103,7 +1112,7 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
     },
     {
       h3: 'Documenting a known, unresolved limitation',
-      paragraphs: ['A genuine review does not pretend the project is flawless — Session 35\'s prop drilling problem is a real, currently open architectural tradeoff worth recording explicitly.'],
+      paragraphs: ['A genuine review does not pretend the project is flawless — Session 39\'s prop drilling problem is a real, currently open architectural tradeoff worth recording explicitly.'],
       code: `# ADR-002 — Prop Drilling in the Composed UI-Layer Classes (UNRESOLVED)
 #
 # Decision: (none yet — documenting a known problem, not a fix)
@@ -1117,11 +1126,11 @@ print(explorer.favorites)  # {'Kenya'} — it worked, but look at the path it to
 # Status: Deliberately left unresolved in this curriculum. A future
 # iteration might explore a shared context/state object or dependency
 # injection to address this, but understanding the problem clearly (as
-# Session 35 did) is prioritized over reaching for a fix prematurely.`,
+# Session 39 did) is prioritized over reaching for a fix prematurely.`,
     },
     {
       h3: 'The final Layer 6 checkpoint: does everything still work?',
-      paragraphs: ['Before considering Layer 6 complete, confirm the full test suite still passes — proving all the structural work across Sessions 32-36 was behavior-preserving throughout, not just at one point in time.'],
+      paragraphs: ['Before considering Layer 6 complete, confirm the full test suite still passes — proving all the structural work across Sessions 36-40 was behavior-preserving throughout, not just at one point in time.'],
     },
   ],
   callout: {
@@ -1151,7 +1160,7 @@ one specific data source.
 
 **Consequence:** Any future data source must be adapted to return data in
 the same raw shape the repository expects.` },
-      { title: 'Add an ADR for the package reorganization from Session 32', body: [], code: `## ADR-002 — Package Structure (models / repository / validators / formatting / search)
+      { title: 'Add an ADR for the package reorganization from Session 36', body: [], code: `## ADR-002 — Package Structure (models / repository / validators / formatting / search)
 
 **Decision:** Split the growing country.py into a country_explorer package
 with focused submodules by responsibility.
@@ -1185,17 +1194,17 @@ problem clearly is prioritized over a premature fix.` },
 
 country_explorer/models.py, repository.py, validators.py, formatting.py,
 and search.py currently reflect distinct responsibilities established in
-Sessions 24, 26, 33, and 34. formatting.py and search.py are each small
+Sessions 28, 30, 37, and 38. formatting.py and search.py are each small
 single-function modules — reasonable for the project's current size, but
 worth reconsidering if either grows to contain several unrelated helpers.` },
-      { title: 'Run the full test suite as the final Layer 6 checkpoint', body: ['Confirm every test from Sessions 27-34 still passes, proving all of Layer 6\'s structural changes were behavior-preserving.'], code: '# pytest -v' },
+      { title: 'Run the full test suite as the final Layer 6 checkpoint', body: ['Confirm every test from Sessions 31-38 still passes, proving all of Layer 6\'s structural changes were behavior-preserving.'], code: '# pytest -v' },
     ],
   },
   filesChanged: [
     { file: 'ARCHITECTURE.md', action: 'Created', why: 'A real architecture decision record documenting resolved and unresolved decisions.' },
-    { file: 'docs/sessions/session-36/index.html', action: 'Created', why: 'This session document — Layer 6 gate.' },
+    { file: 'docs/sessions/session-40/index.html', action: 'Created', why: 'This session document — Layer 6 gate.' },
   ],
-  commitCmd: 'git add ARCHITECTURE.md docs/sessions/session-36/index.html\ngit commit -m "session-36: conduct a full architecture review and document key decisions"',
+  commitCmd: 'git add ARCHITECTURE.md docs/sessions/session-40/index.html\ngit commit -m "session-40: conduct a full architecture review and document key decisions"',
   commitQuestion: 'Why did ADR-003 document a problem without proposing a fix, unlike ADR-001 and ADR-002?',
   checklist: [
     'ARCHITECTURE.md contains at least one fully resolved decision (ADR-001 or ADR-002) with reasoning and alternatives',
@@ -1214,7 +1223,7 @@ worth reconsidering if either grows to contain several unrelated helpers.` },
   whatBreaks: [
     { title: 'Lost institutional knowledge', text: 'Without documented reasoning, future decisions about whether to change the repository pattern, the package structure, or address prop drilling would have to be re-derived from scratch, or worse, made without understanding the original tradeoffs at all.' },
     { title: 'Real-world file and network work (Layer 7)', text: 'The next layer adds real files and a real API — genuinely new external dependencies. Reviewing the architecture now, before adding more complexity, ensures the foundation is well-understood before building further on top of it.' },
-    { title: 'The capstone review (Session 40)', text: 'This session\'s ARCHITECTURE.md becomes a key artifact referenced in the final capstone review, which walks through the entire project end to end.' },
+    { title: 'The capstone review (Session 44)', text: 'This session\'s ARCHITECTURE.md becomes a key artifact referenced in the final capstone review, which walks through the entire project end to end.' },
   ],
   learnedConcept: 'Writing Architecture Decision Records that document not just what was built, but why — including honestly documenting known, unresolved limitations.',
   learnedUnlocks: 'The project now has a durable record of its own reasoning, and Layer 6\'s structural work is confirmed complete and behavior-preserving via a full passing test suite.',
@@ -1223,10 +1232,10 @@ worth reconsidering if either grows to contain several unrelated helpers.` },
 
 // ── SESSION 37 ─────────────────────────────────────────────────────
 {
-  num: 37,
+  num: 41,
   title: 'File I/O Deep Dive',
   nextTitle: 'Calling a Real API with requests',
-  subtitle: 'Layer 7 begins. We go deeper on file handling than Session 25\'s introduction — proper resource management, different file modes, and safely reading large files.',
+  subtitle: 'Layer 7 begins. We go deeper on file handling than Session 29\'s introduction — proper resource management, different file modes, and safely reading large files.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Explain why the with statement is the correct way to open a file, versus manual open()/close()',
@@ -1240,7 +1249,7 @@ worth reconsidering if either grows to contain several unrelated helpers.` },
       q: 'Why is <code>with open(path) as f: ...</code> preferred over manually calling <code>f = open(path)</code> and <code>f.close()</code> afterward?',
       options: { a: 'There is no real difference between the two approaches', b: 'The with statement guarantees the file is closed automatically when the block ends, even if an exception occurs inside it — manual close() calls are easy to skip accidentally, especially when an error happens first', c: 'with is required syntax; manual open/close is not valid Python', d: 'with only works for reading files, never writing' },
       answer: 'b',
-      explain: 'This is a specific application of Session 07\'s error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.',
+      explain: 'This is a specific application of Session 11\'s error-handling philosophy: <code>with</code> guarantees cleanup (closing the file) happens even if an exception is raised partway through — a manual <code>f.close()</code> placed after risky code would be skipped entirely if an exception occurred first.',
     },
     {
       q: 'What is the difference between opening a file with mode "w" versus mode "a"?',
@@ -1255,23 +1264,23 @@ worth reconsidering if either grows to contain several unrelated helpers.` },
       explain: 'For files far larger than available memory, loading the whole thing with <code>f.read()</code> could crash the program or the machine. Iterating line by line processes the file incrementally, using a small, constant amount of memory regardless of the file\'s total size.',
     },
     {
-      q: 'A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 07?',
+      q: 'A file contains text that is not valid UTF-8 (the default assumed encoding). What happens when you try to open() and read it without specifying an encoding, and how would you handle this per Session 11?',
       options: { a: 'Python automatically detects and handles any encoding correctly', b: 'A UnicodeDecodeError is raised; wrapping the read in a try/except UnicodeDecodeError (or specifying the correct encoding explicitly) handles this gracefully', c: 'The file silently reads as an empty string', d: 'This can never happen in Python 3' },
       answer: 'b',
-      explain: 'Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 07\'s try/except, or for specifying the correct encoding explicitly if it is known.',
+      explain: 'Text files can be encoded in different ways (UTF-8, Latin-1, etc.). Reading with the wrong assumed encoding raises <code>UnicodeDecodeError</code> — another case for Session 11\'s try/except, or for specifying the correct encoding explicitly if it is known.',
     },
     {
-      q: 'How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 24\'s original design?',
-      options: { a: 'It requires rewriting get_all() and find_by_region() entirely from scratch', b: 'It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository\'s own methods remain completely unchanged, exactly as Session 24 promised', c: 'CountryExplorer must also be rewritten', d: 'This refactor is not actually possible given the current design' },
+      q: 'How does refactoring CountryRepository to accept a file_path and build itself from it (using with, proper modes, and encoding awareness) relate to Session 28\'s original design?',
+      options: { a: 'It requires rewriting get_all() and find_by_region() entirely from scratch', b: 'It only requires changing HOW raw_data is obtained before being passed to the constructor — the repository\'s own methods remain completely unchanged, exactly as Session 28 promised', c: 'CountryExplorer must also be rewritten', d: 'This refactor is not actually possible given the current design' },
       answer: 'b',
-      explain: 'This is Session 24\'s payoff, delivered a third time (after the mock data and the simple JSON file in Session 25): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.',
+      explain: 'This is Session 28\'s payoff, delivered a third time (after the mock data and the simple JSON file in Session 29): only the data SOURCE changes; get_all() and find_by_region() need zero modification, because they were never coupled to how raw_data was originally obtained.',
     },
   ],
   conceptTitle: 'Robust File Handling',
   sections: [
     {
       h3: 'with — guaranteed cleanup, even on error',
-      paragraphs: ['The with statement (a "context manager") guarantees a file is properly closed when the block ends, whether it ends normally or because of an exception — directly connecting to Session 07\'s finally block concept, but automated and less error-prone.'],
+      paragraphs: ['The with statement (a "context manager") guarantees a file is properly closed when the block ends, whether it ends normally or because of an exception — directly connecting to Session 11\'s finally block concept, but automated and less error-prone.'],
       code: `# Risky — if something raises an exception between open() and close(), the file leaks open
 f = open("countries.json")
 data = f.read()
@@ -1374,9 +1383,9 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
   filesChanged: [
     { file: 'file_io_lab.py', action: 'Created', why: 'Robust file loading with with, modes, encoding handling, and repository construction.' },
     { file: 'load_log.txt', action: 'Generated', why: 'An append-only log of file load attempts.' },
-    { file: 'docs/sessions/session-37/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-41/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add file_io_lab.py load_log.txt docs/sessions/session-37/index.html\ngit commit -m "session-37: robust file I/O with proper resource management and encoding handling"',
+  commitCmd: 'git add file_io_lab.py load_log.txt docs/sessions/session-41/index.html\ngit commit -m "session-41: robust file I/O with proper resource management and encoding handling"',
   commitQuestion: 'Why does with open(...) as f: guarantee the file closes even if json.load(f) raises an exception inside the block?',
   checklist: [
     'load_json_file uses with, not manual open()/close()',
@@ -1389,13 +1398,13 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
   reflection: [
     'Why would using mode "w" instead of "a" for log_load_attempt be a serious bug? What would happen to the log over multiple runs?',
     'What would happen if build_repository_from_file used f.read() to load a truly enormous countries.json instead of relying on json.load\'s own internal handling? Is this a realistic concern for this specific project?',
-    'How does this session\'s with statement connect back to Session 07\'s finally block — are they solving a similar problem in a different way?',
+    'How does this session\'s with statement connect back to Session 11\'s finally block — are they solving a similar problem in a different way?',
     'Why did CountryRepository itself need zero changes for this session\'s new, more robust file-loading logic to work?',
   ],
   whatBreaks: [
     { title: 'Leaked file handles', text: 'Without with, an exception between opening and closing a file leaves it open indefinitely — in a long-running program handling many files, this can exhaust the operating system\'s limit on open file handles, causing mysterious failures far from the actual bug.' },
     { title: 'Overwritten logs', text: 'Using mode "w" instead of "a" for an ongoing log file would silently erase all previous history every time the program restarts — a data-loss bug that is easy to make and often goes unnoticed until the history is actually needed.' },
-    { title: 'Real API responses (Session 38)', text: 'The next session introduces genuinely unpredictable external data over the network — the same resource-management and error-handling discipline from this session (with, specific exception handling) applies directly to handling an HTTP connection safely.' },
+    { title: 'Real API responses (Session 42)', text: 'The next session introduces genuinely unpredictable external data over the network — the same resource-management and error-handling discipline from this session (with, specific exception handling) applies directly to handling an HTTP connection safely.' },
   ],
   learnedConcept: 'Robust file I/O — the with statement for guaranteed cleanup, file modes, line-by-line reading for large files, and encoding-aware error handling.',
   learnedUnlocks: 'The project can now safely and robustly read from real files on disk, handling every realistic failure mode gracefully — the foundation for the real API work in the next session.',
@@ -1404,7 +1413,7 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
 
 // ── SESSION 38 ─────────────────────────────────────────────────────
 {
-  num: 38,
+  num: 42,
   title: 'Calling a Real API with requests',
   nextTitle: 'Handling Errors and Edge Cases Gracefully',
   subtitle: 'We finally connect to a live, real network API — the REST Countries API — using the requests library, replacing our local file with genuinely external, unpredictable data.',
@@ -1414,14 +1423,14 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
     'Read a JSON response body and convert it to Python data structures',
     'Check an HTTP status code before trusting a response',
     'Map a real API\'s response shape onto our existing Country data contract',
-    'Swap CountryRepository\'s data source to a real API with minimal changes, proving Session 24\'s design once more',
+    'Swap CountryRepository\'s data source to a real API with minimal changes, proving Session 28\'s design once more',
   ],
   quiz: [
     {
-      q: 'What does <code>requests.get("https://restcountries.com/v3.1/all")</code> return?',
+      q: 'What does <code>requests.get("https://www.apicountries.com/countries")</code> return?',
       options: { a: 'The raw JSON text as a plain string', b: 'A Response object, which has a .status_code and a .json() method to parse the body', c: 'A Python list directly', d: 'Nothing — you must manually open a socket first' },
       answer: 'b',
-      explain: '<code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 25\'s json.load().',
+      explain: '<code>requests.get()</code> returns a <code>Response</code> object wrapping the HTTP response — you check <code>.status_code</code> to see if it succeeded, and call <code>.json()</code> to parse the body as JSON into Python data structures, similar to Session 29\'s json.load().',
     },
     {
       q: 'What does an HTTP status code of 200 mean, versus 404?',
@@ -1430,22 +1439,22 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
       explain: 'HTTP status codes communicate the outcome of a request. 200 (and the broader 2xx range) means success. 404 means "not found." Checking the status code before calling .json() prevents trying to parse an error page as if it were valid data.',
     },
     {
-      q: 'A real API might return country data with different key names than our own contract (e.g. "name": {"common": "Kenya"} instead of a flat "name": "Kenya"). What is needed to use this data with our existing Country class?',
-      options: { a: 'Country must be completely rewritten to match the API\'s exact shape', b: 'A small adapter/mapping function that transforms the API\'s raw shape into our own contract\'s shape (Session 26), BEFORE constructing Country instances — Country itself needs no changes', c: 'Nothing — Python automatically reconciles differing key names', d: 'The API\'s data cannot be used at all if the shape differs' },
+      q: 'A real API record looks like <code>{"name": "Kenya", "region": "Africa", "population": 54000000, "area": 580367, "flag": "...", "capital": [...], "currencies": {...}, ...}</code> — over 20 fields, most of which our Country class does not want. What is needed to use this data with our existing Country class?',
+      options: { a: 'Country must be rewritten to accept and store all 20+ fields', b: 'A small adapter/mapping function that picks out only the fields our contract needs (Session 30), BEFORE constructing Country instances — Country itself needs no changes', c: 'Nothing — Python automatically ignores extra keys when constructing an object', d: 'The API\'s data cannot be used at all unless it matches our contract exactly' },
       answer: 'b',
-      explain: 'This is exactly Session 26\'s "contract" concept in action: rather than reshaping our whole application around one specific external API\'s shape, we write a small adapter that translates the API\'s raw data into our OWN agreed contract, keeping Country and everything downstream of it completely unchanged.',
+      explain: 'This is exactly Session 30\'s "contract" concept in action: rather than reshaping our whole application around one specific external API\'s wide, over-provided shape, we write a small adapter that trims the raw response down to OUR agreed contract, keeping Country and everything downstream of it completely unchanged.',
     },
     {
-      q: 'Given Session 24\'s repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?',
+      q: 'Given Session 28\'s repository design, what actually needs to change to point CountryRepository at data fetched from a real API instead of a JSON file?',
       options: { a: 'CountryRepository\'s get_all() and find_by_region() methods must be rewritten from scratch', b: 'Only how raw_data is obtained before being passed to the constructor — call requests.get(), adapt the shape, then pass the result in exactly like any other data source; the repository\'s own methods are unchanged', c: 'CountryExplorer must be entirely rebuilt', d: 'This is not possible without a major rewrite' },
       answer: 'b',
-      explain: 'This is the fourth and most significant proof of Session 24\'s design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.',
+      explain: 'This is the fourth and most significant proof of Session 28\'s design (after mock data, a JSON file, and now a real live API) — only the source of raw_data changes; every method built on top of the repository remains completely untouched.',
     },
     {
-      q: 'Why is directly trusting the API response\'s data types without validation (skipping Session 26\'s discipline) risky for a REAL, external API in particular?',
-      options: { a: 'It is not risky; real APIs always return perfectly-typed, reliable data', b: 'An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 26\'s validate_country_record even more important here than it was for your own mock/file data', c: 'Real APIs cannot return incorrect data by definition', d: 'Validation is only needed for locally-generated data' },
+      q: 'Why is directly trusting the API response\'s data types without validation (skipping Session 30\'s discipline) risky for a REAL, external API in particular?',
+      options: { a: 'It is not risky; real APIs always return perfectly-typed, reliable data', b: 'An external API is entirely outside your control — it can change its shape, have bugs, or occasionally return malformed or unexpected data, making Session 30\'s validate_country_record even more important here than it was for your own mock/file data', c: 'Real APIs cannot return incorrect data by definition', d: 'Validation is only needed for locally-generated data' },
       answer: 'b',
-      explain: 'An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 26\'s validation discipline more important here than anywhere else in the project so far.',
+      explain: 'An external, real API is the least trustworthy data source of all — you have zero control over it, and it can change or misbehave without warning. This makes Session 30\'s validation discipline more important here than anywhere else in the project so far.',
     },
   ],
   conceptTitle: 'Calling a Real API',
@@ -1456,7 +1465,7 @@ print(len(missing_repo.get_all()))  # 0 — graceful, no crash` },
       code: `# pip install requests
 import requests
 
-response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
+response = requests.get("https://www.apicountries.com/countries")
 print(response.status_code)  # 200 means success
 
 data = response.json()  # parses the JSON body into Python data structures
@@ -1465,8 +1474,8 @@ print(len(data))          # a few hundred countries`,
     },
     {
       h3: 'Checking the status code before trusting the response',
-      paragraphs: ['Just like Session 07\'s validation-before-use discipline, always check that a request actually succeeded before trying to use its data.'],
-      code: `response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
+      paragraphs: ['Just like Session 11\'s validation-before-use discipline, always check that a request actually succeeded before trying to use its data.'],
+      code: `response = requests.get("https://www.apicountries.com/countries")
 
 if response.status_code == 200:
     data = response.json()
@@ -1483,27 +1492,35 @@ else:
     },
     {
       h3: 'Adapting the API\'s shape to our own contract',
-      paragraphs: ['The REST Countries API returns country data with its own shape — different from our simple flat contract. An adapter function bridges the gap, so Country itself never needs to change.'],
+      paragraphs: [
+        'A real, public API almost never returns exactly the shape you want. This particular API returns over 20 fields per country — area, flags, currencies, calling codes, borders — when our contract only needs three. An adapter function trims the response down to OUR agreed shape, so Country itself never needs to change or grow to accommodate data it does not use.',
+      ],
       code: `def adapt_api_record(raw):
-    # The real API nests the name field, unlike our flat contract
+    # The real API gives us 20+ fields; our contract only wants 3.
+    # .get() with a default protects us if a field is ever missing.
     return {
-        "name": raw["name"]["common"],
+        "name": raw.get("name", "Unknown"),
         "region": raw.get("region", "Unknown"),
         "population": raw.get("population", 0),
     }
 
 api_records = [
-    {"name": {"common": "Kenya"}, "region": "Africa", "population": 54000000},
+    {
+        "name": "Kenya", "region": "Africa", "population": 54000000,
+        "area": 580367, "flag": "🇰🇪", "capital": ["Nairobi"],
+        "currencies": {"KES": {"name": "Kenyan shilling"}},
+    },
 ]
 adapted = [adapt_api_record(r) for r in api_records]
 print(adapted)  # [{'name': 'Kenya', 'region': 'Africa', 'population': 54000000}]
-# Now this matches OUR contract exactly, and Country.from_dict() works unchanged`,
+# Now this matches OUR contract exactly — area, flag, currencies are simply dropped,
+# and Country.from_dict() works completely unchanged`,
     },
     {
       h3: 'Pointing the repository at the real API',
-      paragraphs: ['Session 24\'s design proves itself for the third time: only how raw_data is obtained changes.'],
+      paragraphs: ['Session 28\'s design proves itself for the third time: only how raw_data is obtained changes.'],
       code: `def fetch_countries_from_api():
-    response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
+    response = requests.get("https://www.apicountries.com/countries")
     if response.status_code != 200:
         return []
     return [adapt_api_record(r) for r in response.json()]
@@ -1521,7 +1538,7 @@ print(len(repo.get_all()))  # real, live data — get_all() itself is completely
       { title: 'Create the file and make a basic request, checking the status code', body: [], code: `# real_api_lab.py
 import requests
 
-response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
+response = requests.get("https://www.apicountries.com/countries")
 print("Status code:", response.status_code)
 
 if response.status_code == 200:
@@ -1530,26 +1547,27 @@ if response.status_code == 200:
 else:
     raw_data = []
     print("Request failed")` },
-      { title: 'Inspect one raw record\'s actual shape', body: ['Print the first record and note how it differs from our own contract.'], code: `if raw_data:
+      { title: 'Inspect one raw record\'s actual shape', body: ['Print the first record\'s keys and note how many more fields it has than our own contract.'], code: `if raw_data:
+    print(sorted(raw_data[0].keys()))
     print(raw_data[0])` },
       { title: 'Write adapt_api_record and adapt the whole batch', body: [], code: `def adapt_api_record(raw):
     return {
-        "name": raw["name"]["common"],
+        "name": raw.get("name", "Unknown"),
         "region": raw.get("region", "Unknown"),
         "population": raw.get("population", 0),
     }
 
 adapted_records = [adapt_api_record(r) for r in raw_data]
-print(adapted_records[0])  # now matches our own flat contract` },
+print(adapted_records[0])  # now matches our own flat 3-field contract, extras dropped` },
       { title: 'Build a CountryRepository from the adapted, real data', body: [], code: `from country_explorer import CountryRepository
 
 repo = CountryRepository(raw_data=adapted_records)
 print(len(repo.get_all()))
 print(repo.get_all()[0].summary())` },
-      { title: 'Wrap the whole fetch in a function with status-code handling, and reuse Session 26\'s validation on a sample record', body: [], code: `from country_explorer import validate_country_record
+      { title: 'Wrap the whole fetch in a function with status-code handling, and reuse Session 30\'s validation on a sample record', body: [], code: `from country_explorer import validate_country_record
 
 def fetch_and_build_repository():
-    response = requests.get("https://restcountries.com/v3.1/all?fields=name,region,population")
+    response = requests.get("https://www.apicountries.com/countries")
     if response.status_code != 200:
         print(f"API request failed with status {response.status_code}")
         return CountryRepository(raw_data=[])
@@ -1565,28 +1583,28 @@ if sample:
   },
   filesChanged: [
     { file: 'real_api_lab.py', action: 'Created', why: 'Fetches real data from the REST Countries API, adapts its shape, and builds a working repository.' },
-    { file: 'docs/sessions/session-38/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-42/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add real_api_lab.py docs/sessions/session-38/index.html\ngit commit -m "session-38: fetch real data from the REST Countries API and adapt it to our contract"',
+  commitCmd: 'git add real_api_lab.py docs/sessions/session-42/index.html\ngit commit -m "session-42: fetch real data from the REST Countries API and adapt it to our contract"',
   commitQuestion: 'What did adapt_api_record() have to do, and why did Country and CountryRepository not need any changes at all?',
   checklist: [
     'The API response\'s status_code is checked before parsing its body as JSON',
-    'adapt_api_record() correctly transforms the real API\'s nested name field into our flat contract',
+    'adapt_api_record() correctly trims the real API\'s 20+ fields down to our flat 3-field contract',
     'A working CountryRepository is constructed from real, live, adapted API data',
-    'Session 26\'s validate_country_record() is run against a real adapted record to confirm the contract is honored',
+    'Session 30\'s validate_country_record() is run against a real adapted record to confirm the contract is honored',
     'Country and CountryRepository required zero code changes for this new real data source',
     'I can explain every line without looking at the concept section',
   ],
   reflection: [
-    'Why did the real API\'s raw shape (nested name.common) not require rewriting Country itself? What design decision from earlier sessions made this possible?',
+    'Why did the real API\'s much wider raw shape (20+ fields) not require rewriting Country itself? What design decision from earlier sessions made this possible?',
     'What would happen in your current code if the REST Countries API were temporarily down (status code other than 200)? Is that handled gracefully right now?',
-    'How does adapt_api_record() relate to Session 26\'s concept of a "contract" — is the adapter enforcing the contract, or something else?',
-    'This is the third data source CountryRepository has been pointed at (mock, JSON file, real API). What does that consistency tell you about the value of Session 24\'s original design decision?',
+    'How does adapt_api_record() relate to Session 30\'s concept of a "contract" — is the adapter enforcing the contract, or something else?',
+    'This is the third data source CountryRepository has been pointed at (mock, JSON file, real API). What does that consistency tell you about the value of Session 28\'s original design decision?',
   ],
   whatBreaks: [
     { title: 'Trusting an untrustworthy response', text: 'Skipping the status-code check means a failed request (e.g. a 500 server error, whose body might not even be valid JSON) could crash the program trying to call .json() on something that was never a successful response in the first place.' },
-    { title: 'Graceful degradation (Session 39)', text: 'The next session builds proper loading and error states around exactly this kind of network call — right now, a slow or failed API call has no user-facing feedback at all, which the next session addresses.' },
-    { title: 'The capstone review (Session 40)', text: 'This session is the culmination of Layer 4\'s entire mock-data philosophy: everything built against fake data throughout the project now works, unmodified, against a real, live, external data source.' },
+    { title: 'Graceful degradation (Session 43)', text: 'The next session builds proper loading and error states around exactly this kind of network call — right now, a slow or failed API call has no user-facing feedback at all, which the next session addresses.' },
+    { title: 'The capstone review (Session 44)', text: 'This session is the culmination of Layer 4\'s entire mock-data philosophy: everything built against fake data throughout the project now works, unmodified, against a real, live, external data source.' },
   ],
   learnedConcept: 'Making real HTTP requests with the requests library, checking status codes, and adapting an external API\'s shape to our own internal data contract.',
   learnedUnlocks: 'The Country Explorer can now pull genuinely live, real-world data — proving every layer of the architecture built since Layer 4 was worth the investment.',
@@ -1595,7 +1613,7 @@ if sample:
 
 // ── SESSION 39 ─────────────────────────────────────────────────────
 {
-  num: 39,
+  num: 43,
   title: 'Handling Errors and Edge Cases Gracefully',
   nextTitle: 'Capstone Review',
   subtitle: 'A real network call can fail in many ways: no connection, a timeout, a malformed response. We build proper loading and error feedback instead of a program that silently hangs or crashes.',
@@ -1627,14 +1645,14 @@ if sample:
       explain: 'This mirrors the "loading and error states" concept from the original React course this curriculum is modeled on — any operation that takes time and can fail benefits from explicitly communicating its current state, rather than leaving the user guessing during a silent pause.',
     },
     {
-      q: 'A network call might fail from a connection error, a timeout, OR return a non-200 status code (Session 38). Should all three be handled with a single, generic except Exception?',
-      options: { a: 'Yes — this is the simplest and best approach', b: 'No — per Session 07\'s discipline, each distinct failure mode should be caught and handled specifically, so the user gets an accurate, specific message about what actually went wrong rather than one generic, unhelpful failure', c: 'Only ConnectionError needs specific handling; the rest do not matter', d: 'Python does not allow catching more than one exception type in the same function' },
+      q: 'A network call might fail from a connection error, a timeout, OR return a non-200 status code (Session 42). Should all three be handled with a single, generic except Exception?',
+      options: { a: 'Yes — this is the simplest and best approach', b: 'No — per Session 11\'s discipline, each distinct failure mode should be caught and handled specifically, so the user gets an accurate, specific message about what actually went wrong rather than one generic, unhelpful failure', c: 'Only ConnectionError needs specific handling; the rest do not matter', d: 'Python does not allow catching more than one exception type in the same function' },
       answer: 'b',
-      explain: 'This is Session 07\'s "catch narrowly" principle applied at full scale to a real, multi-failure-mode operation: connection errors, timeouts, and bad status codes are all distinct, specific situations that deserve their own specific handling and messaging, not one catch-all.',
+      explain: 'This is Session 11\'s "catch narrowly" principle applied at full scale to a real, multi-failure-mode operation: connection errors, timeouts, and bad status codes are all distinct, specific situations that deserve their own specific handling and messaging, not one catch-all.',
     },
     {
-      q: 'How does this session\'s error handling relate to everything else built across the curriculum, particularly Sessions 07, 20, 25, and 37?',
-      options: { a: 'It is unrelated new material with no connection to prior sessions', b: 'It is the culmination of the same exception-handling discipline (Session 07), input/response validation (Session 20, 26), and resource-safety practices (Session 25, 37) applied together to the single riskiest, least controllable operation in the whole project: a real network call', c: 'Only Session 07 is relevant; the others do not apply here', d: 'Network calls require an entirely different, unrelated set of skills' },
+      q: 'How does this session\'s error handling relate to everything else built across the curriculum, particularly Sessions 11, 24, 29, and 41?',
+      options: { a: 'It is unrelated new material with no connection to prior sessions', b: 'It is the culmination of the same exception-handling discipline (Session 11), input/response validation (Session 24, 30), and resource-safety practices (Session 29, 41) applied together to the single riskiest, least controllable operation in the whole project: a real network call', c: 'Only Session 11 is relevant; the others do not apply here', d: 'Network calls require an entirely different, unrelated set of skills' },
       answer: 'b',
       explain: 'This session is deliberately a synthesis point — every defensive technique built up over the whole curriculum (specific exception catching, validating untrusted input, safe resource handling) comes together here, applied to the single most unpredictable operation the project performs.',
     },
@@ -1648,7 +1666,7 @@ if sample:
 
 try:
     response = requests.get(
-        "https://restcountries.com/v3.1/all?fields=name,region,population",
+        "https://www.apicountries.com/countries",
         timeout=5,  # give up after 5 seconds
     )
 except requests.exceptions.Timeout:
@@ -1656,13 +1674,13 @@ except requests.exceptions.Timeout:
     },
     {
       h3: 'Catching distinct network failure modes specifically',
-      paragraphs: ['The requests library provides specific exception types for different failure modes — catching them individually (Session 07\'s discipline) gives clearer, more actionable feedback than one generic catch.'],
+      paragraphs: ['The requests library provides specific exception types for different failure modes — catching them individually (Session 11\'s discipline) gives clearer, more actionable feedback than one generic catch.'],
       code: `import requests
 
 def fetch_countries_safely():
     try:
         response = requests.get(
-            "https://restcountries.com/v3.1/all?fields=name,region,population",
+            "https://www.apicountries.com/countries",
             timeout=5,
         )
     except requests.exceptions.ConnectionError:
@@ -1677,7 +1695,7 @@ def fetch_countries_safely():
 
     return response.json(), None`,
       diagram: {
-        caption: 'Each distinct network failure mode gets its own specific handling and message, per Session 07\'s catch-narrowly discipline.',
+        caption: 'Each distinct network failure mode gets its own specific handling and message, per Session 11\'s catch-narrowly discipline.',
         boxes: [
           { label: 'ConnectionError', text: 'no internet' },
           { label: 'Timeout', text: 'too slow', accent: true },
@@ -1702,7 +1720,7 @@ def fetch_countries_safely():
     },
     {
       h3: 'Bringing it all together',
-      paragraphs: ['This combines Session 07\'s exception discipline, Session 26\'s validation, Session 37\'s resource safety, and Session 38\'s API adaptation into one cohesive, defensively-built operation — the most robust piece of code in the entire project.'],
+      paragraphs: ['This combines Session 11\'s exception discipline, Session 30\'s validation, Session 41\'s resource safety, and Session 42\'s API adaptation into one cohesive, defensively-built operation — the most robust piece of code in the entire project.'],
     },
   ],
   callout: null,
@@ -1728,7 +1746,7 @@ def fetch_countries_safely(url, timeout=5):
         return None, f"The API returned an error (status {response.status_code})."
 
     return response.json(), None` },
-      { title: 'Test the happy path with the real API', body: [], code: `data, error = fetch_countries_safely("https://restcountries.com/v3.1/all?fields=name,region,population")
+      { title: 'Test the happy path with the real API', body: [], code: `data, error = fetch_countries_safely("https://www.apicountries.com/countries")
 if error:
     print("Error:", error)
 else:
@@ -1737,15 +1755,15 @@ else:
 print("Error:", error)
 print("Data:", data)` },
       { title: 'Test the error path with an intentionally short timeout', body: ['Use timeout=0.001 against the real API to force a Timeout exception.'], code: `data, error = fetch_countries_safely(
-    "https://restcountries.com/v3.1/all?fields=name,region,population",
+    "https://www.apicountries.com/countries",
     timeout=0.001,
 )
 print("Error:", error)` },
-      { title: 'Combine everything into a full loading pipeline with explicit state messages', body: ['Adapt the data (Session 38), validate a sample (Session 26), and build a CountryRepository, all with explicit loading/success/error feedback.'], code: `from country_explorer import CountryRepository, validate_country_record
+      { title: 'Combine everything into a full loading pipeline with explicit state messages', body: ['Adapt the data (Session 42), validate a sample (Session 30), and build a CountryRepository, all with explicit loading/success/error feedback.'], code: `from country_explorer import CountryRepository, validate_country_record
 
 def adapt_api_record(raw):
     return {
-        "name": raw["name"]["common"],
+        "name": raw.get("name", "Unknown"),
         "region": raw.get("region", "Unknown"),
         "population": raw.get("population", 0),
     }
@@ -1763,15 +1781,15 @@ def load_country_repository(url):
     print(f"Loaded {len(adapted)} countries successfully.")
     return CountryRepository(raw_data=adapted)
 
-repo = load_country_repository("https://restcountries.com/v3.1/all?fields=name,region,population")
+repo = load_country_repository("https://www.apicountries.com/countries")
 print(repo.get_all()[0].summary())` },
     ],
   },
   filesChanged: [
     { file: 'robust_loading_lab.py', action: 'Created', why: 'A fully robust, defensively-built network loading pipeline with three-state feedback.' },
-    { file: 'docs/sessions/session-39/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-43/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add robust_loading_lab.py docs/sessions/session-39/index.html\ngit commit -m "session-39: add timeouts, specific error handling, and loading/success/error feedback"',
+  commitCmd: 'git add robust_loading_lab.py docs/sessions/session-43/index.html\ngit commit -m "session-43: add timeouts, specific error handling, and loading/success/error feedback"',
   commitQuestion: 'Why does fetch_countries_safely catch ConnectionError, Timeout, and RequestException separately instead of one generic except Exception?',
   checklist: [
     'Every requests.get() call specifies an explicit timeout',
@@ -1790,7 +1808,7 @@ print(repo.get_all()[0].summary())` },
   whatBreaks: [
     { title: 'A frozen, unresponsive program', text: 'Without a timeout, one unresponsive server could freeze the entire program indefinitely — completely unacceptable for anything meant to be used interactively or run unattended.' },
     { title: 'Confusing, generic failures', text: 'Catching everything with one generic except Exception (rather than the specific types this session teaches) means a user experiencing a connection problem sees the exact same unhelpful message as someone hitting a slow timeout or a server error — making the problem much harder to diagnose or explain to someone else.' },
-    { title: 'The capstone review (Session 40)', text: 'This session\'s robust loading pipeline is the single piece of code most representative of everything the curriculum has built toward — the final session reviews it, and everything else, end to end.' },
+    { title: 'The capstone review (Session 44)', text: 'This session\'s robust loading pipeline is the single piece of code most representative of everything the curriculum has built toward — the final session reviews it, and everything else, end to end.' },
   ],
   learnedConcept: 'Robust network error handling — timeouts, specific exception types for distinct failure modes, and explicit loading/success/error state communication.',
   learnedUnlocks: 'The Country Explorer can now handle real-world network unreliability gracefully, giving clear feedback instead of hanging or crashing — the last new skill before the capstone review.',
@@ -1799,9 +1817,9 @@ print(repo.get_all()[0].summary())` },
 
 // ── SESSION 40 ─────────────────────────────────────────────────────
 {
-  num: 40,
+  num: 44,
   title: 'Capstone Review',
-  nextTitle: null,
+  nextTitle: 'Decorators',
   subtitle: 'The final session. We walk through everything built across all seven layers, confirm the full test suite passes end to end, and reflect on the complete journey from a single dictionary to a real, tested, documented application.',
   timeEstimate: '35–40 minutes',
   objectives: [
@@ -1819,10 +1837,10 @@ print(repo.get_all()[0].summary())` },
       explain: 'This is the full data flow built up across the entire curriculum: raw data enters through the repository (fetched and validated), gets converted into proper objects, gets composed into a working collection, and finally gets formatted for display — each step depending on the layer before it.',
     },
     {
-      q: 'Why does Country.grow_population() (Session 10/17) still work correctly even after the project was reorganized into a package (Session 32), extracted into shared utilities (Sessions 33-34), and pointed at three different data sources (Sessions 23, 25, 38)?',
+      q: 'Why does Country.grow_population() (Session 14/21) still work correctly even after the project was reorganized into a package (Session 36), extracted into shared utilities (Sessions 37-38), and pointed at three different data sources (Sessions 27, 29, 42)?',
       options: { a: 'It does not still work; it required rewriting at every one of those stages', b: 'Because each of those changes respected the boundaries and contracts established earlier — the method\'s own logic never depended on package location, data source, or any other structural detail outside itself', c: 'Python automatically fixes any breakage caused by refactoring', d: 'grow_population happens to be a coincidentally trivial method with no real logic' },
       answer: 'b',
-      explain: 'This is the deepest lesson of the whole curriculum: well-designed logic, properly encapsulated behind clear contracts (Session 11, 24, 26), remains stable even as everything AROUND it — file structure, data source, calling code — changes dramatically over time.',
+      explain: 'This is the deepest lesson of the whole curriculum: well-designed logic, properly encapsulated behind clear contracts (Session 15, 28, 30), remains stable even as everything AROUND it — file structure, data source, calling code — changes dramatically over time.',
     },
     {
       q: 'Why does this capstone review explicitly re-run the full test suite one final time, given it has already been run after nearly every structural session since Layer 5?',
@@ -1831,16 +1849,16 @@ print(repo.get_all()[0].summary())` },
       explain: 'This is the ultimate proof-of-concept for the discipline built throughout Layer 5 and beyond: a test suite maintained consistently across dozens of structural changes provides genuine, verifiable confidence that the ENTIRE system still works correctly together — not just each part in isolation.',
     },
     {
-      q: 'Looking back at Sessions 08, 16, and 23 (each a concept-only session establishing a new mental model before implementation) — why did the curriculum repeatedly use this same two-step pattern?',
+      q: 'Looking back at Sessions 12, 20, and 27 (each a concept-only session establishing a new mental model before implementation) — why did the curriculum repeatedly use this same two-step pattern?',
       options: { a: 'It was accidental repetition with no deliberate design', b: 'Understanding WHY a practice exists and what problem it solves produces more durable, transferable knowledge than memorizing HOW to use a tool without understanding its purpose — a pattern applied consistently to classes, state, and mock data alike', c: 'Concept-only sessions were only used because there was not enough new syntax to teach otherwise', d: 'This pattern has no relationship to how the sessions building on top of them turned out' },
       answer: 'b',
       explain: 'This consistent pedagogical choice — concept before implementation — is why, at the end of this curriculum, you should be able to explain WHY each major pattern (classes, state, mock data, testing) exists, not just recite its syntax, which is a direct measure of the durable, transferable understanding this course aimed for.',
     },
     {
-      q: 'The Layer 4 mock-data philosophy (Session 23) promised that application code would not need to change regardless of the data source. How many DIFFERENT data sources was CountryRepository actually pointed at across the curriculum, with zero changes to its own methods?',
-      options: { a: 'One — only the original mock data', b: 'Three — the in-memory mock list (Session 23), a real JSON file on disk (Session 25/37), and a real live network API (Session 38) — all with the exact same get_all()/find_by_region()/search() methods, unmodified', c: 'This promise was never actually fulfilled anywhere in the curriculum', d: 'Zero — CountryRepository was rewritten from scratch for each new source' },
+      q: 'The Layer 4 mock-data philosophy (Session 27) promised that application code would not need to change regardless of the data source. How many DIFFERENT data sources was CountryRepository actually pointed at across the curriculum, with zero changes to its own methods?',
+      options: { a: 'One — only the original mock data', b: 'Three — the in-memory mock list (Session 27), a real JSON file on disk (Session 29/41), and a real live network API (Session 42) — all with the exact same get_all()/find_by_region()/search() methods, unmodified', c: 'This promise was never actually fulfilled anywhere in the curriculum', d: 'Zero — CountryRepository was rewritten from scratch for each new source' },
       answer: 'b',
-      explain: 'This is worth recognizing explicitly at the end of the curriculum: Session 24\'s repository design was validated not once, but three separate times, against three genuinely different kinds of data sources — direct, concrete proof that the architectural investment paid off.',
+      explain: 'This is worth recognizing explicitly at the end of the curriculum: Session 28\'s repository design was validated not once, but three separate times, against three genuinely different kinds of data sources — direct, concrete proof that the architectural investment paid off.',
     },
   ],
   conceptTitle: 'The Complete Country Explorer — End to End',
@@ -1861,26 +1879,26 @@ countries = repo.get_all()   # uses Country.from_dict() internally
 explorer = CountryExplorer(countries=countries)
 
 # 4. Layer 3 — computed properties derive values safely, with no drift risk
-print(explorer.total_population)   # @property, Session 22
+print(explorer.total_population)   # @property, Session 26
 
 # 5. Layer 6 — shared utilities used consistently across the whole app
-results = explorer.search("ken")   # search.py, Session 34
+results = explorer.search("ken")   # search.py, Session 38
 
 # 6. Layer 2 — each instance formats itself for display
 for c in results:
-    print(c.summary())             # formatting.py, Session 33`,
+    print(c.summary())             # formatting.py, Session 37`,
     },
     {
       h3: 'Why the architecture held up under change',
       paragraphs: [
-        'Country.summary() and grow_population() were written in Sessions 09-10. By Session 40, the project has been reorganized into a package, had shared logic extracted into utilities, and been pointed at three completely different data sources. Yet those original methods never needed to change — because they were built on clear, explicit contracts (Session 11) from the very beginning.',
+        'Country.summary() and grow_population() were written in Sessions 13-14. By Session 44, the project has been reorganized into a package, had shared logic extracted into utilities, and been pointed at three completely different data sources. Yet those original methods never needed to change — because they were built on clear, explicit contracts (Session 15) from the very beginning.',
       ],
       diagram: {
         caption: 'Everything around the core logic changed dramatically over 40 sessions. The core logic itself, protected by clear contracts, did not need to.',
         boxes: [
           { label: 'data source', text: 'changed 3x' },
           { label: 'package structure', text: 'reorganized', accent: true },
-          { label: 'Country\'s own methods', text: 'unchanged\nsince Session 10' },
+          { label: 'Country\'s own methods', text: 'unchanged\nsince Session 14' },
         ],
       },
     },
@@ -1893,7 +1911,7 @@ for c in results:
     {
       h3: 'The consistent teaching pattern, revisited',
       paragraphs: [
-        'Sessions 08, 16, and 23 each paused to build a mental model — why classes exist, what state actually means, why mock data matters — before the following session introduced concrete implementation. This deliberate pattern is why the concepts in this curriculum should feel understood, not memorized.',
+        'Sessions 12, 20, and 27 each paused to build a mental model — why classes exist, what state actually means, why mock data matters — before the following session introduced concrete implementation. This deliberate pattern is why the concepts in this curriculum should feel understood, not memorized.',
       ],
     },
   ],
@@ -1906,17 +1924,17 @@ for c in results:
     objective: 'Run the complete final test suite, trace the full architecture end to end in writing, and add a final whole-project retrospective to ARCHITECTURE.md.',
     whatYouBuild: 'A final update to <code>ARCHITECTURE.md</code>, plus a verification pass across the whole project.',
     steps: [
-      { title: 'Run the complete test suite one final time', body: ['Every test written since Session 28 should be discovered and pass together.'], code: '# pytest -v' },
+      { title: 'Run the complete test suite one final time', body: ['Every test written since Session 32 should be discovered and pass together.'], code: '# pytest -v' },
       { title: 'Write a short, complete trace of the data flow, end to end', body: ['In a new file or as a comment block, trace: where does data start (Layer 4), how does it become objects (Layer 2), how is it composed and searched (Layer 2/3/6), and how does it reach a printed summary (Layer 2)?'], code: `# capstone_trace.py — a written trace of the full pipeline, in your own words
 #
-# 1. CountryRepository fetches raw data (mock / file / real API — Session 23-25, 38)
-# 2. Repository validates and converts raw dicts into Country instances (Session 14, 26)
-# 3. CountryExplorer composes the working collection (Session 12)
-# 4. Computed properties (Session 22) and the shared search utility (Session 34)
+# 1. CountryRepository fetches raw data (mock / file / real API — Session 27-29, 42)
+# 2. Repository validates and converts raw dicts into Country instances (Session 18, 30)
+# 3. CountryExplorer composes the working collection (Session 16)
+# 4. Computed properties (Session 26) and the shared search utility (Session 38)
 #    operate on that collection safely
-# 5. Country.summary() (Session 10, using formatting.py from Session 33) produces
+# 5. Country.summary() (Session 14, using formatting.py from Session 37) produces
 #    the final, human-readable output` },
-      { title: 'Add a final whole-project retrospective to ARCHITECTURE.md', body: ['Answer explicitly: what would you do differently starting over, and what part of the architecture are you most confident in?'], code: `## Final Retrospective (Session 40)
+      { title: 'Add a final whole-project retrospective to ARCHITECTURE.md', body: ['Answer explicitly: what would you do differently starting over, and what part of the architecture are you most confident in?'], code: `## Final Retrospective (Session 44)
 
 **Most confident in:** The repository pattern (ADR-001) — proven across three
 genuinely different data sources with zero changes to its own methods.
@@ -1925,10 +1943,10 @@ genuinely different data sources with zero changes to its own methods.
 problem from ADR-003, or the size/granularity of formatting.py and search.py]
 
 **Biggest lesson:** [your own honest answer, in your own words]` },
-      { title: 'Verify the complete pipeline runs end to end against the real API', body: ['Using everything built since Session 38-39, load real data, search it, and print summaries — the actual, complete, working Country Explorer.'], code: `from country_explorer import CountryRepository
+      { title: 'Verify the complete pipeline runs end to end against the real API', body: ['Using everything built since Session 42-43, load real data, search it, and print summaries — the actual, complete, working Country Explorer.'], code: `from country_explorer import CountryRepository
 
-# reuse load_country_repository from Session 39
-repo = load_country_repository("https://restcountries.com/v3.1/all?fields=name,region,population")
+# reuse load_country_repository from Session 43
+repo = load_country_repository("https://www.apicountries.com/countries")
 results = repo.search("ken")
 for c in results:
     print(c.summary())` },
@@ -1938,12 +1956,12 @@ for c in results:
   filesChanged: [
     { file: 'capstone_trace.py', action: 'Created', why: 'A written, end-to-end trace of the complete application architecture.' },
     { file: 'ARCHITECTURE.md', action: 'Modified', why: 'Final whole-project retrospective added.' },
-    { file: 'docs/sessions/session-40/index.html', action: 'Created', why: 'This session document — the capstone.' },
+    { file: 'docs/sessions/session-44/index.html', action: 'Created', why: 'This session document — the capstone.' },
   ],
-  commitCmd: 'git add capstone_trace.py ARCHITECTURE.md docs/sessions/session-40/index.html\ngit commit -m "session-40: capstone review — full architecture trace, final retrospective, complete test verification"',
+  commitCmd: 'git add capstone_trace.py ARCHITECTURE.md docs/sessions/session-44/index.html\ngit commit -m "session-44: capstone review — full architecture trace, final retrospective, complete test verification"',
   commitQuestion: 'Looking back across all 40 sessions, which single architectural decision are you most confident paid off, and why?',
   checklist: [
-    'The complete test suite (Sessions 27-39) is run one final time and passes entirely',
+    'The complete test suite (Sessions 31-43) is run one final time and passes entirely',
     'A written trace correctly describes the full data flow from raw source to displayed summary',
     'ARCHITECTURE.md contains a final, honest whole-project retrospective',
     'The complete pipeline is verified running end to end against the real REST Countries API',
@@ -1954,14 +1972,14 @@ for c in results:
     'Of the 40 sessions in this curriculum, which single session changed how you think about writing Python the most? Why that one specifically?',
     'The curriculum used the same "concept session, then implementation session" pattern three times (Sessions 8/9, 16/17, 23/24). Now that you have completed it, was that pattern actually helpful, or would you have preferred combining concept and implementation together?',
     'If you were to extend this project with an eighth layer, what real-world capability would you add, and which earlier layer\'s foundation would it depend on most?',
-    'Compare your understanding of Python now to your understanding after only Session 07 (the end of Layer 1). What is the single biggest difference?',
+    'Compare your understanding of Python now to your understanding after only Session 11 (the end of Layer 1). What is the single biggest difference?',
   ],
   whatBreaks: [
-    { title: 'Nothing — this is the capstone', text: 'There is no next session to set up. This final review exists to confirm the whole system holds together, and to consolidate 40 sessions of individually-learned concepts into one coherent understanding of how a real Python application is actually built, tested, and maintained.' },
+    { title: 'Nothing — this is the capstone of the core curriculum', text: 'This final review exists to confirm the whole system holds together, and to consolidate 44 sessions of individually-learned concepts into one coherent understanding of how a real Python application is actually built, tested, and maintained. Layer 8 that follows is optional, bonus material — this capstone is the natural, complete end point on its own.' },
   ],
-  learnedConcept: 'A complete, end-to-end understanding of the Country Explorer application — how all seven layers connect, and why the architectural decisions made along the way held up under real change.',
-  learnedUnlocks: 'You have completed Python Fundamentals: from a single dictionary in Session 01 to a tested, documented, real-API-integrated application in Session 40.',
-  nextTeaser: null,
+  learnedConcept: 'A complete, end-to-end understanding of the Country Explorer application — how all seven core layers connect, and why the architectural decisions made along the way held up under real change.',
+  learnedUnlocks: 'You have completed the core Python Fundamentals curriculum: from a single dictionary in Session 05 to a tested, documented, real-API-integrated application in Session 44.',
+  nextTeaser: 'Optional: three bonus sessions await in Layer 8, closing a few remaining intermediate-level gaps — decorators, generators and context managers, and packaging a project for real distribution.',
 },
 
 ];

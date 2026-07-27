@@ -2,13 +2,13 @@ module.exports = [
 
 // ── SESSION 21 ─────────────────────────────────────────────────────
 {
-  num: 21,
+  num: 25,
   title: 'Passing State Between Functions',
   nextTitle: 'Computed Properties',
   subtitle: 'When several functions need to work with the same evolving state, where should that state actually live? This session is about ownership, not just passing values around.',
   timeEstimate: '35–40 minutes',
   objectives: [
-    'Pass an object between functions and confirm mutations are visible to all of them (Session 01\'s reference lesson, applied)',
+    'Pass an object between functions and confirm mutations are visible to all of them (Session 05\'s reference lesson, applied)',
     'Decide when a function should own state versus receive it from a caller',
     'Move a piece of state up to a shared "owner" when multiple functions need to coordinate around it',
     'Explain the risk of two different functions each keeping their own separate copy of what should be one shared piece of state',
@@ -17,9 +17,9 @@ module.exports = [
   quiz: [
     {
       q: 'A function search(term) filters a CountryExplorer\'s countries and a separate function stats() reports on the SAME explorer. If both take explorer as a parameter, do they see the same countries?',
-      options: { a: 'No — each function gets its own independent copy', b: 'Yes — since explorer is passed by reference (Session 01), both functions see the exact same underlying data, including any changes made by either one', c: 'Only if they are called in the same file', d: 'Only if explorer is a global variable' },
+      options: { a: 'No — each function gets its own independent copy', b: 'Yes — since explorer is passed by reference (Session 05), both functions see the exact same underlying data, including any changes made by either one', c: 'Only if they are called in the same file', d: 'Only if explorer is a global variable' },
       answer: 'b',
-      explain: 'Passing an object as a function argument passes the reference, not a copy (Session 01). Both functions operate on the same shared CountryExplorer, so any state change either one makes is visible to the other.',
+      explain: 'Passing an object as a function argument passes the reference, not a copy (Session 05). Both functions operate on the same shared CountryExplorer, so any state change either one makes is visible to the other.',
     },
     {
       q: 'Two separate functions each maintain their own local list of "loaded countries" instead of sharing one CountryExplorer. What risk does this create?',
@@ -37,7 +37,7 @@ module.exports = [
       q: 'You refactor a menu\'s ad-hoc local variables into a small MenuState class that owns them. What is the main benefit?',
       options: { a: 'It makes the code run faster', b: 'It gives the previously scattered local state a clear owner and a name, and lets you pass ONE object between functions instead of many loose variables', c: 'It removes the need for functions entirely', d: 'It automatically adds input validation' },
       answer: 'b',
-      explain: 'This mirrors Session 08\'s original motivation for classes: bundling related data (and now, shared state) under one name is easier to pass around and reason about than several independent loose variables that must always be kept in sync manually.',
+      explain: 'This mirrors Session 12\'s original motivation for classes: bundling related data (and now, shared state) under one name is easier to pass around and reason about than several independent loose variables that must always be kept in sync manually.',
     },
     {
       q: 'If a function receives an object and reassigns the LOCAL parameter name to point at a brand new object (e.g. explorer = CountryExplorer(countries=[])), does that affect the caller\'s original object?',
@@ -50,7 +50,7 @@ module.exports = [
   sections: [
     {
       h3: 'Shared state is visible everywhere it is referenced',
-      paragraphs: ['This session applies Session 01\'s reference lesson directly to whole objects passed between functions — a natural consequence of everything already learned, formalized as a design principle.'],
+      paragraphs: ['This session applies Session 05\'s reference lesson directly to whole objects passed between functions — a natural consequence of everything already learned, formalized as a design principle.'],
       code: `class CountryExplorer:
     def __init__(self, countries):
         self.countries = countries
@@ -117,7 +117,7 @@ class Loader:
     },
     {
       h3: 'Bundling scattered local state into a small owning class',
-      paragraphs: ['When a menu (Session 18) accumulates several loose local variables that all need to travel together between functions, wrapping them in a small class — exactly like Session 08\'s original motivation — gives them a clear, shared owner.'],
+      paragraphs: ['When a menu (Session 22) accumulates several loose local variables that all need to travel together between functions, wrapping them in a small class — exactly like Session 12\'s original motivation — gives them a clear, shared owner.'],
     },
   ],
   callout: null,
@@ -177,9 +177,9 @@ report(state)  # sees the search performed by run_search, because it's the SAME 
   },
   filesChanged: [
     { file: 'state_passing_lab.py', action: 'Created', why: 'Demonstrates shared reference passing, mutation vs reassignment, and a MenuState owner class.' },
-    { file: 'docs/sessions/session-21/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-25/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add state_passing_lab.py docs/sessions/session-21/index.html\ngit commit -m "session-21: pass shared state explicitly between functions via one owning object"',
+  commitCmd: 'git add state_passing_lab.py docs/sessions/session-25/index.html\ngit commit -m "session-25: pass shared state explicitly between functions via one owning object"',
   commitQuestion: 'Why did reassign_explorer have no visible effect on explorer.countries, while mutate_countries did?',
   checklist: [
     'search() and add_sample_data() both operate on the same passed-in explorer instance',
@@ -193,12 +193,12 @@ report(state)  # sees the search performed by run_search, because it's the SAME 
     'Before running the lab, did you correctly predict that reassign_explorer would have no effect on the caller\'s explorer? What was your reasoning?',
     'Can you think of a case in the earlier labs where you accidentally relied on (or were confused by) this exact mutation-vs-reassignment distinction?',
     'Why does bundling loose local variables into MenuState make it easier to eventually add a THIRD function that also needs last_search_term?',
-    'How does this session\'s "one owner, passed explicitly" principle compare to Session 16\'s warning about uncontrolled shared mutation? Are they in tension, or do they work together?',
+    'How does this session\'s "one owner, passed explicitly" principle compare to Session 20\'s warning about uncontrolled shared mutation? Are they in tension, or do they work together?',
   ],
   whatBreaks: [
     { title: 'Silently divided state', text: 'If two parts of a program each keep their own copy of what should be one shared truth, they will eventually disagree — one shows stale data while the other has the update, and there is no way to tell which one is "correct" without deep debugging.' },
-    { title: 'Computed properties (Session 22)', text: 'The next session (the Layer 3 gate) asks: should a value be stored as state, or computed fresh each time from other state? Understanding who owns data and how it flows is required before that question makes sense.' },
-    { title: 'Sharing data with a repository (Layer 4)', text: 'Session 24 introduces a CountryRepository that many different parts of the application share explicitly, exactly the pattern this session establishes.' },
+    { title: 'Computed properties (Session 26)', text: 'The next session (the Layer 3 gate) asks: should a value be stored as state, or computed fresh each time from other state? Understanding who owns data and how it flows is required before that question makes sense.' },
+    { title: 'Sharing data with a repository (Layer 4)', text: 'Session 28 introduces a CountryRepository that many different parts of the application share explicitly, exactly the pattern this session establishes.' },
   ],
   learnedConcept: 'State ownership between functions — reference sharing, the mutation vs reassignment distinction, and bundling scattered local state into one owning object.',
   learnedUnlocks: 'You can now design who owns a given piece of state and pass it deliberately, instead of accidentally creating divided, out-of-sync copies.',
@@ -207,7 +207,7 @@ report(state)  # sees the search performed by run_search, because it's the SAME 
 
 // ── SESSION 22 ─────────────────────────────────────────────────────
 {
-  num: 22,
+  num: 26,
   title: 'Computed Properties',
   nextTitle: 'Why Mock Data Matters',
   subtitle: 'This is the Layer 3 gate. Some values should never be stored as their own piece of state — they should be computed fresh, every time, from state that already exists.',
@@ -319,7 +319,7 @@ print(explorer.total_population)   # 87000000 — freshly computed every access`
     },
     {
       h3: 'When NOT to use a computed property',
-      paragraphs: ['A value that is genuinely independent — not derivable from other state — belongs as real, stored state. population itself cannot be computed from anything else; it IS the source of truth, changed only through the controlled methods from Session 17.'],
+      paragraphs: ['A value that is genuinely independent — not derivable from other state — belongs as real, stored state. population itself cannot be computed from anything else; it IS the source of truth, changed only through the controlled methods from Session 21.'],
     },
   ],
   callout: {
@@ -371,14 +371,14 @@ print("Stored population (WRONG):", risky.total_population)   # still 54000000` 
 explorer.add_country(Country(name="Peru", region="Americas", population=33000000))
 print("Computed count:", explorer.country_count)          # 2 — correct
 print("Computed population:", explorer.total_population)  # 87000000 — correct` },
-      { title: 'Write a one-sentence comment for each attribute in CountryExplorer classifying it as STATE or COMPUTED', body: ['Connect this back to Session 16\'s STATE/FIXED annotation exercise.'] },
+      { title: 'Write a one-sentence comment for each attribute in CountryExplorer classifying it as STATE or COMPUTED', body: ['Connect this back to Session 20\'s STATE/FIXED annotation exercise.'] },
     ],
   },
   filesChanged: [
     { file: 'computed_lab.py', action: 'Created', why: 'Contrasts stored, driftable derived state with correct @property-based computed values.' },
-    { file: 'docs/sessions/session-22/index.html', action: 'Created', why: 'This session document — Layer 3 gate.' },
+    { file: 'docs/sessions/session-26/index.html', action: 'Created', why: 'This session document — Layer 3 gate.' },
   ],
-  commitCmd: 'git add computed_lab.py docs/sessions/session-22/index.html\ngit commit -m "session-22: replace stored derived state with @property computed values"',
+  commitCmd: 'git add computed_lab.py docs/sessions/session-26/index.html\ngit commit -m "session-26: replace stored derived state with @property computed values"',
   commitQuestion: 'Why can country_count as a @property never drift out of sync, while the stored version could?',
   checklist: [
     'RiskyExplorer demonstrates the drift bug concretely, with printed WRONG values',
@@ -396,8 +396,8 @@ print("Computed population:", explorer.total_population)  # 87000000 — correct
   ],
   whatBreaks: [
     { title: 'The classic "shows the wrong total" bug', text: 'Nearly every "the displayed total doesn\'t match the actual list" bug in real software comes from exactly this pattern: a stored derived value that one code path forgot to update. This session directly immunizes you against it.' },
-    { title: 'The mock data layer (Layer 4)', text: 'Session 24\'s CountryRepository will expose several computed values (counts, filtered subsets) — built entirely on the @property pattern from this session.' },
-    { title: 'Testing derived values (Layer 5)', text: 'Tests that assert on a count or a total (Session 29) are far simpler to write correctly against a computed property, since there is no separate "did you remember to update the stored copy" step to also test.' },
+    { title: 'The mock data layer (Layer 4)', text: 'Session 28\'s CountryRepository will expose several computed values (counts, filtered subsets) — built entirely on the @property pattern from this session.' },
+    { title: 'Testing derived values (Layer 5)', text: 'Tests that assert on a count or a total (Session 33) are far simpler to write correctly against a computed property, since there is no separate "did you remember to update the stored copy" step to also test.' },
   ],
   learnedConcept: 'Computed properties — eliminating redundant stored state by deriving values on demand with @property, guaranteeing they can never drift out of sync.',
   learnedUnlocks: 'You can now correctly judge whether a value is genuine state or a derived computation — the last Layer 3 skill before we start working with real (mock) data sources.',
@@ -406,7 +406,7 @@ print("Computed population:", explorer.total_population)  # 87000000 — correct
 
 // ── SESSION 23 ─────────────────────────────────────────────────────
 {
-  num: 23,
+  num: 27,
   title: 'Why Mock Data Matters',
   nextTitle: 'Building a Data Access Layer',
   subtitle: 'Layer 4 begins. Real teams build and test an application\'s logic long before a real data source is ready. We formalize working against fake data on purpose.',
@@ -445,7 +445,7 @@ print("Computed population:", explorer.total_population)  # 87000000 — correct
     },
     {
       q: 'Why is this session mostly concept, with a comparatively small lab?',
-      options: { a: 'Because mock data has no real syntax of its own', b: 'Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 24', c: 'Because this topic is not actually important', d: 'Because writing mock data always requires an external library' },
+      options: { a: 'Because mock data has no real syntax of its own', b: 'Because — like Sessions 08 and 16 — the important part is understanding WHY this practice exists before building the concrete data-access layer around it in Session 28', c: 'Because this topic is not actually important', d: 'Because writing mock data always requires an external library' },
       answer: 'b',
       explain: 'This follows the same pattern established twice before in the curriculum: build the mental model first (why does this practice exist, what problem does it solve), then build the concrete implementation in the following session.',
     },
@@ -492,13 +492,13 @@ print(explorer.total_population)   # works completely offline, no network needed
     {
       h3: 'The risk: silent divergence from the real shape',
       paragraphs: [
-        'Mock data is only useful if it honestly represents what real data will look like. If the mock and the eventual real source disagree on key names or types, everything built "safely" against the mock will break the moment real data arrives — an important risk to keep in mind as we build Session 26\'s formal data contracts.',
+        'Mock data is only useful if it honestly represents what real data will look like. If the mock and the eventual real source disagree on key names or types, everything built "safely" against the mock will break the moment real data arrives — an important risk to keep in mind as we build Session 30\'s formal data contracts.',
       ],
     },
   ],
   callout: {
     title: 'Concept session:',
-    text: 'Like Sessions 08 and 16, the goal here is understanding the practice before building the concrete implementation in Session 24.',
+    text: 'Like Sessions 08 and 16, the goal here is understanding the practice before building the concrete implementation in Session 28.',
   },
   closing: null,
   lab: {
@@ -553,15 +553,15 @@ print(explorer.country_count)
 print(explorer.total_population)` },
       { title: 'Print every summary, proving the whole application works with zero network access', body: [], code: `for c in explorer.countries:
     print(c.summary())` },
-      { title: 'Write a comment describing the contract: what keys and types every record must have', body: ['This will become Session 26\'s formal data contract — write it in plain English for now.'] },
+      { title: 'Write a comment describing the contract: what keys and types every record must have', body: ['This will become Session 30\'s formal data contract — write it in plain English for now.'] },
     ],
   },
   filesChanged: [
     { file: 'mock_countries.py', action: 'Created', why: 'A mock dataset of 10 countries mirroring the eventual real API shape.' },
     { file: 'explore_offline.py', action: 'Created', why: 'Builds the full explorer entirely from mock data, no network needed.' },
-    { file: 'docs/sessions/session-23/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-27/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add mock_countries.py explore_offline.py docs/sessions/session-23/index.html\ngit commit -m "session-23: build a mock dataset and run the explorer entirely offline"',
+  commitCmd: 'git add mock_countries.py explore_offline.py docs/sessions/session-27/index.html\ngit commit -m "session-27: build a mock dataset and run the explorer entirely offline"',
   commitQuestion: 'What is the "contract" mock_countries.py is honoring, and why does that matter for a future real data source?',
   checklist: [
     'mock_countries.py contains at least 10 records with varied regions and populations',
@@ -579,8 +579,8 @@ print(explorer.total_population)` },
   ],
   whatBreaks: [
     { title: 'Blocked development', text: 'Without mock data, building and testing the Country Explorer\'s logic would be blocked on a real, possibly unfinished or unreliable API being available — an unnecessary dependency for logic that has nothing to do with networking.' },
-    { title: 'The data access layer (Session 24)', text: 'The next session wraps this mock data behind a proper repository interface — the mock dataset from this session becomes the first "backend" that repository talks to.' },
-    { title: 'Data contracts (Session 26)', text: 'The plain-English contract description written in this lab becomes the formal, enforced contract in Session 26, using type hints and dataclasses.' },
+    { title: 'The data access layer (Session 28)', text: 'The next session wraps this mock data behind a proper repository interface — the mock dataset from this session becomes the first "backend" that repository talks to.' },
+    { title: 'Data contracts (Session 30)', text: 'The plain-English contract description written in this lab becomes the formal, enforced contract in Session 30, using type hints and dataclasses.' },
   ],
   learnedConcept: 'Deliberately building and testing against mock data that mirrors a real data source\'s shape, and the concept of a data contract.',
   learnedUnlocks: 'The entire application can now be developed and demonstrated completely independent of any real, external data source.',
@@ -589,7 +589,7 @@ print(explorer.total_population)` },
 
 // ── SESSION 24 ─────────────────────────────────────────────────────
 {
-  num: 24,
+  num: 28,
   title: 'Building a Data Access Layer',
   nextTitle: 'Working with JSON Files',
   subtitle: 'Application logic should not know or care where its data comes from. We build a CountryRepository that hides that detail behind a clean, swappable interface.',
@@ -599,7 +599,7 @@ print(explorer.total_population)` },
     'Explain the separation of concerns between "fetching/storing data" and "using data"',
     'Swap a repository\'s underlying data source without changing any code that calls it',
     'Explain why this separation makes the application easier to test later (Layer 5 preview)',
-    'Distinguish a repository\'s methods from CountryExplorer\'s methods from Session 12',
+    'Distinguish a repository\'s methods from CountryExplorer\'s methods from Session 16',
   ],
   quiz: [
     {
@@ -615,22 +615,22 @@ print(explorer.total_population)` },
       explain: 'This is the entire point of the abstraction: as long as get_all() keeps returning the same shape of data, its INTERNAL implementation can change freely (mock list, JSON file, real API) without touching a single line of code anywhere else.',
     },
     {
-      q: 'What is the difference between CountryRepository (this session) and CountryExplorer (Session 12)?',
+      q: 'What is the difference between CountryRepository (this session) and CountryExplorer (Session 16)?',
       options: { a: 'They are the same thing with different names', b: 'CountryRepository\'s job is fetching/providing raw data; CountryExplorer\'s job is holding and operating on a working set of Country objects for the application to use — different responsibilities', c: 'CountryRepository is only used for testing', d: 'CountryExplorer must always be built from a CountryRepository' },
       answer: 'b',
-      explain: 'These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 12.',
+      explain: 'These are two different responsibilities: the repository knows how to get data; the explorer knows how to work with a set of already-fetched Country instances. Keeping them separate (rather than one giant class doing both) is exactly the kind of focused-class discipline from Session 16.',
     },
     {
       q: 'Why does this separation make future testing (Layer 5) easier?',
       options: { a: 'It has no effect on testing', b: 'A test can construct a repository around a small, controlled fake dataset instead of a real (or even the standard mock) data source, testing application logic in complete isolation', c: 'Testing requires deleting the repository entirely', d: 'Repositories automatically generate their own tests' },
       answer: 'b',
-      explain: 'Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 31 (testing the data layer) will do.',
+      explain: 'Because the repository is a clean, swappable interface, a test can construct one around exactly the tiny, controlled dataset it needs for that specific test — this is precisely what Session 35 (testing the data layer) will do.',
     },
     {
       q: 'Which method belongs on CountryRepository rather than CountryExplorer, given the separation of concerns described in this session?',
       options: { a: 'total_population — a computed property over a working set of countries', b: 'get_all() — fetching the full raw list of country records from wherever they are stored', c: 'add_country() — mutating a working, in-memory collection', d: 'summaries() — formatting each country for display' },
       answer: 'b',
-      explain: 'get_all() is about FETCHING data from its source — the repository\'s job. The others are about operating on an already-fetched, in-memory working set — the explorer\'s job, as established in Session 12 and 22.',
+      explain: 'get_all() is about FETCHING data from its source — the repository\'s job. The others are about operating on an already-fetched, in-memory working set — the explorer\'s job, as established in Session 16 and 22.',
     },
   ],
   conceptTitle: 'A Data Access Layer',
@@ -675,14 +675,14 @@ print(len(all_countries))`,
 # Today: built around mock data
 repo = CountryRepository(raw_data=MOCK_COUNTRIES)
 
-# Later (Session 25/38): built around a completely different source —
+# Later (Session 29/42): built around a completely different source —
 # but repo.get_all() everywhere else in the app doesn't change at all
 # repo = CountryRepository(raw_data=load_from_json_file("countries.json"))
 # repo = CountryRepository(raw_data=fetch_from_real_api())`,
     },
     {
       h3: 'Repository vs Explorer — two different responsibilities',
-      paragraphs: ['CountryRepository fetches raw data and hands back Country instances. CountryExplorer (Session 12) takes an already-fetched working set and offers operations over it. Keeping these responsibilities separate mirrors Session 12\'s "small, focused classes" principle.'],
+      paragraphs: ['CountryRepository fetches raw data and hands back Country instances. CountryExplorer (Session 16) takes an already-fetched working set and offers operations over it. Keeping these responsibilities separate mirrors Session 16\'s "small, focused classes" principle.'],
       code: `repo = CountryRepository(raw_data=MOCK_COUNTRIES)
 explorer = CountryExplorer(countries=repo.get_all())  # repository FETCHES, explorer OPERATES
 
@@ -693,7 +693,7 @@ print(repo.find_by_region("Africa"))     # repository's job — a different kind
   callout: null,
   closing: null,
   lab: {
-    objective: 'Build a CountryRepository wrapping the mock data from Session 23, and connect it to a CountryExplorer built entirely through the repository\'s interface.',
+    objective: 'Build a CountryRepository wrapping the mock data from Session 27, and connect it to a CountryExplorer built entirely through the repository\'s interface.',
     whatYouBuild: 'A file called <code>repository_lab.py</code>.',
     steps: [
       { title: 'Create the file with Country and the mock import', body: [], code: `# repository_lab.py
@@ -743,9 +743,9 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
   },
   filesChanged: [
     { file: 'repository_lab.py', action: 'Created', why: 'A CountryRepository wrapping mock data, connected to a CountryExplorer.' },
-    { file: 'docs/sessions/session-24/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-28/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add repository_lab.py docs/sessions/session-24/index.html\ngit commit -m "session-24: build a CountryRepository data-access layer around the mock data"',
+  commitCmd: 'git add repository_lab.py docs/sessions/session-28/index.html\ngit commit -m "session-28: build a CountryRepository data-access layer around the mock data"',
   commitQuestion: 'Why did CountryExplorer not need any changes when I swapped in a completely different repository?',
   checklist: [
     'CountryRepository exposes get_all() and find_by_region(), both returning Country instances',
@@ -758,13 +758,13 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
   reflection: [
     'Why does CountryExplorer never import mock_countries directly? What would be lost if it did?',
     'What would you need to change in CountryRepository (and ONLY in CountryRepository) to eventually read from a real file on disk instead of an in-memory list?',
-    'How does this repository pattern relate to the "contract" concept introduced in Session 23?',
+    'How does this repository pattern relate to the "contract" concept introduced in Session 27?',
     'Can you think of a method that seems ambiguous — could reasonably belong to either the repository or the explorer? How would you decide?',
   ],
   whatBreaks: [
     { title: 'Data-source lock-in', text: 'Without this separation, every part of the application that needs country data would import MOCK_COUNTRIES directly — meaning switching to a real API later would require hunting down and rewriting every single one of those import sites instead of changing one class.' },
-    { title: 'Working with real files (Session 25)', text: 'The next session teaches reading actual JSON files from disk — that new data source slots directly into CountryRepository\'s constructor, exactly because of the separation built this session.' },
-    { title: 'Testing in isolation (Layer 5)', text: 'Session 31 tests the data layer by building a CountryRepository around a small, controlled fake dataset — only possible because the repository\'s constructor accepts any data source, a direct consequence of this session\'s design.' },
+    { title: 'Working with real files (Session 29)', text: 'The next session teaches reading actual JSON files from disk — that new data source slots directly into CountryRepository\'s constructor, exactly because of the separation built this session.' },
+    { title: 'Testing in isolation (Layer 5)', text: 'Session 35 tests the data layer by building a CountryRepository around a small, controlled fake dataset — only possible because the repository\'s constructor accepts any data source, a direct consequence of this session\'s design.' },
   ],
   learnedConcept: 'A data-access layer (repository) that hides the true source of data behind a stable interface, cleanly separated from the application logic that uses it.',
   learnedUnlocks: 'The application\'s data source can now change completely — mock, file, real API — without touching any of the code that consumes it.',
@@ -773,7 +773,7 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
 
 // ── SESSION 25 ─────────────────────────────────────────────────────
 {
-  num: 25,
+  num: 29,
   title: 'Working with JSON Files',
   nextTitle: 'Designing Data Contracts',
   subtitle: 'We give the repository its first genuinely external data source: a real JSON file on disk, read and parsed with Python\'s standard library.',
@@ -781,7 +781,7 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
   objectives: [
     'Write Python data to a JSON file with the json module',
     'Read and parse a JSON file back into Python data structures',
-    'Handle a missing or malformed JSON file gracefully, reusing Session 07\'s error handling',
+    'Handle a missing or malformed JSON file gracefully, reusing Session 11\'s error handling',
     'Point CountryRepository at a JSON file instead of the in-memory mock list',
     'Explain the relationship between JSON types and Python types',
   ],
@@ -796,13 +796,13 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
       q: 'After reading a JSON file with <code>data = json.load(f)</code>, what Python type does a JSON array of objects become?',
       options: { a: 'A tuple of tuples', b: 'A list of dictionaries', c: 'A single dictionary with numeric keys', d: 'A string containing the raw JSON text' },
       answer: 'b',
-      explain: 'A JSON array becomes a Python list; a JSON object becomes a Python dict. A JSON array of objects — exactly our country records — becomes a list of dicts, the exact shape we have been using since Session 02.',
+      explain: 'A JSON array becomes a Python list; a JSON object becomes a Python dict. A JSON array of objects — exactly our country records — becomes a list of dicts, the exact shape we have been using since Session 06.',
     },
     {
       q: 'What happens if you call <code>json.load(f)</code> on a file that does not exist?',
       options: { a: 'It returns an empty list', b: 'It raises a FileNotFoundError, before json.load even gets a chance to run', c: 'It silently creates the file', d: 'It returns None' },
       answer: 'b',
-      explain: 'Attempting to open a nonexistent file for reading raises <code>FileNotFoundError</code> at the <code>open()</code> call itself — this needs a try/except (Session 07) if the file might legitimately be missing.',
+      explain: 'Attempting to open a nonexistent file for reading raises <code>FileNotFoundError</code> at the <code>open()</code> call itself — this needs a try/except (Session 11) if the file might legitimately be missing.',
     },
     {
       q: 'What happens if the file exists but contains invalid JSON text, e.g. a typo\'d bracket?',
@@ -811,10 +811,10 @@ print(tiny_explorer.total_population)  # 900000 — same CountryExplorer class, 
       explain: 'Malformed JSON raises <code>json.JSONDecodeError</code> (a subclass of <code>ValueError</code>) — another case where try/except lets you fail gracefully with a clear message instead of crashing the whole program.',
     },
     {
-      q: 'To point CountryRepository at a JSON file instead of MOCK_COUNTRIES, what needs to change, given Session 24\'s design?',
+      q: 'To point CountryRepository at a JSON file instead of MOCK_COUNTRIES, what needs to change, given Session 28\'s design?',
       options: { a: 'Every method inside CountryRepository must be rewritten', b: 'Only the raw_data passed into CountryRepository\'s constructor changes — from MOCK_COUNTRIES to the result of reading and parsing the JSON file; get_all() and find_by_region() need no changes at all', c: 'CountryExplorer needs to be rewritten', d: 'The whole application needs restructuring' },
       answer: 'b',
-      explain: 'This is exactly the payoff promised in Session 24: as long as the JSON file\'s parsed content is still a list of dicts with the same keys, only the CONSTRUCTOR argument changes — the repository\'s methods and everything downstream of it are completely untouched.',
+      explain: 'This is exactly the payoff promised in Session 28: as long as the JSON file\'s parsed content is still a list of dicts with the same keys, only the CONSTRUCTOR argument changes — the repository\'s methods and everything downstream of it are completely untouched.',
     },
   ],
   conceptTitle: 'Reading and Writing JSON',
@@ -832,7 +832,7 @@ with open("countries.json", "w") as f:
     },
     {
       h3: 'Reading it back',
-      paragraphs: ['json.load() parses a JSON file directly back into native Python data structures — a JSON array of objects becomes exactly the list of dicts we\'ve used since Session 02.'],
+      paragraphs: ['json.load() parses a JSON file directly back into native Python data structures — a JSON array of objects becomes exactly the list of dicts we\'ve used since Session 06.'],
       code: `import json
 
 with open("countries.json") as f:
@@ -842,7 +842,7 @@ print(type(data))        # <class 'list'>
 print(type(data[0]))     # <class 'dict'>
 print(data[0]["name"])   # "Kenya"`,
       diagram: {
-        caption: 'JSON arrays become Python lists; JSON objects become Python dicts — the same shape we\'ve worked with since Session 02.',
+        caption: 'JSON arrays become Python lists; JSON objects become Python dicts — the same shape we\'ve worked with since Session 06.',
         boxes: [
           { label: 'JSON array', text: '[ {...}, {...} ]' },
           { label: 'Python', text: 'list of dicts', accent: true },
@@ -851,7 +851,7 @@ print(data[0]["name"])   # "Kenya"`,
     },
     {
       h3: 'Handling a missing or malformed file',
-      paragraphs: ['A file that does not exist, or contains invalid JSON, raises an exception — Session 07\'s discipline applies directly.'],
+      paragraphs: ['A file that does not exist, or contains invalid JSON, raises an exception — Session 11\'s discipline applies directly.'],
       code: `import json
 
 def load_countries_file(path):
@@ -870,7 +870,7 @@ data_missing = load_countries_file("does_not_exist.json")  # handled gracefully`
     },
     {
       h3: 'Pointing the repository at the file — nothing else changes',
-      paragraphs: ['This is Session 24\'s payoff, delivered: only the constructor argument changes, because get_all() was never coupled to WHERE raw_data came from.'],
+      paragraphs: ['This is Session 28\'s payoff, delivered: only the constructor argument changes, because get_all() was never coupled to WHERE raw_data came from.'],
       code: `class CountryRepository:
     def __init__(self, raw_data):
         self._raw_data = raw_data
@@ -939,9 +939,9 @@ print(len(repo.get_all()))` },
   filesChanged: [
     { file: 'json_lab.py', action: 'Created', why: 'Writes and reads countries.json, with graceful error handling, feeding CountryRepository.' },
     { file: 'countries.json', action: 'Generated', why: 'The mock data, now persisted as a real file on disk.' },
-    { file: 'docs/sessions/session-25/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-29/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add json_lab.py countries.json docs/sessions/session-25/index.html\ngit commit -m "session-25: read and write JSON files, point the repository at real disk data"',
+  commitCmd: 'git add json_lab.py countries.json docs/sessions/session-29/index.html\ngit commit -m "session-29: read and write JSON files, point the repository at real disk data"',
   commitQuestion: 'What two things could go wrong when reading countries.json, and how did I handle each one?',
   checklist: [
     'countries.json is generated with json.dump and is valid, readable JSON',
@@ -955,12 +955,12 @@ print(len(repo.get_all()))` },
     'Why does json.load() raise a FileNotFoundError from the open() call rather than from json.load() itself? What does that tell you about the order operations happen in?',
     'What is the practical difference for a user between your program silently falling back to an empty list versus crashing entirely, when countries.json is missing?',
     'Manually break countries.json (delete a bracket) and confirm your JSONDecodeError handling catches it. What did the error message tell you?',
-    'How does this session prove Session 24\'s repository design was worth the extra structure, now that a genuinely different data source exists?',
+    'How does this session prove Session 28\'s repository design was worth the extra structure, now that a genuinely different data source exists?',
   ],
   whatBreaks: [
     { title: 'Crash on missing or corrupt files', text: 'Without explicit handling for FileNotFoundError and JSONDecodeError, a single missing file or one bad edit to countries.json would crash the entire application on startup instead of degrading gracefully.' },
-    { title: 'Data contracts (Session 26)', text: 'Nothing currently verifies that every record read from the JSON file actually has the right keys and types — a JSON file is just text, and can contain anything. The next session formalizes exactly this check.' },
-    { title: 'Real APIs (Session 38)', text: 'Reading and parsing JSON is exactly what a real API response requires too — this session\'s json.load() pattern is nearly identical to how you will parse an HTTP response body in Layer 7.' },
+    { title: 'Data contracts (Session 30)', text: 'Nothing currently verifies that every record read from the JSON file actually has the right keys and types — a JSON file is just text, and can contain anything. The next session formalizes exactly this check.' },
+    { title: 'Real APIs (Session 42)', text: 'Reading and parsing JSON is exactly what a real API response requires too — this session\'s json.load() pattern is nearly identical to how you will parse an HTTP response body in Layer 7.' },
   ],
   learnedConcept: 'Reading and writing JSON files with the json module, handling missing/malformed files gracefully, and pointing a repository at a real disk-based data source.',
   learnedUnlocks: 'The application now has a genuinely persistent, external data source — the first real (if still local) data the repository pattern was built to support.',
@@ -969,17 +969,17 @@ print(len(repo.get_all()))` },
 
 // ── SESSION 26 ─────────────────────────────────────────────────────
 {
-  num: 26,
+  num: 30,
   title: 'Designing Data Contracts',
   nextTitle: 'Why We Test and What to Test',
-  subtitle: 'This is the Layer 4 gate. We formalize the informal "contract" from Session 23 using type hints and dataclasses, catching shape mismatches automatically instead of hoping.',
+  subtitle: 'This is the Layer 4 gate. We formalize the informal "contract" from Session 27 using type hints and dataclasses, catching shape mismatches automatically instead of hoping.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Add type hints to a function or method signature',
     'Define a class using @dataclass instead of a hand-written __init__',
     'Explain what type hints do and do not enforce at runtime',
     'Validate that a raw dict matches the expected contract before constructing an instance from it',
-    'Compare the dataclass version of Country to the hand-written version from Session 09',
+    'Compare the dataclass version of Country to the hand-written version from Session 13',
   ],
   quiz: [
     {
@@ -989,28 +989,28 @@ print(len(repo.get_all()))` },
       explain: 'This is a critical fact about Python type hints: they are NOT enforced by the language at runtime. They document intent and enable external tools (editors, mypy) to catch mismatches ahead of time, but summary(42) would still run and likely fail inside the function body instead.',
     },
     {
-      q: 'What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 09?',
+      q: 'What does @dataclass generate automatically for a class, compared to the hand-written __init__ from Session 13?',
       options: { a: 'Nothing — it is purely decorative', b: 'An __init__ method (and a few other dunder methods, including __eq__) based on the class\'s declared fields, without you writing them by hand', c: 'A complete REST API for the class', d: 'Automatic file I/O for the class' },
       answer: 'b',
-      explain: '@dataclass inspects the class\'s field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 09, while still producing an ordinary class.',
+      explain: '@dataclass inspects the class\'s field declarations and auto-generates __init__ (and by default __eq__, among others) — eliminating the repetitive self.x = x boilerplate from Session 13, while still producing an ordinary class.',
     },
     {
-      q: 'Given <code>@dataclass\\nclass Country:\\n    name: str\\n    region: str\\n    population: int</code>, does this dataclass automatically give you the Session 15 value-based __eq__ behavior?',
-      options: { a: 'No — you still must write __eq__ by hand', b: 'Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 15 built manually', c: 'Only if you also inherit from a base class', d: 'Dataclasses do not support equality comparison at all' },
+      q: 'Given <code>@dataclass\\nclass Country:\\n    name: str\\n    region: str\\n    population: int</code>, does this dataclass automatically give you the Session 19 value-based __eq__ behavior?',
+      options: { a: 'No — you still must write __eq__ by hand', b: 'Yes — @dataclass generates a field-by-field __eq__ by default, exactly the behavior Session 19 built manually', c: 'Only if you also inherit from a base class', d: 'Dataclasses do not support equality comparison at all' },
       answer: 'b',
-      explain: 'This directly connects back to Session 15: a dataclass\'s default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.',
+      explain: 'This directly connects back to Session 19: a dataclass\'s default __eq__ compares all declared fields, exactly like the __eq__ we wrote by hand — but generated automatically, for free.',
     },
     {
       q: 'A raw dict from a JSON file is missing the "population" key. If you call Country(**raw_dict) where Country is a dataclass requiring population, what happens?',
       options: { a: 'population silently defaults to 0', b: 'A TypeError is raised for the missing required argument — dataclasses still require all non-default fields at construction, just like a hand-written __init__ would', c: 'The dataclass ignores the missing field entirely', d: 'It raises a KeyError instead of a TypeError' },
       answer: 'b',
-      explain: 'Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 09\'s hand-written version. This is why validating BEFORE construction (as this session\'s lab does) is still necessary for a clear, early error.',
+      explain: 'Dataclasses generate a real __init__ under the hood — type hints alone do not enforce anything, but the generated constructor still requires every field without a default, exactly like Session 13\'s hand-written version. This is why validating BEFORE construction (as this session\'s lab does) is still necessary for a clear, early error.',
     },
     {
       q: 'Why would you validate that a raw dict has the correct keys and roughly correct types BEFORE passing it into a dataclass constructor, given that type hints are not enforced at runtime?',
       options: { a: 'There is no reason to; the dataclass handles this automatically', b: 'Because type hints alone will not catch a wrong VALUE type (e.g. population as a string "fifty-four-million"); explicit validation catches contract violations early and with a clear message, rather than a confusing failure downstream', c: 'Validation is only useful for strings, never numbers', d: 'Dataclasses reject bad types automatically at construction time' },
       answer: 'b',
-      explain: 'Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 20\'s discipline) catches this immediately, with a clear message.',
+      explain: 'Since Python does not enforce type hints, a dataclass will happily accept <code>Country(name="Kenya", region="Africa", population="fifty-four-million")</code> without complaint at construction time — the bug would only surface later, confusingly, wherever population is actually used as a number. Explicit validation (Session 24\'s discipline) catches this immediately, with a clear message.',
     },
   ],
   conceptTitle: 'Data Contracts with Type Hints and Dataclasses',
@@ -1031,7 +1031,7 @@ print(summary(42))
     {
       h3: '@dataclass — less boilerplate, same underlying class',
       paragraphs: [
-        'A dataclass declares its fields with type hints, and Python auto-generates __init__ (and by default, __eq__) from those declarations — directly replacing Session 09\'s hand-written boilerplate.',
+        'A dataclass declares its fields with type hints, and Python auto-generates __init__ (and by default, __eq__) from those declarations — directly replacing Session 13\'s hand-written boilerplate.',
       ],
       code: `from dataclasses import dataclass
 
@@ -1047,7 +1047,7 @@ print(kenya.population)  # 54000000
 
 peru1 = Country(name="Peru", region="Americas", population=33000000)
 peru2 = Country(name="Peru", region="Americas", population=33000000)
-print(peru1 == peru2)  # True — free, field-by-field equality (Session 15's manual __eq__, generated automatically)`,
+print(peru1 == peru2)  # True — free, field-by-field equality (Session 19's manual __eq__, generated automatically)`,
       diagram: {
         caption: '@dataclass reads the field declarations and generates __init__ and __eq__ for you — the same result as Sessions 09 and 15, without the boilerplate.',
         boxes: [
@@ -1068,7 +1068,7 @@ print(bad.population)  # "fifty-four-million" — a string, accepted without com
     {
       h3: 'Validating the contract before construction',
       paragraphs: [
-        'Combining Session 20\'s validation discipline with the dataclass gives us both convenience AND safety: check the raw dict\'s shape and types explicitly, THEN construct.',
+        'Combining Session 24\'s validation discipline with the dataclass gives us both convenience AND safety: check the raw dict\'s shape and types explicitly, THEN construct.',
       ],
       code: `def validate_country_record(data):
     required = {"name": str, "region": str, "population": int}
@@ -1104,7 +1104,7 @@ class Country:
 
     def summary(self):
         return f"{self.name} ({self.region}): pop. {self.population:,}"` },
-      { title: 'Prove the free __eq__ works, connecting back to Session 15', body: [], code: `a = Country(name="Kenya", region="Africa", population=54000000)
+      { title: 'Prove the free __eq__ works, connecting back to Session 19', body: [], code: `a = Country(name="Kenya", region="Africa", population=54000000)
 b = Country(name="Kenya", region="Africa", population=54000000)
 print("a == b:", a == b)   # True — generated automatically
 print("a is b:", a is b)   # False — still separate objects` },
@@ -1119,7 +1119,7 @@ print(type(bad.population))        # <class 'str'> — the hint did nothing to s
         if not isinstance(data[key], expected_type):
             raise TypeError(f"{key} must be {expected_type.__name__}, got {type(data[key]).__name__}")
     return data` },
-      { title: 'Validate a batch of raw records, including a deliberately bad one, and skip failures gracefully', body: ['Reuse the Session 14 pattern of catching per-record errors without losing the whole batch.'], code: `raw_records = [
+      { title: 'Validate a batch of raw records, including a deliberately bad one, and skip failures gracefully', body: ['Reuse the Session 18 pattern of catching per-record errors without losing the whole batch.'], code: `raw_records = [
     {"name": "Kenya", "region": "Africa", "population": 54000000},
     {"name": "Bad Data", "region": "Africa", "population": "fifty"},  # wrong type
     {"name": "Also Bad", "region": "Africa"},                          # missing key
@@ -1138,9 +1138,9 @@ print("Valid countries:", len(good_countries))` },
   },
   filesChanged: [
     { file: 'contracts_lab.py', action: 'Created', why: 'Converts Country to a dataclass and adds explicit contract validation for raw records.' },
-    { file: 'docs/sessions/session-26/index.html', action: 'Created', why: 'This session document — Layer 4 gate.' },
+    { file: 'docs/sessions/session-30/index.html', action: 'Created', why: 'This session document — Layer 4 gate.' },
   ],
-  commitCmd: 'git add contracts_lab.py docs/sessions/session-26/index.html\ngit commit -m "session-26: formalize the country data contract with dataclasses and explicit validation"',
+  commitCmd: 'git add contracts_lab.py docs/sessions/session-30/index.html\ngit commit -m "session-30: formalize the country data contract with dataclasses and explicit validation"',
   commitQuestion: 'Why does population="not a number" get accepted by Country(**data) even though population is type-hinted as int?',
   checklist: [
     'Country is defined using @dataclass with type-hinted fields',
@@ -1152,13 +1152,13 @@ print("Valid countries:", len(good_countries))` },
   ],
   reflection: [
     'Why do you think Python chose not to enforce type hints at runtime by default, when other languages do enforce their type systems? What tradeoff does this represent?',
-    'How does validate_country_record() in this session compare to validate_population() from Session 20? What is genuinely new versus what is the same idea applied at a different level?',
+    'How does validate_country_record() in this session compare to validate_population() from Session 24? What is genuinely new versus what is the same idea applied at a different level?',
     'If a real API someday returns population as a string like "54000000" (valid digits, but the wrong TYPE), would your current validate_country_record() accept or reject it? Is that the right behavior?',
-    'How does the dataclass\'s generated __init__ relate back to everything you learned about __init__ and self in Session 09?',
+    'How does the dataclass\'s generated __init__ relate back to everything you learned about __init__ and self in Session 13?',
   ],
   whatBreaks: [
     { title: 'Trusting type hints as enforcement', text: 'A very common and dangerous misconception is believing type hints protect you from bad data at runtime. This session should permanently correct that — hints inform tooling and readers, but only explicit validation actually protects your program.' },
-    { title: 'Testing the data layer (Session 31)', text: 'The tests you write for CountryRepository in Layer 5 will directly exercise validate_country_record() with both good and bad records — this session\'s validation logic IS what gets tested.' },
+    { title: 'Testing the data layer (Session 35)', text: 'The tests you write for CountryRepository in Layer 5 will directly exercise validate_country_record() with both good and bad records — this session\'s validation logic IS what gets tested.' },
     { title: 'Real, messy API data (Layer 7)', text: 'A real external API is far less trustworthy than your own mock or JSON data — it can return unexpected types, missing fields, or malformed values at any time. The validation discipline from this session is what stands between that chaos and your application crashing.' },
   ],
   learnedConcept: 'Type hints as documentation (not enforcement), dataclasses as a concise way to define structured classes, and explicit validation as the real protection at data boundaries.',
@@ -1168,7 +1168,7 @@ print("Valid countries:", len(good_countries))` },
 
 // ── SESSION 27 ─────────────────────────────────────────────────────
 {
-  num: 27,
+  num: 31,
   title: 'Why We Test and What to Test',
   nextTitle: 'Setting Up pytest',
   subtitle: 'Layer 5 begins. Every session so far has been manually verified by reading printed output. Automated tests replace that manual check with something repeatable and reliable.',
@@ -1178,7 +1178,7 @@ print("Valid countries:", len(good_countries))` },
     'Distinguish testing behavior (what a function/method does) from testing implementation (how it does it)',
     'Identify which parts of the Country Explorer project are worth testing first',
     'Explain what NOT to test, and why over-testing has real costs',
-    'Recognise this as a concept-only session, mirroring Sessions 08, 16, and 23',
+    'Recognise this as a concept-only session, mirroring Sessions 12, 20, and 27',
   ],
   quiz: [
     {
@@ -1206,8 +1206,8 @@ print("Valid countries:", len(good_countries))` },
       explain: 'Every test is code you have to maintain. A test for a trivial getter with no logic (like a plain @property returning self._x) rarely catches a real bug and just adds upkeep cost — testing effort is best spent where logic (and therefore risk of a bug) actually exists.',
     },
     {
-      q: 'Why does this session, like Sessions 08/16/23 before it, contain very little new syntax?',
-      options: { a: 'Because testing does not require any special tools', b: 'Because — following the established pattern of this curriculum — understanding WHY and WHAT to test is a judgment call that must be built before the concrete tool (pytest, Session 28) is introduced', c: 'Because this topic will never require code', d: 'Because testing is not actually important enough to cover' },
+      q: 'Why does this session, like Sessions 12/20/27 before it, contain very little new syntax?',
+      options: { a: 'Because testing does not require any special tools', b: 'Because — following the established pattern of this curriculum — understanding WHY and WHAT to test is a judgment call that must be built before the concrete tool (pytest, Session 32) is introduced', c: 'Because this topic will never require code', d: 'Because testing is not actually important enough to cover' },
       answer: 'b',
       explain: 'This is the fourth time the curriculum uses this structure: concept first (why does this practice exist, what should it apply to), then the concrete implementation next session — building genuine understanding rather than memorized tool usage.',
     },
@@ -1217,7 +1217,7 @@ print("Valid countries:", len(good_countries))` },
     {
       h3: 'Manual verification does not scale',
       paragraphs: [
-        'Every lab so far ended the same way: run the file, read the printed output, and eyeball whether it looks right. This works for a single session, but it does not scale — nothing stops a later change from silently breaking Session 10\'s summary() while you are focused on Session 24\'s repository.',
+        'Every lab so far ended the same way: run the file, read the printed output, and eyeball whether it looks right. This works for a single session, but it does not scale — nothing stops a later change from silently breaking Session 14\'s summary() while you are focused on Session 28\'s repository.',
       ],
     },
     {
@@ -1264,7 +1264,7 @@ def test_grow_population_increases_value():
   ],
   callout: {
     title: 'Concept session:',
-    text: 'Like Sessions 08, 16, and 23 before it, the goal today is a correct mental model of testing before Session 28 introduces the concrete pytest tool.',
+    text: 'Like Sessions 12, 20, and 27 before it, the goal today is a correct mental model of testing before Session 32 introduces the concrete pytest tool.',
   },
   closing: null,
   lab: {
@@ -1312,7 +1312,7 @@ def test_grow_population_rejects_negative():
 test_grow_population_increases_value()
 test_grow_population_rejects_negative()
 print("grow_population tests passed")` },
-      { title: 'Write a check for set_population preserving previous valid state on rejection', body: ['This directly verifies the guarantee established in Session 17.'], code: `def test_set_population_rejects_and_preserves_state():
+      { title: 'Write a check for set_population preserving previous valid state on rejection', body: ['This directly verifies the guarantee established in Session 21.'], code: `def test_set_population_rejects_and_preserves_state():
     k = Country(name="Kenya", region="Africa", population=54000000)
     try:
         k.set_population(-1)
@@ -1328,9 +1328,9 @@ print("set_population rejection test passed")` },
   },
   filesChanged: [
     { file: 'manual_tests.py', action: 'Created', why: 'Plain assert-based behavior checks for the highest-value logic in the project.' },
-    { file: 'docs/sessions/session-27/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-31/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add manual_tests.py docs/sessions/session-27/index.html\ngit commit -m "session-27: write manual assert-based tests for the highest-value logic first"',
+  commitCmd: 'git add manual_tests.py docs/sessions/session-31/index.html\ngit commit -m "session-31: write manual assert-based tests for the highest-value logic first"',
   commitQuestion: 'Why did I choose to test grow_population\'s rejection case, but decide NOT to test the exact wording of a print() statement?',
   checklist: [
     'Every test function uses assert to check a specific, observable behavior',
@@ -1347,9 +1347,9 @@ print("set_population rejection test passed")` },
     'What is the risk of writing too many trivial tests, in terms of your own time and the codebase\'s long-term maintainability?',
   ],
   whatBreaks: [
-    { title: 'Silent regressions', text: 'Without any automated tests, a change made while working on Session 30 could silently break something built in Session 10, and nothing would tell you until a human happened to notice much later — if ever.' },
-    { title: 'A proper testing tool (Session 28)', text: 'The bare assert statements from this session work, but they lack useful failure messages, test discovery, and a clean way to organize many tests. Session 28 introduces pytest to solve exactly these gaps.' },
-    { title: 'Confident refactoring (Layer 6)', text: 'Session 32-36\'s architecture refactoring only becomes safe to do confidently once a real test suite exists to catch anything the refactor accidentally breaks — this session is the philosophical foundation for that safety net.' },
+    { title: 'Silent regressions', text: 'Without any automated tests, a change made while working on Session 34 could silently break something built in Session 14, and nothing would tell you until a human happened to notice much later — if ever.' },
+    { title: 'A proper testing tool (Session 32)', text: 'The bare assert statements from this session work, but they lack useful failure messages, test discovery, and a clean way to organize many tests. Session 32 introduces pytest to solve exactly these gaps.' },
+    { title: 'Confident refactoring (Layer 6)', text: 'Session 36-40\'s architecture refactoring only becomes safe to do confidently once a real test suite exists to catch anything the refactor accidentally breaks — this session is the philosophical foundation for that safety net.' },
   ],
   learnedConcept: 'Why automated tests matter, the distinction between testing behavior and testing implementation, and prioritizing what is actually worth testing.',
   learnedUnlocks: 'You can now write and reason about basic automated checks, and — just as importantly — deliberately choose what NOT to test.',
@@ -1358,10 +1358,10 @@ print("set_population rejection test passed")` },
 
 // ── SESSION 28 ─────────────────────────────────────────────────────
 {
-  num: 28,
+  num: 32,
   title: 'Setting Up pytest',
   nextTitle: 'Testing Functions and Return Values',
-  subtitle: 'We install and configure pytest, then convert Session 27\'s manual assert-based checks into real, discoverable, well-organized pytest tests.',
+  subtitle: 'We install and configure pytest, then convert Session 31\'s manual assert-based checks into real, discoverable, well-organized pytest tests.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Install pytest and understand its file/function naming conventions for test discovery',
@@ -1384,22 +1384,22 @@ print("set_population rejection test passed")` },
       explain: 'Simply running <code>pytest</code> in the project directory automatically discovers and runs every test file/function matching its naming convention — no manual listing required.',
     },
     {
-      q: 'When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest\'s output show you that a bare Python assert (Session 27) does not?',
+      q: 'When a plain assert k.population == 55000000 fails inside a pytest test, what does pytest\'s output show you that a bare Python assert (Session 31) does not?',
       options: { a: 'Nothing extra — the output is identical either way', b: 'pytest shows the actual values on both sides of the comparison (e.g. "assert 54000000 == 55000000") automatically, without you writing a custom message', c: 'pytest only tells you which file failed, never which line', d: 'pytest requires you to manually format every failure message' },
       answer: 'b',
       explain: 'This is one of pytest\'s most useful features: it introspects a failing <code>assert</code> and shows you the actual runtime values involved, giving a much clearer picture of what went wrong than a bare assert\'s generic AssertionError.',
     },
     {
       q: 'Why organize tests into a separate tests/ directory instead of mixing test files in with application code?',
-      options: { a: 'pytest requires this exact structure to function at all', b: 'It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 06', c: 'Tests placed outside tests/ run twice as slowly', d: 'There is no benefit; it is arbitrary' },
+      options: { a: 'pytest requires this exact structure to function at all', b: 'It keeps a clear separation between application code and the tests that verify it, making the project easier to navigate as it grows — mirroring the module organization discipline from Session 10', c: 'Tests placed outside tests/ run twice as slowly', d: 'There is no benefit; it is arbitrary' },
       answer: 'b',
-      explain: 'Just like Session 06\'s module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.',
+      explain: 'Just like Session 10\'s module-splitting discipline, a dedicated tests/ directory keeps concerns separated and makes it immediately obvious, to anyone browsing the project, where the tests live versus where the actual application logic lives.',
     },
     {
-      q: 'What is the pytest equivalent of Session 27\'s manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?',
+      q: 'What is the pytest equivalent of Session 31\'s manual test_grow_population_rejects_negative(), which checked that calling grow_population(-5) raised ValueError?',
       options: { a: 'assert grow_population(-5) == False', b: 'Using pytest.raises(ValueError): as a context manager around the call, e.g. with pytest.raises(ValueError): k.grow_population(-5)', c: 'pytest cannot test for raised exceptions', d: 'try/except is no longer needed with pytest' },
       answer: 'b',
-      explain: '<code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 27\'s manual try/except/assert False pattern with something more concise and pytest-native.',
+      explain: '<code>pytest.raises(ExceptionType)</code> is a context manager specifically for asserting that a block of code raises a given exception — replacing Session 31\'s manual try/except/assert False pattern with something more concise and pytest-native.',
     },
   ],
   conceptTitle: 'pytest Fundamentals',
@@ -1412,7 +1412,7 @@ print("set_population rejection test passed")` },
     },
     {
       h3: 'Test discovery conventions',
-      paragraphs: ['pytest automatically finds and runs tests that follow its naming conventions — no manual registration required, unlike Session 27\'s hand-called test functions.'],
+      paragraphs: ['pytest automatically finds and runs tests that follow its naming conventions — no manual registration required, unlike Session 31\'s hand-called test functions.'],
       code: `# tests/test_country.py  — file name starts with test_
 from country import Country  # importing the real application module
 
@@ -1455,7 +1455,7 @@ def test_summary_format():   # function name starts with test_
     },
     {
       h3: 'Testing for raised exceptions with pytest.raises',
-      paragraphs: ['pytest provides a dedicated, cleaner way to assert that code raises a specific exception, replacing Session 27\'s manual try/except/assert False.'],
+      paragraphs: ['pytest provides a dedicated, cleaner way to assert that code raises a specific exception, replacing Session 31\'s manual try/except/assert False.'],
       code: `import pytest
 
 def test_grow_population_rejects_negative():
@@ -1468,7 +1468,7 @@ def test_grow_population_rejects_negative():
   callout: null,
   closing: null,
   lab: {
-    objective: 'Set up a proper project structure with a tests/ directory, convert Session 27\'s manual tests to pytest, and run the suite.',
+    objective: 'Set up a proper project structure with a tests/ directory, convert Session 31\'s manual tests to pytest, and run the suite.',
     whatYouBuild: 'A file called <code>country.py</code> (the real module) and <code>tests/test_country.py</code>.',
     steps: [
       { title: 'Create country.py as a real, importable module', body: [], code: `# country.py
@@ -1518,12 +1518,12 @@ def test_set_population_rejects_negative():
   filesChanged: [
     { file: 'country.py', action: 'Created', why: 'The real, importable Country module (no longer duplicated inline in a lab script).' },
     { file: 'tests/test_country.py', action: 'Created', why: 'A proper pytest test suite for Country, organized in a dedicated tests/ directory.' },
-    { file: 'docs/sessions/session-28/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-32/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country.py tests/test_country.py docs/sessions/session-28/index.html\ngit commit -m "session-28: set up pytest with a real tests/ directory"',
+  commitCmd: 'git add country.py tests/test_country.py docs/sessions/session-32/index.html\ngit commit -m "session-32: set up pytest with a real tests/ directory"',
   commitQuestion: 'What naming convention did I follow to make pytest automatically discover these tests without any manual registration?',
   checklist: [
-    'country.py exists as a standalone, importable module (Session 06 discipline)',
+    'country.py exists as a standalone, importable module (Session 10 discipline)',
     'tests/test_country.py follows pytest\'s file and function naming conventions',
     'At least two tests use pytest.raises() instead of manual try/except',
     'Running pytest from the project root discovers and passes all tests',
@@ -1531,14 +1531,14 @@ def test_set_population_rejects_negative():
     'I can explain every line without looking at the concept section',
   ],
   reflection: [
-    'Compare the effort of writing test_grow_population_rejects_negative() with pytest.raises() versus Session 27\'s manual try/except/assert False version. Which communicates intent more clearly to a reader?',
+    'Compare the effort of writing test_grow_population_rejects_negative() with pytest.raises() versus Session 31\'s manual try/except/assert False version. Which communicates intent more clearly to a reader?',
     'Why does pytest need file and function names to follow a convention, instead of you manually telling it which functions are tests?',
     'What did the deliberately-broken test\'s failure output show you that made it easy to identify the problem?',
-    'How does organizing tests/ separately from country.py reflect the same reasoning as splitting country_data.py from explorer.py back in Session 06?',
+    'How does organizing tests/ separately from country.py reflect the same reasoning as splitting country_data.py from explorer.py back in Session 10?',
   ],
   whatBreaks: [
     { title: 'Forgetting to run tests', text: 'Even a good test suite is useless if no one remembers to run it before shipping a change — this is a process discipline this session sets up the tooling for, but does not solve by itself (CI automation solves it, but is out of scope for this curriculum).' },
-    { title: 'Testing props/output specifically (Session 29)', text: 'This session set up the tooling; the next two sessions dive into what specifically to assert on — return values and object state — building real test coverage across the whole project.' },
+    { title: 'Testing props/output specifically (Session 33)', text: 'This session set up the tooling; the next two sessions dive into what specifically to assert on — return values and object state — building real test coverage across the whole project.' },
     { title: 'Confident refactoring (Layer 6)', text: 'A real, runnable pytest suite is the safety net that makes Layer 6\'s architecture refactoring sessions safe to do boldly instead of nervously.' },
   ],
   learnedConcept: 'pytest fundamentals — installation, test discovery conventions, running the suite, readable failure output, and pytest.raises for exception testing.',
@@ -1548,7 +1548,7 @@ def test_set_population_rejects_negative():
 
 // ── SESSION 29 ─────────────────────────────────────────────────────
 {
-  num: 29,
+  num: 33,
   title: 'Testing Functions and Return Values',
   nextTitle: 'Testing Classes and State Changes',
   subtitle: 'We systematically test return values across the project, including edge cases: empty inputs, boundary values, and the exact examples used in each session\'s own concept explanation.',
@@ -1557,7 +1557,7 @@ def test_set_population_rejects_negative():
     'Write multiple test functions covering a normal case, an edge case, and a boundary case for one function',
     'Use pytest parametrization to run the same test logic across several inputs',
     'Test a list comprehension\'s output by checking exact contents, not just length',
-    'Test the from_dict classmethod from Session 14 with both valid and malformed input',
+    'Test the from_dict classmethod from Session 18 with both valid and malformed input',
     'Identify what "edge case" means concretely, using examples from this project',
   ],
   quiz: [
@@ -1565,7 +1565,7 @@ def test_set_population_rejects_negative():
       q: 'For a function find_by_region(countries, region), what is an example of an "edge case" worth testing, beyond the normal "region exists with matches" case?',
       options: { a: 'Only ever testing with exactly 3 countries', b: 'Calling it with a region that matches nothing (expect an empty list) and with an empty countries list entirely', c: 'Edge cases do not apply to this kind of function', d: 'Testing it twice with identical inputs' },
       answer: 'b',
-      explain: 'Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 13).',
+      explain: 'Edge cases are inputs at the boundary of normal usage: zero matches, an empty source collection, or unusual-but-valid inputs. These are exactly where bugs like accidentally returning None instead of [] tend to hide (recall Session 17).',
     },
     {
       q: 'What does @pytest.mark.parametrize let you do?',
@@ -1617,7 +1617,7 @@ def test_find_by_region_normal_case():
 def test_find_by_region_no_matches_returns_empty_list():
     countries = [Country(name="Kenya", region="Africa", population=54000000)]
     result = find_by_region(countries, "Antarctica")
-    assert result == []  # Session 13's guarantee, verified
+    assert result == []  # Session 17's guarantee, verified
 
 def test_find_by_region_empty_source_list():
     result = find_by_region([], "Africa")
@@ -1653,7 +1653,7 @@ def test_set_population_validity(value, expected_valid):
     },
     {
       h3: 'Testing from_dict with valid and malformed input',
-      paragraphs: ['Session 14\'s classmethod is a natural place for edge-case testing: what happens with correct data, and what happens with a missing required field.'],
+      paragraphs: ['Session 18\'s classmethod is a natural place for edge-case testing: what happens with correct data, and what happens with a missing required field.'],
       code: `import pytest
 from country import Country
 
@@ -1673,7 +1673,7 @@ def test_from_dict_missing_field_raises():
   closing: null,
   lab: {
     objective: 'Write a systematic test suite covering normal, edge, and boundary cases for find_by_region, from_dict, and set_population, using parametrization.',
-    whatYouBuild: 'A file called <code>tests/test_return_values.py</code>, building on Session 28\'s country.py.',
+    whatYouBuild: 'A file called <code>tests/test_return_values.py</code>, building on Session 32\'s country.py.',
     steps: [
       { title: 'Add find_by_region and from_dict to country.py if not already present', body: [], code: `# country.py (additions)
 def find_by_region(countries, region):
@@ -1731,9 +1731,9 @@ def test_set_population_boundaries(value, should_succeed):
   filesChanged: [
     { file: 'country.py', action: 'Modified', why: 'Adds find_by_region and from_dict if not already present.' },
     { file: 'tests/test_return_values.py', action: 'Created', why: 'Systematic normal/edge/boundary test coverage, including parametrized cases.' },
-    { file: 'docs/sessions/session-29/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-33/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country.py tests/test_return_values.py docs/sessions/session-29/index.html\ngit commit -m "session-29: systematically test return values, including edge and boundary cases"',
+  commitCmd: 'git add country.py tests/test_return_values.py docs/sessions/session-33/index.html\ngit commit -m "session-33: systematically test return values, including edge and boundary cases"',
   commitQuestion: 'Why does test_find_by_region_returns_exact_matches check the exact list of names instead of just the count?',
   checklist: [
     'find_by_region is tested for exact contents, no matches, and an empty source list',
@@ -1751,7 +1751,7 @@ def test_set_population_boundaries(value, should_succeed):
   ],
   whatBreaks: [
     { title: 'False confidence from weak assertions', text: 'A test suite full of length-only or existence-only checks gives a false sense of safety — it can pass while the actual returned data is subtly wrong, exactly the gap exact-content assertions close.' },
-    { title: 'Testing state changes (Session 30)', text: 'This session focused on return VALUES. The next session tests state CHANGES on an object over time — a related but distinct testing skill, since not every method returns something meaningful; some just mutate.' },
+    { title: 'Testing state changes (Session 34)', text: 'This session focused on return VALUES. The next session tests state CHANGES on an object over time — a related but distinct testing skill, since not every method returns something meaningful; some just mutate.' },
     { title: 'Regression safety for the whole project', text: 'Every function and method tested in this session is now protected against silent regressions in every remaining session of the curriculum — this is the payoff of investing in test coverage now.' },
   ],
   learnedConcept: 'Systematic testing of return values — normal, edge, and boundary cases, exact-content assertions, and pytest parametrization.',
@@ -1761,7 +1761,7 @@ def test_set_population_boundaries(value, should_succeed):
 
 // ── SESSION 30 ─────────────────────────────────────────────────────
 {
-  num: 30,
+  num: 34,
   title: 'Testing Classes and State Changes',
   nextTitle: 'Testing the Data Layer with Mocks',
   subtitle: 'Not every method returns a meaningful value — many exist to change an object\'s state over time. We test that state changes correctly, using setup/teardown fixtures for clean, isolated tests.',
@@ -1788,15 +1788,15 @@ def test_set_population_boundaries(value, should_succeed):
     },
     {
       q: 'Why is sharing ONE CountryExplorer instance across many different test functions (instead of a fresh one per test, via a fixture) risky?',
-      options: { a: 'There is no risk; sharing is always safe and faster', b: 'A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test\'s starting state, since it is the same shared, mutable object — Session 01\'s reference lesson applied to testing itself', c: 'pytest automatically prevents shared state between tests', d: 'Only numeric state can leak between tests' },
+      options: { a: 'There is no risk; sharing is always safe and faster', b: 'A mutation performed in one test (e.g. adding a country) would carry over and affect a LATER test\'s starting state, since it is the same shared, mutable object — Session 05\'s reference lesson applied to testing itself', c: 'pytest automatically prevents shared state between tests', d: 'Only numeric state can leak between tests' },
       answer: 'b',
-      explain: 'This is Session 01\'s and Session 16\'s reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.',
+      explain: 'This is Session 05\'s and Session 20\'s reference/mutation lessons applied directly to test design: a shared mutable object means tests are no longer independent — the order tests happen to run in can change their outcome, which is a serious test-suite design flaw.',
     },
     {
       q: 'You want to test that CountryExplorer.total_population correctly reflects a country added via add_country(). What should the test check?',
       options: { a: 'Only that add_country() itself does not raise an exception', b: 'That total_population BEFORE adding equals one value, and total_population AFTER calling add_country() correctly reflects the new total — the computed property tracking the mutation correctly', c: 'That country_count is a string', d: 'Nothing needs to be checked; @property is always correct by definition' },
       answer: 'b',
-      explain: 'This directly verifies Session 22\'s guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.',
+      explain: 'This directly verifies Session 26\'s guarantee: since total_population is computed fresh from self.countries every access, it should automatically reflect the addition — testing before and after values confirms this actually holds true in the real running code.',
     },
     {
       q: 'A test performs THREE sequential state changes (e.g. grow_population twice, then set_population once) and checks only the final value. What does this kind of test verify that three separate single-step tests would not?',
@@ -1848,7 +1848,7 @@ def test_set_population(kenya):          # a COMPLETELY SEPARATE, fresh instance
     },
     {
       h3: 'The risk of a shared instance across tests',
-      paragraphs: ['Without a fixture, using one module-level instance across many tests means a mutation in one test silently carries into the next — a direct real-world consequence of the reference-sharing behaviour from Session 01 and 16.'],
+      paragraphs: ['Without a fixture, using one module-level instance across many tests means a mutation in one test silently carries into the next — a direct real-world consequence of the reference-sharing behaviour from Session 05 and 16.'],
       code: `# RISKY — a single shared instance across tests
 shared_kenya = Country(name="Kenya", region="Africa", population=54000000)
 
@@ -1862,7 +1862,7 @@ def test_b_expects_original_population():
     },
     {
       h3: 'Testing a computed property tracking a mutation',
-      paragraphs: ['Combining Session 22\'s computed properties with state-change testing verifies the whole chain works correctly together.'],
+      paragraphs: ['Combining Session 26\'s computed properties with state-change testing verifies the whole chain works correctly together.'],
       code: `from country import Country, CountryExplorer
 
 @pytest.fixture
@@ -1938,9 +1938,9 @@ def test_set_population_changes_state(kenya):
   filesChanged: [
     { file: 'country.py', action: 'Modified', why: 'Adds CountryExplorer with add_country and computed properties.' },
     { file: 'tests/test_state_changes.py', action: 'Created', why: 'Fixture-based, isolated tests for state changes, computed properties, and multi-step sequences.' },
-    { file: 'docs/sessions/session-30/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-34/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add country.py tests/test_state_changes.py docs/sessions/session-30/index.html\ngit commit -m "session-30: test state changes with fixtures, before/after checks, and multi-step sequences"',
+  commitCmd: 'git add country.py tests/test_state_changes.py docs/sessions/session-34/index.html\ngit commit -m "session-34: test state changes with fixtures, before/after checks, and multi-step sequences"',
   commitQuestion: 'Why does using a fixture instead of one shared module-level instance prevent tests from affecting each other?',
   checklist: [
     'kenya and empty_explorer are defined as @pytest.fixture functions, not shared module-level instances',
@@ -1954,11 +1954,11 @@ def test_set_population_changes_state(kenya):
     'Rewrite one of this session\'s fixture-based tests using a single shared module-level instance instead. Can you construct a second test that would now fail due to leaked state?',
     'Why does test_add_country_updates_computed_properties need to check BOTH country_count and total_population, rather than just one of them?',
     'What real bug would the multi-step sequence test catch that three separate single-step tests might miss?',
-    'How does pytest deciding to call kenya() fresh for every test that requests it relate to Session 09\'s lesson that every __init__ call creates an independent instance?',
+    'How does pytest deciding to call kenya() fresh for every test that requests it relate to Session 13\'s lesson that every __init__ call creates an independent instance?',
   ],
   whatBreaks: [
     { title: 'Order-dependent test failures', text: 'Tests that share mutable state can pass or fail depending on the ORDER they happen to run in — an extremely confusing and hard-to-diagnose category of bug in a test suite, entirely avoided by fixtures.' },
-    { title: 'Testing the data layer (Session 31)', text: 'The next session — the Layer 5 gate — applies these exact same fixture and state-testing techniques to CountryRepository, using a mock data source built specifically for testing.' },
+    { title: 'Testing the data layer (Session 35)', text: 'The next session — the Layer 5 gate — applies these exact same fixture and state-testing techniques to CountryRepository, using a mock data source built specifically for testing.' },
     { title: 'Safe architecture refactoring (Layer 6)', text: 'A test suite with reliable, isolated tests (thanks to fixtures) is what makes Layer 6\'s refactoring sessions safe — an unreliable, order-dependent suite would give false confidence or false alarms during a refactor.' },
   ],
   learnedConcept: 'Testing state changes with before/after assertions, pytest fixtures for isolated setup, and multi-step sequence testing.',

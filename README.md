@@ -1,13 +1,14 @@
 # Python Fundamentals — Learn with AI
 
-Structured, documentation-first, 40-session Python curriculum — beginner through
-intermediate — built with the same "learn with AI" interactive pattern as
+Structured, documentation-first, 47-session Python curriculum — true beginner
+through intermediate — built with the same "learn with AI" interactive pattern as
 [react-learn-with-ai](https://github.com/pinkmachine19/react-learn-with-ai).
 
 The whole curriculum builds one running project, the **Country Explorer**: starting
-from a single Python dictionary in Session 01, through classes, state, mock data,
-automated testing, package architecture, and finally a real network API call in
-Session 38, culminating in a capstone review in Session 40.
+from print() and variables in Session 01, through dictionaries, classes, state, mock
+data, automated testing, package architecture, and a real network API call, up to a
+capstone review at Session 44 — plus three optional bonus sessions (decorators,
+generators/context managers, packaging & virtual environments) in Layer 8.
 
 ## Site
 
@@ -18,9 +19,9 @@ framework or build step required to *view* the site.
 ## Regenerating the site
 
 The `docs/` HTML is generated from structured session data in [`data/`](data) via a
-small Node.js template renderer in [`scripts/`](scripts) — this keeps 40 sessions of
-content consistent (same layout, same quiz/lab structure) without hand-maintaining
-40 near-identical HTML files.
+small Node.js template renderer in [`scripts/`](scripts) — this keeps 47 sessions of
+content consistent (same layout, same quiz/lab structure, real inline SVG diagrams)
+without hand-maintaining dozens of near-identical HTML files.
 
 ```bash
 npm run build
@@ -35,6 +36,6 @@ itself.
 
 - `docs/` — the published site (GitHub Pages root)
 - `data/` — session content (objectives, quizzes, concept sections, labs) and layer metadata
-- `scripts/` — the static site generator
+- `scripts/` — the static site generator, including the real inline-SVG diagram renderer
 - `ARCHITECTURE.md` — architecture decisions made *within the curriculum's own
-  running project* (the Country Explorer), authored progressively in Sessions 32, 36, and 40
+  running project* (the Country Explorer), authored progressively across Sessions 36, 40, and 44

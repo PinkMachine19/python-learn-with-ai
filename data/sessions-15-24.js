@@ -2,7 +2,7 @@ module.exports = [
 
 // ── SESSION 11 ─────────────────────────────────────────────────────
 {
-  num: 11,
+  num: 15,
   title: 'Passing Data via the Constructor',
   nextTitle: 'Composition — Objects Containing Objects',
   subtitle: 'Every value a Country needs must arrive through its constructor, deliberately, at creation time — exactly like React props arrive from a parent. This session makes that discipline explicit.',
@@ -25,7 +25,7 @@ module.exports = [
       q: 'Given <code>def __init__(self, name, region, population=0):</code>, what happens with <code>Country("Kenya", "Africa")</code>?',
       options: { a: 'A TypeError — population is required', b: 'population is set to 0, the default value', c: 'population is set to None', d: 'It fails because region should also have a default' },
       answer: 'b',
-      explain: 'Just like the plain functions from Session 04, a constructor parameter can have a default. Omitting <code>population</code> in the call falls back to <code>0</code>.',
+      explain: 'Just like the plain functions from Session 08, a constructor parameter can have a default. Omitting <code>population</code> in the call falls back to <code>0</code>.',
     },
     {
       q: 'Why is it considered bad practice for a class\'s __init__ to silently read a global variable instead of receiving that value as a parameter?',
@@ -50,7 +50,7 @@ module.exports = [
   sections: [
     {
       h3: 'Recap: __init__ already does this',
-      paragraphs: ['Since Session 09, every Country instance has received its data through __init__ parameters. This session is about treating that as a deliberate rule, not an implementation detail — and drawing the parallel to how data flows into a React component as props in the original course.'],
+      paragraphs: ['Since Session 13, every Country instance has received its data through __init__ parameters. This session is about treating that as a deliberate rule, not an implementation detail — and drawing the parallel to how data flows into a React component as props in the original course.'],
       code: `class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -69,7 +69,7 @@ kenya = Country(name="Kenya", region="Africa", population=54000000)`,
     },
     {
       h3: 'Keyword arguments for clarity',
-      paragraphs: ['As a constructor grows past two or three parameters, positional calls become error-prone — it is easy to swap two values of the same type by accident. Keyword arguments (Session 05) remove that risk entirely.'],
+      paragraphs: ['As a constructor grows past two or three parameters, positional calls become error-prone — it is easy to swap two values of the same type by accident. Keyword arguments (Session 09) remove that risk entirely.'],
       code: `# Risky — easy to accidentally swap two strings
 peru = Country("Peru", "Americas", 33000000)
 
@@ -91,7 +91,7 @@ print(unknown.population)  # 0 — default used`,
     {
       h3: 'Why NOT to read global state inside __init__',
       paragraphs: [
-        'A tempting shortcut is to have a class silently pull data from a global variable instead of a parameter. This hides the class\'s real dependencies and makes every instance implicitly coupled to shared state — exactly the kind of bug Session 01 warned about with shared references.',
+        'A tempting shortcut is to have a class silently pull data from a global variable instead of a parameter. This hides the class\'s real dependencies and makes every instance implicitly coupled to shared state — exactly the kind of bug Session 05 warned about with shared references.',
       ],
       code: `# Risky pattern — DO NOT do this
 DEFAULT_REGION = "Africa"
@@ -153,9 +153,9 @@ print(another_risky.region)  # "Europe" — silently different, no argument chan
   },
   filesChanged: [
     { file: 'construction_lab.py', action: 'Created', why: 'Demonstrates keyword construction, defaults, and the risk of hidden global dependencies.' },
-    { file: 'docs/sessions/session-11/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-15/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add construction_lab.py docs/sessions/session-11/index.html\ngit commit -m "session-11: require explicit constructor arguments instead of hidden global state"',
+  commitCmd: 'git add construction_lab.py docs/sessions/session-15/index.html\ngit commit -m "session-15: require explicit constructor arguments instead of hidden global state"',
   commitQuestion: 'Why did another_risky silently get a different region than risky, even though neither call passed a region argument?',
   checklist: [
     'Country has a default value for at least one constructor parameter',
@@ -168,13 +168,13 @@ print(another_risky.region)  # "Europe" — silently different, no argument chan
   reflection: [
     'Where else in the labs so far might you have accidentally relied on a value "just being there" instead of passing it explicitly?',
     'What is the cost of always using keyword arguments (more typing) versus the benefit (clarity, safety)? Where is that tradeoff worth it and where is it not?',
-    'How does this session\'s "explicit data in, explicit instance out" pattern connect back to the reference/mutation lessons from Session 01?',
+    'How does this session\'s "explicit data in, explicit instance out" pattern connect back to the reference/mutation lessons from Session 05?',
     'Can you think of a legitimate use for a class reading module-level state, where it would NOT be a hidden dependency problem?',
   ],
   whatBreaks: [
     { title: 'Hard-to-test classes', text: 'A class that reads global or module-level state instead of constructor arguments cannot be tested in isolation — every test now depends on setting up (and tearing down) that global correctly, which is exactly the kind of fragile test suite Layer 5 will teach you to avoid.' },
-    { title: 'Composition (Session 12)', text: 'The next session builds one class out of several others. If each class does not have a clean, explicit set of constructor dependencies, composing them together becomes guesswork instead of straightforward assembly.' },
-    { title: 'The data layer (Layer 4)', text: 'The CountryRepository we build in Session 24 depends on this discipline directly — it is constructed with its data source as an explicit argument, which is exactly what makes it possible to swap in fake data for tests later.' },
+    { title: 'Composition (Session 16)', text: 'The next session builds one class out of several others. If each class does not have a clean, explicit set of constructor dependencies, composing them together becomes guesswork instead of straightforward assembly.' },
+    { title: 'The data layer (Layer 4)', text: 'The CountryRepository we build in Session 28 depends on this discipline directly — it is constructed with its data source as an explicit argument, which is exactly what makes it possible to swap in fake data for tests later.' },
   ],
   learnedConcept: 'Constructor arguments as an explicit, self-documenting contract — keyword arguments, defaults, and the risk of hidden global dependencies.',
   learnedUnlocks: 'Every class we build from here forward will receive its dependencies explicitly, making it possible to compose and test them independently.',
@@ -183,7 +183,7 @@ print(another_risky.region)  # "Europe" — silently different, no argument chan
 
 // ── SESSION 12 ─────────────────────────────────────────────────────
 {
-  num: 12,
+  num: 16,
   title: 'Composition — Objects Containing Objects',
   nextTitle: 'Conditional Logic in Methods',
   subtitle: 'Real applications are built from many small, focused classes working together, not one giant class doing everything. We build a CountryExplorer that holds a list of Country objects.',
@@ -206,25 +206,25 @@ print(another_risky.region)  # "Europe" — silently different, no argument chan
       q: 'Given the CountryExplorer above with a method <code>def summaries(self): return [c.summary() for c in self.countries]</code>, what does this method do?',
       options: { a: 'Calls summary() on the CountryExplorer itself, once', b: 'Loops over each Country instance in self.countries and calls each one\'s own summary() method, collecting the results', c: 'Modifies each country\'s summary attribute directly', d: 'Raises an error because Country objects cannot be inside a list comprehension' },
       answer: 'b',
-      explain: 'This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance\'s own <code>summary()</code> method (from Session 10), and just collects the results.',
+      explain: 'This is delegation: the outer object does not know how to summarize a country itself — it delegates that job to each Country instance\'s own <code>summary()</code> method (from Session 14), and just collects the results.',
     },
     {
       q: 'How do you add a new Country to an existing CountryExplorer instance\'s collection after construction?',
       options: { a: 'You cannot — the list is fixed once __init__ runs', b: 'explorer.countries.append(new_country) — mutate the list attribute directly', c: 'explorer.append(new_country)', d: 'CountryExplorer(new_country)' },
       answer: 'b',
-      explain: '<code>self.countries</code> is just a regular list attribute — Session 02\'s <code>.append()</code> works on it exactly the same way it worked on any other list.',
+      explain: '<code>self.countries</code> is just a regular list attribute — Session 06\'s <code>.append()</code> works on it exactly the same way it worked on any other list.',
     },
     {
       q: 'If explorer.countries contains 3 Country instances and you call explorer.summaries(), how many times does each individual Country\'s summary() method run?',
       options: { a: 'Once total, for the whole list', b: 'Once each — 3 times total, once per Country instance', c: 'Zero times — summaries() has its own separate implementation', d: 'It depends on the population values' },
       answer: 'b',
-      explain: 'The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 02, just now calling a method instead of reading a dict key.',
+      explain: 'The list comprehension inside <code>summaries()</code> iterates the 3 instances and calls <code>.summary()</code> on each one individually, exactly like the for-loop pattern from Session 06, just now calling a method instead of reading a dict key.',
     },
     {
       q: 'Why is composition (CountryExplorer HAS a list of countries) generally preferred over cramming all country data as loose attributes directly onto one giant class?',
       options: { a: 'Composition is always faster to execute', b: 'It keeps each class focused on one responsibility, and Country\'s own logic (like grow_population) stays reusable and testable independently', c: 'Python does not allow more than 3 attributes per class', d: 'There is no real difference' },
       answer: 'b',
-      explain: 'Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 06.',
+      explain: 'Composition lets each class stay small and focused — Country knows how to be a country, CountryExplorer knows how to manage a collection of them. This mirrors exactly why we split code into modules in Session 10.',
     },
   ],
   conceptTitle: 'Composition',
@@ -273,7 +273,7 @@ print(explorer.summaries())
     },
     {
       h3: 'Growing the collection after construction',
-      paragraphs: ['Since self.countries is just a list, everything from Session 02 still applies to it.'],
+      paragraphs: ['Since self.countries is just a list, everything from Session 06 still applies to it.'],
       code: `nigeria = Country(name="Nigeria", region="Africa", population=223000000)
 explorer.countries.append(nigeria)
 print(len(explorer.countries))  # one more than before`,
@@ -360,9 +360,9 @@ print(explorer.total_population())  # reflects the new total automatically` },
   },
   filesChanged: [
     { file: 'explorer_composed.py', action: 'Created', why: 'CountryExplorer composes and delegates to a list of Country instances.' },
-    { file: 'docs/sessions/session-12/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-16/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add explorer_composed.py docs/sessions/session-12/index.html\ngit commit -m "session-12: compose CountryExplorer from a list of Country instances"',
+  commitCmd: 'git add explorer_composed.py docs/sessions/session-16/index.html\ngit commit -m "session-16: compose CountryExplorer from a list of Country instances"',
   commitQuestion: 'Why does total_population() automatically reflect a country added after construction, without any changes to total_population itself?',
   checklist: [
     'CountryExplorer stores a list of Country instances as self.countries',
@@ -376,11 +376,11 @@ print(explorer.total_population())  # reflects the new total automatically` },
     'Why does total_population() automatically pick up the newly appended country without any code change to total_population itself? Trace through what self.countries actually contains at call time.',
     'What would go wrong if CountryExplorer tried to reimplement summary formatting itself instead of calling c.summary()?',
     'Can you think of a real application where "one object holding a collection of other objects" is the natural shape? (Hint: think of any list-based UI you have used.)',
-    'How is CountryExplorer.countries similar to and different from the plain list of dictionaries we used in Session 02?',
+    'How is CountryExplorer.countries similar to and different from the plain list of dictionaries we used in Session 06?',
   ],
   whatBreaks: [
     { title: 'Duplicated logic', text: 'If CountryExplorer reimplemented formatting or validation instead of delegating to Country\'s own methods, a bug fix would need to happen in two places — and they would inevitably drift out of sync over time.' },
-    { title: 'Conditional rendering / logic (Session 13)', text: 'The next session adds conditional logic inside methods, such as handling an empty collection. Composition is what makes "no countries yet" a meaningful, testable state to handle.' },
+    { title: 'Conditional rendering / logic (Session 17)', text: 'The next session adds conditional logic inside methods, such as handling an empty collection. Composition is what makes "no countries yet" a meaningful, testable state to handle.' },
     { title: 'The whole rest of the project', text: 'Every remaining layer — mock data, testing, architecture, real APIs — operates on a composed structure just like CountryExplorer. This is the shape the entire application is built from.' },
   ],
   learnedConcept: 'Composition — one class holding instances of another, and delegating collection-level work to each inner instance\'s own methods.',
@@ -390,7 +390,7 @@ print(explorer.total_population())  # reflects the new total automatically` },
 
 // ── SESSION 13 ─────────────────────────────────────────────────────
 {
-  num: 13,
+  num: 17,
   title: 'Conditional Logic in Methods',
   nextTitle: 'Building Lists of Objects',
   subtitle: 'Real data has gaps. A method needs to behave sensibly when the collection is empty, a value is missing, or a search finds nothing at all.',
@@ -423,9 +423,9 @@ print(explorer.total_population())  # reflects the new total automatically` },
     },
     {
       q: 'A method find_by_region(region) returns [] when no country matches. Is returning an empty list the same kind of situation as raising an exception?',
-      options: { a: 'Yes — both represent a failure and should be handled identically', b: 'No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 07)', c: 'Yes, an empty list should always be converted to a raised exception', d: 'There is no meaningful distinction in Python' },
+      options: { a: 'Yes — both represent a failure and should be handled identically', b: 'No — "found nothing, here is an empty (but valid) result" is a normal outcome; an exception should be reserved for genuinely unexpected or invalid states (Session 11)', c: 'Yes, an empty list should always be converted to a raised exception', d: 'There is no meaningful distinction in Python' },
       answer: 'b',
-      explain: 'A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 07) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.',
+      explain: 'A search finding zero matches is a completely normal, expected outcome — not an error. Reserve exceptions (Session 11) for truly invalid states, like a negative population. Conflating "not found" with "broken" makes calling code harder to write correctly.',
     },
     {
       q: 'Given a method that must show a message when there are no countries, which is more idiomatic Python?',
@@ -489,7 +489,7 @@ def region_or_unknown_longhand(country):
     {
       h3: '"Not found" is not the same as "broken"',
       paragraphs: [
-        'Recall Session 07: exceptions are for genuinely invalid states. A search that legitimately finds nothing should return an empty, valid result — not raise an exception. Confusing the two forces every caller to wrap normal searches in try/except unnecessarily.',
+        'Recall Session 11: exceptions are for genuinely invalid states. A search that legitimately finds nothing should return an empty, valid result — not raise an exception. Confusing the two forces every caller to wrap normal searches in try/except unnecessarily.',
       ],
       code: `class CountryExplorer:
     def __init__(self, countries):
@@ -508,7 +508,7 @@ print(result)  # [] — a valid, empty answer, no crash, no exception`,
   closing: null,
   lab: {
     objective: 'Add conditional logic to CountryExplorer that handles an empty collection gracefully, using truthy checks and a ternary expression.',
-    whatYouBuild: 'A file called <code>conditional_lab.py</code>, building on Session 12\'s CountryExplorer.',
+    whatYouBuild: 'A file called <code>conditional_lab.py</code>, building on Session 16\'s CountryExplorer.',
     steps: [
       { title: 'Create the file with Country and CountryExplorer', body: [], code: `# conditional_lab.py
 class Country:
@@ -575,9 +575,9 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
   },
   filesChanged: [
     { file: 'conditional_lab.py', action: 'Created', why: 'Adds conditional branching, truthy checks, and a ternary display method.' },
-    { file: 'docs/sessions/session-13/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-17/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add conditional_lab.py docs/sessions/session-13/index.html\ngit commit -m "session-13: handle empty collections and missing values with conditional logic"',
+  commitCmd: 'git add conditional_lab.py docs/sessions/session-17/index.html\ngit commit -m "session-17: handle empty collections and missing values with conditional logic"',
   commitQuestion: 'Why does find_by_region return an empty list instead of raising an exception when nothing matches?',
   checklist: [
     'status_message() uses not self.countries, not len(self.countries) == 0',
@@ -590,13 +590,13 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
   reflection: [
     'Step 5 printed "1 countries loaded." — grammatically wrong. How would you fix this with a ternary expression? Try writing it.',
     'Why is returning an empty list from find_by_region a better design than returning None when nothing is found?',
-    'Can you think of a case in this lab where using an exception (Session 07) WOULD have been the right choice instead of a normal empty return?',
-    'How does the truthy/falsy behaviour of empty lists connect to what you learned about mutability and identity in Session 01 and 02?',
+    'Can you think of a case in this lab where using an exception (Session 11) WOULD have been the right choice instead of a normal empty return?',
+    'How does the truthy/falsy behaviour of empty lists connect to what you learned about mutability and identity in Session 05 and 02?',
   ],
   whatBreaks: [
     { title: 'None-checking chaos', text: 'If find_by_region sometimes returned None instead of an empty list, every single caller would need an extra None-check before it could safely loop over the result — multiplying defensive code throughout the whole project for no benefit.' },
-    { title: 'Building lists of objects (Session 14)', text: 'The next session focuses on constructing many Country instances at once, often from raw data that may have missing fields. This session\'s conditional patterns are what keep that construction from crashing on incomplete records.' },
-    { title: 'UI-equivalent states (parallel to the original React course)', text: 'This is directly analogous to Session 13 of the source React course ("Conditional Rendering") — handling an empty search result gracefully is the same problem whether you are printing to a console or rendering to a screen.' },
+    { title: 'Building lists of objects (Session 18)', text: 'The next session focuses on constructing many Country instances at once, often from raw data that may have missing fields. This session\'s conditional patterns are what keep that construction from crashing on incomplete records.' },
+    { title: 'UI-equivalent states (parallel to the original React course)', text: 'This is directly analogous to Session 17 of the source React course ("Conditional Rendering") — handling an empty search result gracefully is the same problem whether you are printing to a console or rendering to a screen.' },
   ],
   learnedConcept: 'Conditional logic inside methods — truthy/falsy checks on collections, ternary expressions, and treating "not found" as a normal outcome rather than an error.',
   learnedUnlocks: 'CountryExplorer now handles the messy, incomplete cases real data throws at it, without crashing or producing misleading results.',
@@ -605,7 +605,7 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
 
 // ── SESSION 14 ─────────────────────────────────────────────────────
 {
-  num: 14,
+  num: 18,
   title: 'Building Lists of Objects',
   nextTitle: 'Object Identity and Equality',
   subtitle: 'Real data rarely arrives as neatly hand-typed Country(...) calls. This session formalizes converting a list of raw dicts into a list of proper Country instances, at any scale.',
@@ -622,7 +622,7 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
       q: 'Given raw = [{"name": "Kenya", "region": "Africa", "population": 54000000}, ...], which builds a list of Country instances from it?',
       options: { a: '<code>[Country(r) for r in raw]</code>', b: '<code>[Country(**r) for r in raw]</code>', c: '<code>Country(raw)</code>', d: '<code>[Country[r] for r in raw]</code>' },
       answer: 'b',
-      explain: 'Recall Session 05: <code>**r</code> spreads each dictionary\'s key-value pairs as keyword arguments into the Country constructor — exactly matching __init__\'s parameter names.',
+      explain: 'Recall Session 09: <code>**r</code> spreads each dictionary\'s key-value pairs as keyword arguments into the Country constructor — exactly matching __init__\'s parameter names.',
     },
     {
       q: 'What does <code>@classmethod</code> do to a method like <code>from_dict</code>?',
@@ -646,14 +646,14 @@ print(explorer.status_message())  # "1 countries loaded." — note the grammar, 
       q: 'One raw record is missing the "population" key entirely. Using [Country.from_dict(r) for r in raw] with no error handling, what happens when that record is processed, assuming population has no default in __init__?',
       options: { a: 'It silently skips that record and continues', b: 'A TypeError is raised (missing required argument) and the whole comprehension stops, unless you catch it', c: 'population is automatically set to 0', d: 'It is set to the string "population"' },
       answer: 'b',
-      explain: 'Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 07 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.',
+      explain: 'Without a default value or error handling, a missing required keyword argument raises a <code>TypeError</code>, which — per Session 11 — will propagate and stop the whole batch unless you wrap the conversion in a try/except to handle bad records individually.',
     },
   ],
   conceptTitle: 'Building Object Lists from Raw Data',
   sections: [
     {
       h3: 'From raw dicts to instances, using what you already know',
-      paragraphs: ['This session combines Session 03\'s comprehensions with Session 05\'s ** spreading and Session 09\'s constructors — nothing new syntactically, just a new combination.'],
+      paragraphs: ['This session combines Session 07\'s comprehensions with Session 09\'s ** spreading and Session 13\'s constructors — nothing new syntactically, just a new combination.'],
       code: `class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -671,7 +671,7 @@ raw = [
 countries = [Country(**r) for r in raw]
 print(countries[0].summary())  # "Kenya (Africa): pop. 54,000,000"`,
       diagram: {
-        caption: 'Each raw dict is spread with ** into a fresh Country() call, one per item — the comprehension pattern from Session 03, now building instances instead of values.',
+        caption: 'Each raw dict is spread with ** into a fresh Country() call, one per item — the comprehension pattern from Session 07, now building instances instead of values.',
         boxes: [
           { label: 'raw dicts', text: '{...}, {...}' },
           { label: 'Country(**r)', text: 'per item' },
@@ -697,7 +697,7 @@ print(kenya.name)  # "Kenya"`,
     },
     {
       h3: 'cls vs self',
-      paragraphs: ['self (regular methods) refers to a specific instance. cls (classmethods) refers to the class itself — the blueprint, not a built thing. This mirrors the class-vs-instance distinction from Session 08.'],
+      paragraphs: ['self (regular methods) refers to a specific instance. cls (classmethods) refers to the class itself — the blueprint, not a built thing. This mirrors the class-vs-instance distinction from Session 12.'],
       code: `class Country:
     @classmethod
     def from_dict(cls, data):
@@ -709,7 +709,7 @@ print(kenya.name)  # "Kenya"`,
     },
     {
       h3: 'Handling a bad record without losing the whole batch',
-      paragraphs: ['Session 07\'s try/except lets us skip malformed records individually instead of letting one bad record crash the entire conversion.'],
+      paragraphs: ['Session 11\'s try/except lets us skip malformed records individually instead of letting one bad record crash the entire conversion.'],
       code: `raw = [
     {"name": "Kenya", "region": "Africa", "population": 54000000},
     {"name": "Ghost Nation"},  # missing region and population!
@@ -775,9 +775,9 @@ CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000
   },
   filesChanged: [
     { file: 'build_list_lab.py', action: 'Created', why: 'Converts raw dicts into Country instances at scale using a classmethod and comprehension.' },
-    { file: 'docs/sessions/session-14/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-18/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add build_list_lab.py docs/sessions/session-14/index.html\ngit commit -m "session-14: build Country instances in bulk with a from_dict classmethod"',
+  commitCmd: 'git add build_list_lab.py docs/sessions/session-18/index.html\ngit commit -m "session-18: build Country instances in bulk with a from_dict classmethod"',
   commitQuestion: 'Why does from_dict use cls(**data) instead of Country(**data) directly?',
   checklist: [
     'from_dict is decorated with @classmethod and takes cls as its first parameter',
@@ -795,8 +795,8 @@ CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000
   ],
   whatBreaks: [
     { title: 'One bad record, whole batch lost', text: 'Without the try/except pattern from this session, a single malformed record anywhere in a large dataset would crash the entire conversion — unacceptable for any real data source, which is never perfectly clean.' },
-    { title: 'Object identity confusion (Session 15)', text: 'The next session (the Layer 2 gate) asks whether two Country instances built from identical data are "the same" — a question you can only reason about clearly once you are comfortable constructing many instances from data, as this session taught.' },
-    { title: 'The mock data layer (Layer 4)', text: 'Session 24\'s data-access layer is built almost entirely from the from_dict pattern in this session, applied to a whole file of mock JSON records.' },
+    { title: 'Object identity confusion (Session 19)', text: 'The next session (the Layer 2 gate) asks whether two Country instances built from identical data are "the same" — a question you can only reason about clearly once you are comfortable constructing many instances from data, as this session taught.' },
+    { title: 'The mock data layer (Layer 4)', text: 'Session 28\'s data-access layer is built almost entirely from the from_dict pattern in this session, applied to a whole file of mock JSON records.' },
   ],
   learnedConcept: 'Bulk-converting raw dicts into class instances with a from_dict classmethod, and skipping malformed records individually with try/except.',
   learnedUnlocks: 'You can now turn any batch of raw dict-shaped data into a real list of working objects — the exact operation every future data source will require.',
@@ -805,7 +805,7 @@ CountryDebug.from_dict({"name": "Kenya", "region": "Africa", "population": 54000
 
 // ── SESSION 15 ─────────────────────────────────────────────────────
 {
-  num: 15,
+  num: 19,
   title: 'Object Identity and Equality',
   nextTitle: 'What Is State in a Program?',
   subtitle: 'This is the Layer 2 gate. Two Country instances can hold identical data yet not be "the same" — understanding why is essential before we start tracking objects by identity in collections.',
@@ -965,9 +965,9 @@ print(capital == None)   # works, but not the conventional style — explain why
   },
   filesChanged: [
     { file: 'identity_lab.py', action: 'Created', why: 'Demonstrates default identity-based equality, a custom __eq__, and is None.' },
-    { file: 'docs/sessions/session-15/index.html', action: 'Created', why: 'This session document — Layer 2 gate.' },
+    { file: 'docs/sessions/session-19/index.html', action: 'Created', why: 'This session document — Layer 2 gate.' },
   ],
-  commitCmd: 'git add identity_lab.py docs/sessions/session-15/index.html\ngit commit -m "session-15: implement value-based __eq__ and distinguish it from identity"',
+  commitCmd: 'git add identity_lab.py docs/sessions/session-19/index.html\ngit commit -m "session-19: implement value-based __eq__ and distinguish it from identity"',
   commitQuestion: 'Why does a is b stay False even after I defined __eq__ to make a == b return True?',
   checklist: [
     'a == b is printed and observed to be False BEFORE __eq__ is added',
@@ -981,11 +981,11 @@ print(capital == None)   # works, but not the conventional style — explain why
     'Before running the lab, did you correctly predict that a == b would be False without __eq__? If not, what was your mental model, and how has it changed?',
     'Why does Python NOT give every class value-based equality by default? Can you think of a reason that would be a bad default?',
     'If you were writing a test in Layer 5 that checks "did this function return the right Country?", would you use == or is? Why?',
-    'How does the id()-based explanation of is connect back to the shared-reference behaviour of dictionaries from Session 01?',
+    'How does the id()-based explanation of is connect back to the shared-reference behaviour of dictionaries from Session 05?',
   ],
   whatBreaks: [
     { title: 'False negatives in comparisons', text: 'Code that assumes two identically-built objects are automatically == (without a custom __eq__) will silently fail comparisons that should have succeeded — a subtle bug that only appears when you actually try to compare two objects and get a surprising False.' },
-    { title: 'Testing assertions (Layer 5)', text: 'Test frameworks in Session 29 rely heavily on == to check "did the function return what I expected?" If a class does not implement __eq__, every such test will need clumsy, error-prone field-by-field comparisons instead of a clean assertEqual.' },
+    { title: 'Testing assertions (Layer 5)', text: 'Test frameworks in Session 33 rely heavily on == to check "did the function return what I expected?" If a class does not implement __eq__, every such test will need clumsy, error-prone field-by-field comparisons instead of a clean assertEqual.' },
     { title: 'Deduplicating data (Layer 4)', text: 'When we design data contracts and work with real data sources in Layer 4, detecting duplicate records requires exactly the value-based equality this session teaches — the default identity comparison would treat every record as unique, even genuine duplicates.' },
   ],
   learnedConcept: 'Identity (is) vs equality (==) — the default identity-based comparison for custom classes, overriding it with __eq__, and when is is still the right tool.',
@@ -995,24 +995,24 @@ print(capital == None)   # works, but not the conventional style — explain why
 
 // ── SESSION 16 ─────────────────────────────────────────────────────
 {
-  num: 16,
+  num: 20,
   title: 'What Is State in a Program?',
   nextTitle: 'Updating State via Methods',
   subtitle: 'Layer 3 begins. Everything so far has been static — built once and read. State is data that legitimately changes while a program runs, and tracking it correctly is a skill of its own.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Define "state" as data that changes over the lifetime of a running program',
-    'Distinguish construction-time data (Session 11) from data that is expected to change afterward',
+    'Distinguish construction-time data (Session 15) from data that is expected to change afterward',
     'Explain why uncontrolled mutation of shared state causes bugs that are hard to trace',
     'Identify which attributes of Country and CountryExplorer are state versus fixed identity',
-    'Recognise this as a concept-only session, mirroring Session 08\'s approach',
+    'Recognise this as a concept-only session, mirroring Session 12\'s approach',
   ],
   quiz: [
     {
       q: 'Which of these Country attributes is most clearly "state" — data expected to change during the program\'s life — versus a fixed identifying property?',
       options: { a: 'name — a country\'s name essentially never changes during a program run', b: 'population — plausibly grows, shrinks, or gets corrected while the program runs', c: 'Both are equally state', d: 'Neither is state; state only applies to numbers' },
       answer: 'b',
-      explain: 'population is a value we would realistically expect to be updated (Session 10\'s grow_population) while the program runs — the definition of state. name is closer to a fixed identifying property for the object\'s lifetime.',
+      explain: 'population is a value we would realistically expect to be updated (Session 14\'s grow_population) while the program runs — the definition of state. name is closer to a fixed identifying property for the object\'s lifetime.',
     },
     {
       q: 'A CountryExplorer\'s .countries list grows as more data loads in. Is that state?',
@@ -1022,21 +1022,21 @@ print(capital == None)   # works, but not the conventional style — explain why
     },
     {
       q: 'Two different parts of a program both hold a reference to the same CountryExplorer instance. One part appends a country. What happens from the other part\'s point of view?',
-      options: { a: 'Nothing — each reference has its own independent copy', b: 'The other part sees the new country too, because both references point to the same shared state (Session 01\'s reference behaviour)', c: 'A RuntimeError is raised for concurrent access', d: 'The append is silently ignored' },
+      options: { a: 'Nothing — each reference has its own independent copy', b: 'The other part sees the new country too, because both references point to the same shared state (Session 05\'s reference behaviour)', c: 'A RuntimeError is raised for concurrent access', d: 'The append is silently ignored' },
       answer: 'b',
-      explain: 'This is Session 01\'s reference lesson applied to state specifically: if two parts of a program share a reference to the same mutable object, a change made through either one is visible through both — which is powerful, but also the source of many state-related bugs if not managed deliberately.',
+      explain: 'This is Session 05\'s reference lesson applied to state specifically: if two parts of a program share a reference to the same mutable object, a change made through either one is visible through both — which is powerful, but also the source of many state-related bugs if not managed deliberately.',
     },
     {
       q: 'Why can uncontrolled, scattered mutation of shared state be hard to debug?',
       options: { a: 'Python does not allow mutation, so this scenario cannot occur', b: 'When many different parts of the code can change the same state directly, it becomes hard to know which part caused an unexpected value, since there is no single place responsible for the change', c: 'Mutation is always slower than creating new objects, which is the only downside', d: 'It is not actually hard to debug — this is a myth' },
       answer: 'b',
-      explain: 'If any code, anywhere, can freely mutate shared state, tracing "why is this value wrong" requires checking every possible mutation site instead of one controlled entry point — this is exactly the problem Session 17\'s controlled updates will address.',
+      explain: 'If any code, anywhere, can freely mutate shared state, tracing "why is this value wrong" requires checking every possible mutation site instead of one controlled entry point — this is exactly the problem Session 21\'s controlled updates will address.',
     },
     {
       q: 'Why is this session mostly concept and almost no new syntax?',
-      options: { a: 'Because state does not actually require any new Python features — it is a new way of thinking about attributes and mutation you already know how to write', b: 'Because state is not actually important', c: 'Because Python has no support for mutable state', d: 'Because the syntax was already covered in Session 01 and needs no further explanation ever' },
+      options: { a: 'Because state does not actually require any new Python features — it is a new way of thinking about attributes and mutation you already know how to write', b: 'Because state is not actually important', c: 'Because Python has no support for mutable state', d: 'Because the syntax was already covered in Session 05 and needs no further explanation ever' },
       answer: 'a',
-      explain: 'Just like Session 08 (What Classes Are and Why), this session builds a mental model using tools you already have — attributes and mutation. The next sessions build concrete, controlled patterns for managing it well.',
+      explain: 'Just like Session 12 (What Classes Are and Why), this session builds a mental model using tools you already have — attributes and mutation. The next sessions build concrete, controlled patterns for managing it well.',
     },
   ],
   conceptTitle: 'State',
@@ -1055,7 +1055,7 @@ print(capital == None)   # works, but not the conventional style — explain why
     {
       h3: 'Construction-time data vs state',
       paragraphs: [
-        'Session 11 established that data arrives explicitly through the constructor. Some of that data stays fixed for the object\'s lifetime (like name); other data is the object\'s starting state, expected to evolve afterward (like population, which grow_population already updates).',
+        'Session 15 established that data arrives explicitly through the constructor. Some of that data stays fixed for the object\'s lifetime (like name); other data is the object\'s starting state, expected to evolve afterward (like population, which grow_population already updates).',
       ],
       diagram: {
         caption: 'Construction sets the starting values. State is the subset expected to keep changing afterward, through controlled methods.',
@@ -1084,13 +1084,13 @@ explorer.countries.append(Country(name="Kenya", region="Africa", population=5400
       code: `# Risky — anyone, anywhere, can silently corrupt state
 explorer.countries[0].population = -999999  # no validation, no traceability
 
-# Better (Session 17 formalizes this) — a controlled method with rules
+# Better (Session 21 formalizes this) — a controlled method with rules
 explorer.countries[0].grow_population(1000000)  # validated, named, traceable`,
     },
   ],
   callout: {
     title: 'Concept-only session:',
-    text: 'Like Session 08, there is very little new code today. The goal is recognising state as a distinct concept from ordinary attributes before Session 17 gives us controlled patterns for updating it.',
+    text: 'Like Session 12, there is very little new code today. The goal is recognising state as a distinct concept from ordinary attributes before Session 21 gives us controlled patterns for updating it.',
   },
   closing: null,
   lab: {
@@ -1111,15 +1111,15 @@ class CountryExplorer:
     def __init__(self, name, region, population):
         self.name = name              # FIXED — identity, not expected to change
         self.region = region          # FIXED — identity, not expected to change
-        self.population = population  # STATE — expected to change over time (Session 10)
+        self.population = population  # STATE — expected to change over time (Session 14)
 
 class CountryExplorer:
     def __init__(self, countries):
-        self.countries = countries    # STATE — grows/shrinks as data loads (Session 12)` },
+        self.countries = countries    # STATE — grows/shrinks as data loads (Session 16)` },
       { title: 'Demonstrate uncontrolled mutation directly and observe it works with no guardrails', body: [], code: `k = Country(name="Kenya", region="Africa", population=54000000)
 k.population = -999999   # directly assigned, bypassing any validation
 print(k.population)      # -999999 — nothing stopped this` },
-      { title: 'Demonstrate two references sharing the same mutable state', body: ['Recall Session 01 — prove it applies to real objects too, not just dicts.'], code: `explorer = CountryExplorer(countries=[k])
+      { title: 'Demonstrate two references sharing the same mutable state', body: ['Recall Session 05 — prove it applies to real objects too, not just dicts.'], code: `explorer = CountryExplorer(countries=[k])
 same_explorer = explorer  # NOT a copy — same reference
 
 same_explorer.countries.append(Country(name="Ghana", region="Africa", population=31000000))
@@ -1130,28 +1130,28 @@ print(len(same_explorer.countries))  # 2` },
   },
   filesChanged: [
     { file: 'state_concept.py', action: 'Created', why: 'Identifies state vs fixed attributes and demonstrates uncontrolled mutation risk.' },
-    { file: 'docs/sessions/session-16/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-20/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add state_concept.py docs/sessions/session-16/index.html\ngit commit -m "session-16: identify state vs fixed attributes and observe uncontrolled mutation risk"',
+  commitCmd: 'git add state_concept.py docs/sessions/session-20/index.html\ngit commit -m "session-20: identify state vs fixed attributes and observe uncontrolled mutation risk"',
   commitQuestion: 'In my own words, what makes population "state" while name is not?',
   checklist: [
     'Every attribute in Country and CountryExplorer is annotated STATE or FIXED with reasoning',
     'Uncontrolled direct mutation (k.population = -999999) is demonstrated and its lack of guardrails is noted',
-    'Two references to the same CountryExplorer are shown to share mutations, connecting back to Session 01',
+    'Two references to the same CountryExplorer are shown to share mutations, connecting back to Session 05',
     'A written comment explains the risk of uncontrolled mutation in your own words',
     'No validation or controlled-update code is added yet — that is intentionally next session',
     'I can explain every line without looking at the concept section',
   ],
   reflection: [
     'Is region truly always fixed? Can you think of a real-world scenario (e.g. historical border changes) where it might legitimately need to be state instead?',
-    'Why do you think this session deliberately shows you the RISK of uncontrolled mutation before Session 17 shows you the SOLUTION?',
-    'How does "two references sharing mutable state" in this session\'s lab connect back to Session 01\'s object mutation, Session 09\'s independent instances, and Session 12\'s composition?',
+    'Why do you think this session deliberately shows you the RISK of uncontrolled mutation before Session 21 shows you the SOLUTION?',
+    'How does "two references sharing mutable state" in this session\'s lab connect back to Session 05\'s object mutation, Session 13\'s independent instances, and Session 16\'s composition?',
     'Where in a large real application would uncontrolled state mutation be catastrophic versus merely annoying?',
   ],
   whatBreaks: [
     { title: 'Untraceable bugs', text: 'A program where any code anywhere can mutate any state directly makes "why is this value wrong" a search through the entire codebase instead of a single, well-known method — this is the single most common source of hard-to-debug real-world software issues.' },
-    { title: 'Controlled updates (Session 17)', text: 'The next session channels all state changes through named, validating methods. Without today\'s clear sense of what counts as state, that discipline will feel like unnecessary ceremony instead of a direct fix for a problem you just observed yourself.' },
-    { title: 'Re-render logic (parallel to the original course\'s Session 19)', text: 'This mirrors exactly why the source React course treats state as sacred — uncontrolled mutation there breaks UI updates. Here, it breaks traceability. The underlying discipline is the same.' },
+    { title: 'Controlled updates (Session 21)', text: 'The next session channels all state changes through named, validating methods. Without today\'s clear sense of what counts as state, that discipline will feel like unnecessary ceremony instead of a direct fix for a problem you just observed yourself.' },
+    { title: 'Re-render logic (parallel to the original course\'s Session 23)', text: 'This mirrors exactly why the source React course treats state as sacred — uncontrolled mutation there breaks UI updates. Here, it breaks traceability. The underlying discipline is the same.' },
   ],
   learnedConcept: 'State — data expected to change during a program\'s run, distinct from fixed identity data, and the risk of mutating it without a controlled entry point.',
   learnedUnlocks: 'You can now identify state in any class you design, and you have directly observed why uncontrolled mutation is a real problem, not a theoretical one.',
@@ -1160,7 +1160,7 @@ print(len(same_explorer.countries))  # 2` },
 
 // ── SESSION 17 ─────────────────────────────────────────────────────
 {
-  num: 17,
+  num: 21,
   title: 'Updating State via Methods',
   nextTitle: 'Handling User Input',
   subtitle: 'Direct attribute assignment lets anyone set invalid state from anywhere. This session channels every state change through named, validating methods instead.',
@@ -1168,7 +1168,7 @@ print(len(same_explorer.countries))  # 2` },
   objectives: [
     'Rewrite direct attribute mutation as a named, validating method call',
     'Design a method name that clearly communicates what state change it performs',
-    'Validate a proposed state change before applying it, reusing Session 07\'s exception patterns',
+    'Validate a proposed state change before applying it, reusing Session 11\'s exception patterns',
     'Explain why "one method, one clear responsibility" makes state changes traceable',
     'Add a second controlled-update method to CountryExplorer for adding a country safely',
   ],
@@ -1177,7 +1177,7 @@ print(len(same_explorer.countries))  # 2` },
       q: 'Compare <code>k.population = -999999</code> to <code>k.grow_population(-999999)</code> where grow_population validates its input. What is the key difference?',
       options: { a: 'They have identical effects and identical safety', b: 'The direct assignment bypasses any validation entirely; the method call can reject the invalid value and raise a clear error instead', c: 'The method call is always slower, that is the only difference', d: 'Direct assignment is actually safer because it is simpler' },
       answer: 'b',
-      explain: 'Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 07\'s raise) before any bad data is ever stored.',
+      explain: 'Direct attribute assignment has no opportunity to check the value first. A method is a checkpoint — it can inspect the proposed change and reject it (Session 11\'s raise) before any bad data is ever stored.',
     },
     {
       q: 'Why is a specific method name like set_capital(new_capital) preferred over a generic update(field, value) method that can change any attribute?',
@@ -1192,7 +1192,7 @@ print(len(same_explorer.countries))  # 2` },
       explain: 'The validation check runs and raises before the assignment line ever executes. This guarantees the object\'s state can never become invalid through this method — the invalid value is rejected, and the previous valid state is preserved.',
     },
     {
-      q: 'Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 16)?',
+      q: 'Why does "every state change goes through a named method" make debugging easier than uncontrolled direct assignment (from Session 20)?',
       options: { a: 'It does not actually help — this is a myth', b: 'When something goes wrong, you can search the codebase for calls to that specific method instead of every possible attribute assignment anywhere', c: 'Named methods run in a special debug mode automatically', d: 'It only helps for numeric attributes, not strings' },
       answer: 'b',
       explain: 'If <code>population</code> can only change via <code>grow_population()</code> or <code>set_population()</code>, then tracing an unexpected value means searching for calls to those two specific methods — a vastly smaller search space than "anywhere in the codebase that touches .population directly."',
@@ -1208,7 +1208,7 @@ print(len(same_explorer.countries))  # 2` },
   sections: [
     {
       h3: 'From direct assignment to a named method',
-      paragraphs: ['Session 10 already introduced grow_population as a validating method. This session generalizes that pattern: every state change should go through a method, never a bare attribute assignment from outside the class.'],
+      paragraphs: ['Session 14 already introduced grow_population as a validating method. This session generalizes that pattern: every state change should go through a method, never a bare attribute assignment from outside the class.'],
       code: `class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -1248,7 +1248,7 @@ def set_capital(self, new_capital):
     },
     {
       h3: 'Extending the pattern to CountryExplorer',
-      paragraphs: ['The same discipline applies to the collection-level state from Session 12 — an add_country method guarantees every item in the list is actually a valid Country.'],
+      paragraphs: ['The same discipline applies to the collection-level state from Session 16 — an add_country method guarantees every item in the list is actually a valid Country.'],
       code: `class CountryExplorer:
     def __init__(self, countries):
         self.countries = countries
@@ -1265,7 +1265,7 @@ print(len(explorer.countries))  # 1
 # explorer.add_country("not a country")  # raises TypeError — caught before corrupting the list`,
     },
     {
-      h3: 'Why this actually solves Session 16\'s risk',
+      h3: 'Why this actually solves Session 20\'s risk',
       paragraphs: ['Once population can only change through grow_population or set_population, tracing an unexpected value means checking those two call sites — not the entire codebase.'],
     },
   ],
@@ -1275,7 +1275,7 @@ print(len(explorer.countries))  # 1
     objective: 'Add set_population, set_capital, and add_country as controlled, validating state-change methods, replacing direct attribute assignment.',
     whatYouBuild: 'A file called <code>controlled_state.py</code>.',
     steps: [
-      { title: 'Create the file with Country including grow_population from Session 10', body: [], code: `# controlled_state.py
+      { title: 'Create the file with Country including grow_population from Session 14', body: [], code: `# controlled_state.py
 class Country:
     def __init__(self, name, region, population, capital=None):
         self.name = name
@@ -1343,9 +1343,9 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1` },
   },
   filesChanged: [
     { file: 'controlled_state.py', action: 'Created', why: 'Replaces direct attribute assignment with validating set_population, set_capital, and add_country methods.' },
-    { file: 'docs/sessions/session-17/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-21/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add controlled_state.py docs/sessions/session-17/index.html\ngit commit -m "session-17: channel all state changes through validating methods"',
+  commitCmd: 'git add controlled_state.py docs/sessions/session-21/index.html\ngit commit -m "session-21: channel all state changes through validating methods"',
   commitQuestion: 'Why does the object\'s state stay valid even after I tried to set an invalid population?',
   checklist: [
     'set_population and set_capital both validate before assigning',
@@ -1356,15 +1356,15 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1` },
     'I can explain every line without looking at the concept section',
   ],
   reflection: [
-    'Compare this session\'s code to Session 16\'s uncontrolled mutation demo. Walk through, step by step, why the exact same invalid value (-999999 or empty string) is now safely rejected.',
+    'Compare this session\'s code to Session 20\'s uncontrolled mutation demo. Walk through, step by step, why the exact same invalid value (-999999 or empty string) is now safely rejected.',
     'What would a generic update(field, value) version of set_population and set_capital look like, and why is it worse for validation specifically?',
-    'If a bug report said "population went negative somewhere," how would having these controlled methods change your debugging process compared to Session 16\'s version?',
+    'If a bug report said "population went negative somewhere," how would having these controlled methods change your debugging process compared to Session 20\'s version?',
     'Is there a state change you can think of for Country or CountryExplorer that this session did not cover, but probably should have its own controlled method?',
   ],
   whatBreaks: [
     { title: 'Silent data corruption returns', text: 'If even one code path in a large project still assigns .population directly instead of calling set_population, the guarantee this whole session builds is broken — controlled state updates only work if EVERY mutation goes through the checkpoint, with no exceptions.' },
-    { title: 'Event handling (Session 18)', text: 'The next session adds user input as a trigger for these exact methods. Without a solid, validated set_population/set_capital to call INTO, handling user input safely is not possible.' },
-    { title: 'Data contracts (Layer 4)', text: 'Session 26 formalizes exactly this kind of validation using type hints and dataclasses — this session is the hand-rolled version of a discipline that later gets language-level support.' },
+    { title: 'Event handling (Session 22)', text: 'The next session adds user input as a trigger for these exact methods. Without a solid, validated set_population/set_capital to call INTO, handling user input safely is not possible.' },
+    { title: 'Data contracts (Layer 4)', text: 'Session 30 formalizes exactly this kind of validation using type hints and dataclasses — this session is the hand-rolled version of a discipline that later gets language-level support.' },
   ],
   learnedConcept: 'Controlled state updates — validating, specifically-named methods as the only path to changing an object\'s state, replacing direct attribute assignment.',
   learnedUnlocks: 'Country and CountryExplorer can no longer silently enter an invalid state — every change is validated at a single, traceable checkpoint.',
@@ -1373,10 +1373,10 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1` },
 
 // ── SESSION 18 ─────────────────────────────────────────────────────
 {
-  num: 18,
+  num: 22,
   title: 'Handling User Input',
   nextTitle: 'Tracing State Changes',
-  subtitle: 'State changes need a trigger. In a real program, that trigger is often a user typing something. We connect input() to the controlled methods from Session 17.',
+  subtitle: 'State changes need a trigger. In a real program, that trigger is often a user typing something. We connect input() to the controlled methods from Session 21.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Read a line of text from the user with input()',
@@ -1396,7 +1396,7 @@ print("Collection still valid, length:", len(explorer.countries))  # still 1` },
       q: 'A user types "fifty" when asked for a population. What happens if you call <code>int(user_input)</code> directly with no error handling?',
       options: { a: 'It returns 0', b: 'It raises a ValueError, since "fifty" cannot be parsed as an integer', c: 'It silently rounds to the nearest number', d: 'It returns the string unchanged' },
       answer: 'b',
-      explain: '<code>int()</code> raises <code>ValueError</code> on text that is not a valid integer literal. Per Session 07, this needs a try/except around it, or the program crashes on the very first bad keystroke.',
+      explain: '<code>int()</code> raises <code>ValueError</code> on text that is not a valid integer literal. Per Session 11, this needs a try/except around it, or the program crashes on the very first bad keystroke.',
     },
     {
       q: 'Why should raw user input be validated and converted BEFORE being passed to a method like set_population, rather than passing the raw string directly?',
@@ -1427,7 +1427,7 @@ print(type(name))  # <class 'str'> — always, even if they typed "54000000"`,
     },
     {
       h3: 'Converting and validating before using the value',
-      paragraphs: ['A numeric field like population needs explicit conversion, and that conversion can fail on bad input — exactly the kind of case Session 07\'s try/except exists for.'],
+      paragraphs: ['A numeric field like population needs explicit conversion, and that conversion can fail on bad input — exactly the kind of case Session 11\'s try/except exists for.'],
       code: `raw = input("Enter population: ")
 
 try:
@@ -1449,7 +1449,7 @@ if population is not None:
     },
     {
       h3: 'Connecting validated input to a controlled method',
-      paragraphs: ['Once input is converted and confirmed valid, it can safely flow into the Session 17 methods, which add their own domain-specific validation (like rejecting negative numbers) on top.'],
+      paragraphs: ['Once input is converted and confirmed valid, it can safely flow into the Session 21 methods, which add their own domain-specific validation (like rejecting negative numbers) on top.'],
       code: `def prompt_population(country):
     raw = input(f"New population for {country.name}: ")
     try:
@@ -1483,7 +1483,7 @@ if population is not None:
   callout: null,
   closing: null,
   lab: {
-    objective: 'Build an interactive text menu that reads and validates user input, then applies it through the controlled state methods from Session 17.',
+    objective: 'Build an interactive text menu that reads and validates user input, then applies it through the controlled state methods from Session 21.',
     whatYouBuild: 'A file called <code>input_lab.py</code>.',
     steps: [
       { title: 'Create the file with Country including set_population and grow_population', body: [], code: `# input_lab.py
@@ -1545,14 +1545,14 @@ class Country:
 if __name__ == "__main__":
     kenya = Country(name="Kenya", region="Africa", population=54000000)
     run_menu(kenya)` },
-      { title: 'Confirm the __main__ guard from Session 06 is used correctly', body: ['The menu should only run when this file is executed directly, not if it were imported elsewhere.'] },
+      { title: 'Confirm the __main__ guard from Session 10 is used correctly', body: ['The menu should only run when this file is executed directly, not if it were imported elsewhere.'] },
     ],
   },
   filesChanged: [
     { file: 'input_lab.py', action: 'Created', why: 'An interactive menu reading validated user input into controlled state methods.' },
-    { file: 'docs/sessions/session-18/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-22/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add input_lab.py docs/sessions/session-18/index.html\ngit commit -m "session-18: read and validate user input, connect it to controlled state methods"',
+  commitCmd: 'git add input_lab.py docs/sessions/session-22/index.html\ngit commit -m "session-22: read and validate user input, connect it to controlled state methods"',
   commitQuestion: 'Why does read_int need its own try/except, separate from set_population\'s own validation?',
   checklist: [
     'read_int() converts user input to int and returns None on invalid text, without crashing',
@@ -1565,13 +1565,13 @@ if __name__ == "__main__":
   reflection: [
     'Why are there two separate layers of validation here — read_int\'s conversion check and set_population\'s value check? Could you combine them into one? Should you?',
     'What would happen if you skipped read_int entirely and called int(input(...)) directly inside prompt_set_population? Trace through what happens on bad input.',
-    'How does this session\'s "validate at the boundary, then trust the value" pattern relate to what you learned about function contracts in Session 04 and 11?',
+    'How does this session\'s "validate at the boundary, then trust the value" pattern relate to what you learned about function contracts in Session 08 and 11?',
     'Where else in a real application (not just population) would you need this same read-validate-apply pattern for user input?',
   ],
   whatBreaks: [
     { title: 'Crash on first typo', text: 'Without read_int\'s try/except, the very first time a user makes a typo, the entire program crashes instead of gracefully asking again — completely unacceptable for anything meant to be used by another person.' },
-    { title: 'Tracing state changes (Session 19)', text: 'The next session adds logging/debugging so you can trace exactly when and why state changed. Without a controlled input path like this session\'s, there would be too many uncontrolled entry points to trace meaningfully.' },
-    { title: 'Real API responses (Layer 7)', text: 'Session 38\'s real API data needs exactly this same "validate untrusted external input before trusting it" discipline — user keyboard input and network responses are both untrusted data from outside your program\'s control.' },
+    { title: 'Tracing state changes (Session 23)', text: 'The next session adds logging/debugging so you can trace exactly when and why state changed. Without a controlled input path like this session\'s, there would be too many uncontrolled entry points to trace meaningfully.' },
+    { title: 'Real API responses (Layer 7)', text: 'Session 42\'s real API data needs exactly this same "validate untrusted external input before trusting it" discipline — user keyboard input and network responses are both untrusted data from outside your program\'s control.' },
   ],
   learnedConcept: 'Reading user input with input(), converting and validating it safely, and connecting it to controlled state-change methods via a menu loop.',
   learnedUnlocks: 'You have built your first genuinely interactive program — one that reacts safely to unpredictable human input instead of only running pre-written code.',
@@ -1580,7 +1580,7 @@ if __name__ == "__main__":
 
 // ── SESSION 19 ─────────────────────────────────────────────────────
 {
-  num: 19,
+  num: 23,
   title: 'Tracing State Changes',
   nextTitle: 'Validating Input',
   subtitle: 'Now that state can only change through controlled methods, we can add visibility into every change — turning "why is this value wrong" from a mystery into a readable trace.',
@@ -1590,14 +1590,14 @@ if __name__ == "__main__":
     'Use Python\'s logging module for a more structured trace than print()',
     'Explain the difference between a debug-level and a warning-level log message',
     'Track how many times a state-change method has been called, as a simple instrumentation pattern',
-    'Explain why this is only possible because state changes are funneled through methods (Session 17)',
+    'Explain why this is only possible because state changes are funneled through methods (Session 21)',
   ],
   quiz: [
     {
       q: 'Why does adding a print statement inside set_population (rather than at every call site) give you a complete trace of every population change?',
-      options: { a: 'It does not — you would still need a print at every call site', b: 'Because Session 17 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from', c: 'print() automatically traces all attribute changes in Python', d: 'This only works for numeric attributes' },
+      options: { a: 'It does not — you would still need a print at every call site', b: 'Because Session 21 already guarantees ALL population changes go through this one method, a single print here sees every single change, no matter where it was triggered from', c: 'print() automatically traces all attribute changes in Python', d: 'This only works for numeric attributes' },
       answer: 'b',
-      explain: 'This is the payoff of Session 17\'s discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.',
+      explain: 'This is the payoff of Session 21\'s discipline: because every population change is forced through one method, instrumenting that one method gives you complete visibility, instead of needing to add tracing everywhere the attribute might be touched.',
     },
     {
       q: 'What is the practical difference between logging.debug(...) and logging.warning(...)?',
@@ -1612,10 +1612,10 @@ if __name__ == "__main__":
       explain: 'A simple counter attribute, incremented inside the controlled method, gives you a lightweight built-in instrumentation of how often that particular state change has occurred for a given instance — useful for debugging unexpected repeated changes.',
     },
     {
-      q: 'Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 16\'s uncontrolled-mutation version?',
-      options: { a: 'It would have been equally easy either way', b: 'In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case', c: 'Instrumentation only works with classes, never with plain attributes', d: 'print() did not exist before Session 17' },
+      q: 'Why is this kind of instrumentation ("count every call", "print every change") realistic to add here but would have been much harder in Session 20\'s uncontrolled-mutation version?',
+      options: { a: 'It would have been equally easy either way', b: 'In the uncontrolled version, mutation could happen from anywhere via direct assignment, so there is no single place to add the instrumentation that would catch every case', c: 'Instrumentation only works with classes, never with plain attributes', d: 'print() did not exist before Session 21' },
       answer: 'b',
-      explain: 'This is the direct payoff connecting Session 16 (the risk), Session 17 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.',
+      explain: 'This is the direct payoff connecting Session 20 (the risk), Session 21 (the fix), and this session (the benefit): a controlled entry point is a natural place to add tracing; scattered direct mutation has no such single point.',
     },
     {
       q: 'Should tracing/logging code like this normally raise exceptions or otherwise change the program\'s actual behavior?',
@@ -1628,7 +1628,7 @@ if __name__ == "__main__":
   sections: [
     {
       h3: 'Why a controlled entry point makes tracing trivial',
-      paragraphs: ['Because Session 17 forced every population change through set_population and grow_population, adding a trace to those two methods gives complete visibility into every change, anywhere in the program, with no missed call sites.'],
+      paragraphs: ['Because Session 21 forced every population change through set_population and grow_population, adding a trace to those two methods gives complete visibility into every change, anywhere in the program, with no missed call sites.'],
       code: `class Country:
     def __init__(self, name, region, population):
         self.name = name
@@ -1745,9 +1745,9 @@ k.set_population(58000000)  # print trace still visible; debug log line is now s
   },
   filesChanged: [
     { file: 'tracing_lab.py', action: 'Created', why: 'Adds print and logging traces plus an update counter to the controlled set_population method.' },
-    { file: 'docs/sessions/session-19/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-23/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add tracing_lab.py docs/sessions/session-19/index.html\ngit commit -m "session-19: trace state changes with print, logging, and a call counter"',
+  commitCmd: 'git add tracing_lab.py docs/sessions/session-23/index.html\ngit commit -m "session-23: trace state changes with print, logging, and a call counter"',
   commitQuestion: 'Why does one trace statement inside set_population see every population change in the whole program?',
   checklist: [
     'set_population prints a before/after trace and logs a debug message on every valid change',
@@ -1759,26 +1759,26 @@ k.set_population(58000000)  # print trace still visible; debug log line is now s
   ],
   reflection: [
     'Why does raising the logging level silence debug() calls but not your plain print() calls? What does that tell you about how the two mechanisms are separate?',
-    'If you needed to trace every state change across the WHOLE program (not just Country), what would you need to be true about how ALL your classes handle state, based on Session 17?',
+    'If you needed to trace every state change across the WHOLE program (not just Country), what would you need to be true about how ALL your classes handle state, based on Session 21?',
     'What is the tradeoff of leaving debug-level tracing permanently in the code (as opposed to removing it after debugging is done)?',
     'How would you use _update_count to detect a bug where population is being changed far more often than expected?',
   ],
   whatBreaks: [
     { title: 'Debugging without visibility', text: 'Without any tracing, tracking down "why did this value change unexpectedly" requires manually stepping through code with a debugger every single time — tracing built into the controlled entry point gives you a permanent, always-available record instead.' },
-    { title: 'Validated input (Session 20)', text: 'The next session tightens validation on the input side. Having tracing already in place means you will be able to directly observe the effect of stricter validation instead of guessing.' },
-    { title: 'Testing failures (Layer 5)', text: 'When a test fails in Session 30 because state didn\'t update as expected, the debugging techniques from this session — trace prints, logging, counters — are exactly what you\'ll reach for to understand why.' },
+    { title: 'Validated input (Session 24)', text: 'The next session tightens validation on the input side. Having tracing already in place means you will be able to directly observe the effect of stricter validation instead of guessing.' },
+    { title: 'Testing failures (Layer 5)', text: 'When a test fails in Session 34 because state didn\'t update as expected, the debugging techniques from this session — trace prints, logging, counters — are exactly what you\'ll reach for to understand why.' },
   ],
   learnedConcept: 'Tracing state changes with print and the logging module\'s severity levels, plus lightweight call-counting instrumentation.',
   learnedUnlocks: 'You can now observe exactly when, how often, and why any piece of controlled state changes — turning invisible bugs into readable traces.',
-  nextTeaser: 'We tighten validation further, handling edge cases in user-supplied input more thoroughly than Session 18 did.',
+  nextTeaser: 'We tighten validation further, handling edge cases in user-supplied input more thoroughly than Session 22 did.',
 },
 
 // ── SESSION 20 ─────────────────────────────────────────────────────
 {
-  num: 20,
+  num: 24,
   title: 'Validating Input',
   nextTitle: 'Passing State Between Functions',
-  subtitle: 'Session 18 handled the happy path and basic type errors. Real input has more edge cases: empty strings, whitespace, out-of-range values, and wrong types entirely.',
+  subtitle: 'Session 22 handled the happy path and basic type errors. Real input has more edge cases: empty strings, whitespace, out-of-range values, and wrong types entirely.',
   timeEstimate: '35–40 minutes',
   objectives: [
     'Strip and normalize text input before validating it',
@@ -1804,19 +1804,19 @@ k.set_population(58000000)  # print trace still visible; debug log line is now s
       q: 'Why write one shared validate_population(value) function instead of repeating the same range check in prompt_set_population, a data-import function, AND a test?',
       options: { a: 'There is no benefit; repeating the check everywhere is equally good', b: 'If the rule ever changes (e.g. the acceptable range), you update one function instead of hunting down every duplicate copy, and every path is guaranteed to apply the same rule', c: 'Python requires all validation to be in a single function', d: 'Shared functions run faster than duplicated logic' },
       answer: 'b',
-      explain: 'This is the same principle from Session 06 (one place to change) applied to validation logic specifically — a single source of truth for what "valid" means prevents different code paths from silently drifting apart on the rule.',
+      explain: 'This is the same principle from Session 10 (one place to change) applied to validation logic specifically — a single source of truth for what "valid" means prevents different code paths from silently drifting apart on the rule.',
     },
     {
       q: 'A user types "abc" for population. Is this a bug in your program, or an expected condition to handle gracefully?',
       options: { a: 'A bug — the program should never receive text it cannot parse', b: 'An expected condition — user error is normal and must be handled gracefully with a clear message, not treated as a program bug', c: 'It depends on how the user is feeling', d: 'Both are the same thing in Python' },
       answer: 'b',
-      explain: 'Anything a user might reasonably (or accidentally) type is expected input to handle gracefully — that is the whole point of Sessions 18–20. A bug is when the PROGRAM itself does something it was never supposed to do, like a typo\'d variable name.',
+      explain: 'Anything a user might reasonably (or accidentally) type is expected input to handle gracefully — that is the whole point of Sessions 22–24. A bug is when the PROGRAM itself does something it was never supposed to do, like a typo\'d variable name.',
     },
     {
       q: 'Which is the correct order of operations when validating a raw string meant to become a population number?',
       options: { a: 'Check range, then strip, then parse', b: 'Strip whitespace, parse to a number (catching ValueError), then check the range', c: 'Parse to a number first, then strip, then check range', d: 'Order does not matter at all' },
       answer: 'b',
-      explain: 'You must have clean text before attempting to parse it (stripping first avoids surprises), successfully parse it into a number before you can meaningfully compare it (Session 07\'s try/except), and only then check whether that number is in an acceptable range.',
+      explain: 'You must have clean text before attempting to parse it (stripping first avoids surprises), successfully parse it into a number before you can meaningfully compare it (Session 11\'s try/except), and only then check whether that number is in an acceptable range.',
     },
   ],
   conceptTitle: 'Thorough Input Validation',
@@ -1860,7 +1860,7 @@ def validate_name(raw):
     },
     {
       h3: 'One shared validation function, used everywhere',
-      paragraphs: ['Rather than repeating a range check inline in the menu, in a data importer, and in a test, define it once and call it from every path that needs it — connecting back to Session 06\'s module discipline.'],
+      paragraphs: ['Rather than repeating a range check inline in the menu, in a data importer, and in a test, define it once and call it from every path that needs it — connecting back to Session 10\'s module discipline.'],
       code: `# validators.py
 def validate_population(raw):
     raw = raw.strip()
@@ -1872,7 +1872,7 @@ def validate_population(raw):
         raise ValueError(f"population cannot be negative, got {value}")
     return value
 
-# input_lab.py (Session 18) can now import and reuse this directly
+# input_lab.py (Session 22) can now import and reuse this directly
 from validators import validate_population
 
 def prompt_set_population(country):
@@ -1885,13 +1885,13 @@ def prompt_set_population(country):
     },
     {
       h3: 'User error vs a program bug',
-      paragraphs: ['A user typing bad input is expected and must be handled gracefully with a clear message — this is not a bug. A genuine bug is the program itself doing something it should never do, like a typo\'d variable name raising NameError. Session 07\'s "catch narrowly" advice is exactly why we only catch the specific exceptions we expect from user input.'],
+      paragraphs: ['A user typing bad input is expected and must be handled gracefully with a clear message — this is not a bug. A genuine bug is the program itself doing something it should never do, like a typo\'d variable name raising NameError. Session 11\'s "catch narrowly" advice is exactly why we only catch the specific exceptions we expect from user input.'],
     },
   ],
   callout: null,
   closing: null,
   lab: {
-    objective: 'Build a shared validators module with thorough name and population validation, and wire it into the Session 18 menu.',
+    objective: 'Build a shared validators module with thorough name and population validation, and wire it into the Session 22 menu.',
     whatYouBuild: 'Two files: <code>validators.py</code> and an updated <code>menu.py</code>.',
     steps: [
       { title: 'Create validators.py with validate_name and validate_population', body: [], code: `# validators.py
@@ -1958,9 +1958,9 @@ class Country:
   filesChanged: [
     { file: 'validators.py', action: 'Created', why: 'A shared, reusable validation module for name and population input.' },
     { file: 'menu.py', action: 'Created', why: 'Wires the interactive menu to use the shared validators before touching state.' },
-    { file: 'docs/sessions/session-20/index.html', action: 'Created', why: 'This session document.' },
+    { file: 'docs/sessions/session-24/index.html', action: 'Created', why: 'This session document.' },
   ],
-  commitCmd: 'git add validators.py menu.py docs/sessions/session-20/index.html\ngit commit -m "session-20: add thorough, reusable input validation for name and population"',
+  commitCmd: 'git add validators.py menu.py docs/sessions/session-24/index.html\ngit commit -m "session-24: add thorough, reusable input validation for name and population"',
   commitQuestion: 'Why does validate_population need both a try/except around int() AND a separate range check afterward?',
   checklist: [
     'validate_name strips whitespace before checking for emptiness',
@@ -1972,14 +1972,14 @@ class Country:
   ],
   reflection: [
     'Why does validate_population strip the raw string before attempting int() on it? What edge case does that prevent?',
-    'Session 17\'s set_population also checks value < 0. Is that check now redundant given validate_population already checks it? Should you remove one? Why or why not?',
+    'Session 21\'s set_population also checks value < 0. Is that check now redundant given validate_population already checks it? Should you remove one? Why or why not?',
     'What is an example of a validation rule that belongs in validate_population (business rule) versus one that belongs in set_population (object invariant)? Are they always the same thing?',
-    'How does having validators.py as a separate, focused module connect back to the reasoning from Session 06 about splitting code?',
+    'How does having validators.py as a separate, focused module connect back to the reasoning from Session 10 about splitting code?',
   ],
   whatBreaks: [
     { title: 'Whitespace bugs slipping through', text: 'Without stripping first, a user pasting "  Kenya  " with trailing spaces would create a country whose name never quite matches "Kenya" in comparisons or lookups — a maddening, hard-to-spot bug in real data entry.' },
     { title: 'Duplicated, drifting validation rules', text: 'Without a shared validators module, the range check might get updated in the menu but forgotten in a future data-import path (Layer 4), silently allowing invalid data in through the back door.' },
-    { title: 'Data contracts (Layer 4)', text: 'Session 26 formalizes exactly this kind of validation using type hints and dataclasses. This session is the hand-rolled foundation for understanding why that formalization is valuable, not just theoretical.' },
+    { title: 'Data contracts (Layer 4)', text: 'Session 30 formalizes exactly this kind of validation using type hints and dataclasses. This session is the hand-rolled foundation for understanding why that formalization is valuable, not just theoretical.' },
   ],
   learnedConcept: 'Thorough input validation — stripping whitespace, separating parse errors from range errors, and centralizing validation rules in one reusable module.',
   learnedUnlocks: 'User input can no longer sneak invalid data past the program through whitespace tricks or out-of-range numbers that merely happen to parse.',
