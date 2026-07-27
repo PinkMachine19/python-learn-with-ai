@@ -61,6 +61,22 @@
     <h1>Errors and Exceptions</h1>
     <p class="subtitle">This is the Layer 1 gate. Real data is messy — missing keys, wrong types, invalid input. We learn to handle failure deliberately instead of letting the whole program crash.</p>
 
+  <div class="hero-diagram">
+    <svg viewBox="0 0 560 200" width="560" height="200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="560" height="200" rx="8" fill="#111111" />
+      
+    <polygon points="200,40 240,110 160,110" fill="none" stroke="#d29922" stroke-width="1.5" />
+    <text x="200" y="100" text-anchor="middle" font-family="monospace" font-size="18" fill="#d29922" font-weight="700">!</text>
+    <line x1="245" y1="75" x2="320" y2="75" stroke="#e6edf3" stroke-width="1.5" /><polygon points="320,75 312.0,80.0 312.0,70.0" fill="#e6edf3" />
+    <path d="M400,40 L440,55 L440,100 Q440,140 400,160 Q360,140 360,100 L360,55 Z" fill="none" stroke="#3fb950" stroke-width="1.5" />
+    <text x="400" y="108" text-anchor="middle" font-family="monospace" font-size="12" fill="#3fb950" font-weight="400">try</text>
+    <text x="240" y="25" text-anchor="start" font-family="var(--font-sans)" font-size="10" fill="#8b949e" font-weight="400">raised</text>
+    <text x="365" y="25" text-anchor="start" font-family="var(--font-sans)" font-size="10" fill="#8b949e" font-weight="400">caught, handled</text>
+  
+    </svg>
+    <p class="hero-caption">Something goes wrong — caught deliberately, instead of crashing.</p>
+  </div>
+
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>

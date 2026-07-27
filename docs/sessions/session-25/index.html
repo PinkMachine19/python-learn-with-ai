@@ -61,6 +61,14 @@
     <h1>Passing State Between Functions</h1>
     <p class="subtitle">When several functions need to work with the same evolving state, where should that state actually live? This session is about ownership, not just passing values around.</p>
 
+  <div class="hero-diagram">
+    <svg viewBox="0 0 560 200" width="560" height="200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="560" height="200" rx="8" fill="#111111" />
+      <rect x="60" y="70" width="95" height="55" rx="5" fill="none" stroke="#e6edf3" stroke-width="1.5" /><text x="107" y="102" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3" font-weight="400">App</text><line x1="155" y1="97" x2="185" y2="97" stroke="#58a6ff" stroke-width="1.5" /><polygon points="185,97 177.0,102.0 177.0,92.0" fill="#58a6ff" /><rect x="185" y="70" width="95" height="55" rx="5" fill="none" stroke="#e6edf3" stroke-width="1.5" /><text x="232" y="102" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3" font-weight="400">Nav</text><line x1="280" y1="97" x2="310" y2="97" stroke="#58a6ff" stroke-width="1.5" /><polygon points="310,97 302.0,102.0 302.0,92.0" fill="#58a6ff" /><rect x="310" y="70" width="95" height="55" rx="5" fill="none" stroke="#e6edf3" stroke-width="1.5" /><text x="357" y="102" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3" font-weight="400">Menu</text><line x1="405" y1="97" x2="435" y2="97" stroke="#58a6ff" stroke-width="1.5" /><polygon points="435,97 427.0,102.0 427.0,92.0" fill="#58a6ff" /><rect x="435" y="70" width="95" height="55" rx="5" fill="none" stroke="#ff5ca8" stroke-width="1.5" /><text x="482" y="102" text-anchor="middle" font-family="monospace" font-size="11" fill="#e6edf3" font-weight="400">Explorer</text><text x="280" y="150" text-anchor="middle" font-family="var(--font-sans)" font-size="10" fill="#8b949e" font-weight="400">a value threaded through layers that do not use it</text>
+    </svg>
+    <p class="hero-caption">One shared object, passed deliberately between functions.</p>
+  </div>
+
     <div class="alert alert-info">
       Estimated time: 35–40 minutes &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>
