@@ -391,6 +391,31 @@ hr {
   color: var(--yellow);
 }
 
+/* ── Hero diagram (opens every session, before the pre-quiz) ────────── */
+.hero-diagram {
+  background: #111111;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px 18px;
+  margin: 18px 0 24px;
+}
+
+.hero-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.hero-caption {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 10px 0 0;
+  font-style: italic;
+}
+
 /* ── Concept diagrams (real inline SVG, like the source course) ─────── */
 .diagram-svg {
   background: #111111;

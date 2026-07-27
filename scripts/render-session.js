@@ -1,4 +1,6 @@
 const { pad2, page, escCode } = require('./lib');
+const { renderHero } = require('./hero-icons');
+const heroes = require('../data/heroes');
 
 function layerForSession(layers, num) {
   return layers.find((l) => num >= l.range[0] && num <= l.range[1]);
@@ -211,6 +213,7 @@ function renderSession(s, layers, totalSessions) {
     <h1>${s.title}</h1>
     <p class="subtitle">${s.subtitle}</p>
 
+${renderHero(heroes[s.num])}
     <div class="alert alert-info">
       Estimated time: ${s.timeEstimate} &nbsp;·&nbsp; Pre-quiz → Concept → Lab → Commit → Post-quiz
     </div>
