@@ -105,22 +105,30 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>population = 54000000</code> and <code>if population > 50000000:\n    print("Large")</code>, what happens?</p>
+        <p>Given <code>population = 54000000</code> and the following code, what happens?</p>
+        <pre><code>if population &gt; 50000000:
+    print("Large")</code></pre>
         <label class="quiz-option" data-val="a">Nothing prints, because population is a variable, not a literal True</label>
         <label class="quiz-option" data-val="b">"Large" prints, because population > 50000000 evaluates to True</label>
         <label class="quiz-option" data-val="c">It raises a SyntaxError</label>
         <label class="quiz-option" data-val="d">"Large" prints regardless of the comparison</label>
-        <div class="explanation">The condition <code>population > 50000000</code> evaluates to <code>True</code> (54000000 is indeed greater than 50000000), so the indented block underneath the <code>if</code> runs.</div>
+        <div class="explanation">The condition <code>population > 50000000</code> evaluates to <code>True</code> (54,000,000 is indeed greater than 50,000,000), so the indented block underneath the <code>if</code> runs.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given <code>if population > 100000000:\n    print("Huge")\nelif population > 50000000:\n    print("Large")\nelse:\n    print("Small")</code> with population = 54000000, what prints?</p>
+        <p>Given the following, with <code>population = 54000000</code>, what prints?</p>
+        <pre><code>if population &gt; 100000000:
+    print("Huge")
+elif population &gt; 50000000:
+    print("Large")
+else:
+    print("Small")</code></pre>
         <label class="quiz-option" data-val="a">"Huge"</label>
         <label class="quiz-option" data-val="b">"Large"</label>
         <label class="quiz-option" data-val="c">"Small"</label>
         <label class="quiz-option" data-val="d">All three lines print</label>
-        <div class="explanation">Python checks branches top to bottom and stops at the FIRST True condition. 54000000 is not > 100000000, so it checks the next branch: 54000000 > 50000000 is True, so "Large" prints, and the else is skipped entirely — only one branch ever runs.</div>
+        <div class="explanation">Python checks branches top to bottom and stops at the FIRST True condition. 54,000,000 is not > 100,000,000, so it checks the next branch: 54,000,000 > 50,000,000 is True, so "Large" prints, and the else is skipped entirely — only one branch ever runs.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
@@ -384,22 +392,30 @@ git commit -m "session-03: branch program flow with if/elif/else and combined co
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>population = 54000000</code> and <code>if population > 50000000:\n    print("Large")</code>, what happens?</p>
+        <p>Given <code>population = 54000000</code> and the following code, what happens?</p>
+        <pre><code>if population &gt; 50000000:
+    print("Large")</code></pre>
         <label class="quiz-option" data-val="a">Nothing prints, because population is a variable, not a literal True</label>
         <label class="quiz-option" data-val="b">"Large" prints, because population > 50000000 evaluates to True</label>
         <label class="quiz-option" data-val="c">It raises a SyntaxError</label>
         <label class="quiz-option" data-val="d">"Large" prints regardless of the comparison</label>
-        <div class="explanation">The condition <code>population > 50000000</code> evaluates to <code>True</code> (54000000 is indeed greater than 50000000), so the indented block underneath the <code>if</code> runs.</div>
+        <div class="explanation">The condition <code>population > 50000000</code> evaluates to <code>True</code> (54,000,000 is indeed greater than 50,000,000), so the indented block underneath the <code>if</code> runs.</div>
       </div>
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>Given <code>if population > 100000000:\n    print("Huge")\nelif population > 50000000:\n    print("Large")\nelse:\n    print("Small")</code> with population = 54000000, what prints?</p>
+        <p>Given the following, with <code>population = 54000000</code>, what prints?</p>
+        <pre><code>if population &gt; 100000000:
+    print("Huge")
+elif population &gt; 50000000:
+    print("Large")
+else:
+    print("Small")</code></pre>
         <label class="quiz-option" data-val="a">"Huge"</label>
         <label class="quiz-option" data-val="b">"Large"</label>
         <label class="quiz-option" data-val="c">"Small"</label>
         <label class="quiz-option" data-val="d">All three lines print</label>
-        <div class="explanation">Python checks branches top to bottom and stops at the FIRST True condition. 54000000 is not > 100000000, so it checks the next branch: 54000000 > 50000000 is True, so "Large" prints, and the else is skipped entirely — only one branch ever runs.</div>
+        <div class="explanation">Python checks branches top to bottom and stops at the FIRST True condition. 54,000,000 is not > 100,000,000, so it checks the next branch: 54,000,000 > 50,000,000 is True, so "Large" prints, and the else is skipped entirely — only one branch ever runs.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
