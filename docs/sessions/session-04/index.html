@@ -104,7 +104,9 @@
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and <code>for country in countries:\n    print(country)</code>, what prints?</p>
+        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and the following code, what prints?</p>
+        <pre><code>for country in countries:
+    print(country)</code></pre>
         <label class="quiz-option" data-val="a">The word "countries" three times</label>
         <label class="quiz-option" data-val="b">"Kenya", then "Ghana", then "Peru", each on its own line</label>
         <label class="quiz-option" data-val="c">The whole list printed once: ['Kenya', 'Ghana', 'Peru']</label>
@@ -144,7 +146,11 @@
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Given <code>for c in countries:\n    if c["population"] < 1000000:\n        continue\n    print(c["name"])</code>, what does continue do for a country with a small population?</p>
+        <p>Given the following, what does continue do for a country with a small population?</p>
+        <pre><code>for c in countries:
+    if c["population"] < 10:
+        continue
+    print(c["name"])</code></pre>
         <label class="quiz-option" data-val="a">It stops the whole loop immediately</label>
         <label class="quiz-option" data-val="b">It skips the rest of THIS iteration's body (so print never runs for this item) and moves on to the next item in the loop</label>
         <label class="quiz-option" data-val="c">It removes the item from the countries list permanently</label>
@@ -167,6 +173,9 @@
       <p class="diagram-caption-text">The loop body runs once per item — country is rebound to a new value each time through.</p>
     </div>
 
+    <div class="alert alert-info">
+      <strong>What are these words called?</strong> <code>for</code>, <code>while</code>, <code>in</code>, <code>break</code>, and <code>continue</code> are all <strong>keywords</strong> — reserved words that are part of Python's own syntax, not something you define. Unlike <code>and</code>/<code>or</code>/<code>not</code> from the last session, none of these act as operators — they don't combine or produce a value, they control which code runs and how many times.
+    </div>
 
     <h3>for loops — repeating for every item in a collection</h3>
     <p>A for loop runs its body once per item in a list, binding a loop variable to each value in turn — no manual counting required.</p>
@@ -206,22 +215,22 @@ while count &lt; 5:
 # 4</code></pre>
 
     <h3>break and continue</h3>
-    <p>break exits a loop immediately and completely. continue skips only the rest of the current pass and moves on to the next item.</p>
+    <p>break exits a loop immediately and completely. continue skips only the rest of the current pass and moves on to the next item. (Population figures are in millions, to keep the numbers easy to read.)</p>
     <pre><code>countries = [
-    {"name": "Norway", "population": 5400000},
-    {"name": "Kenya", "population": 54000000},
-    {"name": "India", "population": 1428000000},
+    {"name": "Norway", "population": 5},
+    {"name": "Kenya", "population": 54},
+    {"name": "India", "population": 1428},
 ]
 
 # break — stop as soon as we find what we need
 for c in countries:
-    if c["population"] &gt; 100000000:
+    if c["population"] &gt; 100:
         print("Found one:", c["name"])
         break
 
 # continue — skip small countries, but keep checking the rest
 for c in countries:
-    if c["population"] &lt; 10000000:
+    if c["population"] &lt; 10:
         continue
     print(c["name"])</code></pre>
 
@@ -386,7 +395,9 @@ git commit -m "session-04: repeat actions with for/while loops, break, and conti
 
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
-        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and <code>for country in countries:\n    print(country)</code>, what prints?</p>
+        <p>Given <code>countries = ["Kenya", "Ghana", "Peru"]</code> and the following code, what prints?</p>
+        <pre><code>for country in countries:
+    print(country)</code></pre>
         <label class="quiz-option" data-val="a">The word "countries" three times</label>
         <label class="quiz-option" data-val="b">"Kenya", then "Ghana", then "Peru", each on its own line</label>
         <label class="quiz-option" data-val="c">The whole list printed once: ['Kenya', 'Ghana', 'Peru']</label>
@@ -426,7 +437,11 @@ git commit -m "session-04: repeat actions with for/while loops, break, and conti
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>Given <code>for c in countries:\n    if c["population"] < 1000000:\n        continue\n    print(c["name"])</code>, what does continue do for a country with a small population?</p>
+        <p>Given the following, what does continue do for a country with a small population?</p>
+        <pre><code>for c in countries:
+    if c["population"] < 10:
+        continue
+    print(c["name"])</code></pre>
         <label class="quiz-option" data-val="a">It stops the whole loop immediately</label>
         <label class="quiz-option" data-val="b">It skips the rest of THIS iteration's body (so print never runs for this item) and moves on to the next item in the loop</label>
         <label class="quiz-option" data-val="c">It removes the item from the countries list permanently</label>

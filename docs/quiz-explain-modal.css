@@ -31,6 +31,14 @@
   animation: quiz-explain-pop 0.25s ease;
 }
 
+.quiz-explain-modal.is-correct {
+  border-color: var(--green, #3fb950);
+}
+
+.quiz-explain-modal.is-wrong {
+  border-color: var(--red, #f85149);
+}
+
 @keyframes quiz-explain-pop {
   from { transform: scale(0.92); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -53,6 +61,14 @@
   font-size: 18px;
   font-weight: 800;
   color: var(--yellow, #d29922);
+}
+
+.quiz-explain-title.is-correct {
+  color: var(--green, #3fb950);
+}
+
+.quiz-explain-title.is-wrong {
+  color: var(--red, #f85149);
 }
 
 .quiz-explain-text {
@@ -78,7 +94,15 @@
   border-left: 3px solid var(--accent, #58a6ff);
 }
 
-.quiz-explain-explanation[hidden] {
+.quiz-explain-modal.is-correct .quiz-explain-explanation {
+  border-left-color: var(--green, #3fb950);
+}
+
+.quiz-explain-modal.is-wrong .quiz-explain-explanation {
+  border-left-color: var(--red, #f85149);
+}
+
+.quiz-explain-explanation:empty {
   display: none;
 }
 

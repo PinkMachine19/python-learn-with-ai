@@ -114,27 +114,27 @@
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>"Population: " + str(54000000)</code> produce?</p>
+        <p>What does <code>"Population: " + str(54)</code> produce?</p>
         <label class="quiz-option" data-val="a">A TypeError, because you cannot add a string and a number</label>
-        <label class="quiz-option" data-val="b">The string "Population: 54000000"</label>
-        <label class="quiz-option" data-val="c">The number 54000054000000</label>
-        <label class="quiz-option" data-val="d">The string "Population: " repeated 54000000 times</label>
+        <label class="quiz-option" data-val="b">The string "Population: 54"</label>
+        <label class="quiz-option" data-val="c">The number 54</label>
+        <label class="quiz-option" data-val="d">The string "Population: " repeated 54 times</label>
         <div class="explanation"><code>str()</code> explicitly converts the number to text first, so <code>+</code> is now combining two strings (called "concatenation"), producing one longer string.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What happens if you write <code>"Population: " + 54000000</code> WITHOUT calling str() first?</p>
+        <p>What happens if you write <code>"Population: " + 54</code> WITHOUT calling str() first?</p>
         <label class="quiz-option" data-val="a">It silently converts the number to text and works fine</label>
         <label class="quiz-option" data-val="b">It raises a TypeError — Python refuses to implicitly combine a string and a number with +</label>
-        <label class="quiz-option" data-val="c">It returns 54000000 as a number, ignoring the text</label>
+        <label class="quiz-option" data-val="c">It returns 54 as a number, ignoring the text</label>
         <label class="quiz-option" data-val="d">It prints "Population: " and then a separate line with the number</label>
         <div class="explanation">Python does not automatically guess what you meant by mixing a string and a number with <code>+</code> — it raises a <code>TypeError</code> rather than silently doing something that might not be what you intended. This is deliberate: implicit, silent type mixing causes more bugs than it saves keystrokes.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Given <code>population = "54000000"</code> (a string), how do you get it as an actual number you could do math with?</p>
+        <p>Given <code>population = "54"</code> (a string), how do you get it as an actual number you could do math with?</p>
         <label class="quiz-option" data-val="a"><code>str(population)</code></label>
         <label class="quiz-option" data-val="b"><code>int(population)</code></label>
         <label class="quiz-option" data-val="c"><code>population.number()</code></label>
@@ -144,8 +144,8 @@
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What does <code>population > 50000000</code> evaluate to, given <code>population = 54000000</code>?</p>
-        <label class="quiz-option" data-val="a">The number 54000000</label>
+        <p>What does <code>population > 50</code> evaluate to, given <code>population = 54</code>?</p>
+        <label class="quiz-option" data-val="a">The number 54</label>
         <label class="quiz-option" data-val="b">The bool True</label>
         <label class="quiz-option" data-val="c">The string "True"</label>
         <label class="quiz-option" data-val="d">A SyntaxError — > only works on strings</label>
@@ -178,9 +178,9 @@ print(10 // 3)  # 3   — floor division, whole number part only
 print(10 % 3)   # 1   — modulo, the remainder</code></pre>
 
     <h3>Combining strings</h3>
-    <p>Strings can be joined with +, but only with other strings — and Python offers a cleaner way for mixing text and values: f-strings.</p>
+    <p>Strings can be joined with +, but only with other strings — and Python offers a cleaner way for mixing text and values: f-strings. (Population figures throughout this course are in millions, to keep the numbers easy to read.)</p>
     <pre><code>name = "Kenya"
-population = 54000000
+population = 54
 
 # + concatenation — every piece must already be a string
 message = "Country: " + name + ", Population: " + str(population)
@@ -192,9 +192,9 @@ print(message)  # identical result, much easier to read and write</code></pre>
 
     <h3>Explicit conversion: int(), float(), str()</h3>
     <p>Python never silently guesses how to convert between types. You always convert deliberately, using a conversion function — this is a safety feature, not an inconvenience: it forces you to notice when a conversion is happening.</p>
-    <pre><code>population_text = "54000000"
+    <pre><code>population_text = "54"
 population_number = int(population_text)   # str -&gt; int
-print(population_number + 1000000)          # 55000000 — now real math works
+print(population_number + 1)                # 55 — now real math works
 
 rate_text = "2.3"
 rate_number = float(rate_text)               # str -&gt; float
@@ -204,20 +204,20 @@ count_text = str(count)                      # int -&gt; str, for combining with
 
     <h3>Why mixing types with + is an error, not a guess</h3>
     <p>Adding a string and a number has no single obvious meaning — should it produce a number, or glue the number onto the end as text? Rather than silently picking one (and possibly surprising you), Python raises an error and makes you decide explicitly.</p>
-    <pre><code># population = "Population: " + 54000000
+    <pre><code># population = "Population: " + 54
 # TypeError: can only concatenate str (not "int") to str
 
 # You decide what you meant:
-population = "Population: " + str(54000000)   # -&gt; "Population: 54000000"</code></pre>
+population = "Population: " + str(54)   # -&gt; "Population: 54"</code></pre>
 
     <h3>Comparison operators produce a bool</h3>
     <p>Comparing two values always gives you back exactly True or False — this is the building block the next session's if-statements are built on.</p>
-    <pre><code>population = 54000000
+    <pre><code>population = 54
 
-print(population &gt; 50000000)   # True
-print(population == 54000000)  # True
-print(population &lt; 1000)        # False
-print(population != 0)          # True</code></pre>
+print(population &gt; 50)   # True
+print(population == 54)  # True
+print(population &lt; 50)   # False
+print(population != 0)   # True</code></pre>
 
 
 
@@ -239,10 +239,10 @@ print(population != 0)          # True</code></pre>
         <p><strong>Create the file and do basic arithmetic</strong></p>
 
         <pre><code># operators.py
-population = 54000000
+population = 54
 neighbors = 3
 
-print(population + 1000000)
+print(population + 1)
 print(population / neighbors)
 print(population // neighbors)
 print(population % neighbors)</code></pre>
@@ -267,9 +267,9 @@ print(message_fstring)</code></pre>
       <div class="step-body">
         <p><strong>Convert a text number into a real number and do math with it</strong></p>
 
-        <pre><code>population_from_form = "54000000"   # imagine this came from a text input
+        <pre><code>population_from_form = "54"   # imagine this came from a text input
 population_number = int(population_from_form)
-print(population_number + 1000000)  # only works because we converted first</code></pre>
+print(population_number + 1)  # only works because we converted first</code></pre>
       </div>
     </div>
 
@@ -289,8 +289,8 @@ print(fixed)</code></pre>
       <div class="step-body">
         <p><strong>Write three comparisons and print their boolean results</strong></p>
 
-        <pre><code>print(population &gt; 50000000)
-print(population == 54000000)
+        <pre><code>print(population &gt; 50)
+print(population == 54)
 print(neighbors &lt;= 2)</code></pre>
       </div>
     </div>
@@ -330,7 +330,7 @@ print(neighbors &lt;= 2)</code></pre>
 git commit -m "session-02: arithmetic, f-strings, explicit type conversion, and comparisons"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "Why does Python raise an error instead of guessing what "Population: " + 54000000 should mean?"
+      Do not commit until you can answer out loud: "Why does Python raise an error instead of guessing what "Population: " + 54 should mean?"
     </div>
 
     <hr class="section-divider" />
@@ -387,27 +387,27 @@ git commit -m "session-02: arithmetic, f-strings, explicit type conversion, and 
 
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
-        <p>What does <code>"Population: " + str(54000000)</code> produce?</p>
+        <p>What does <code>"Population: " + str(54)</code> produce?</p>
         <label class="quiz-option" data-val="a">A TypeError, because you cannot add a string and a number</label>
-        <label class="quiz-option" data-val="b">The string "Population: 54000000"</label>
-        <label class="quiz-option" data-val="c">The number 54000054000000</label>
-        <label class="quiz-option" data-val="d">The string "Population: " repeated 54000000 times</label>
+        <label class="quiz-option" data-val="b">The string "Population: 54"</label>
+        <label class="quiz-option" data-val="c">The number 54</label>
+        <label class="quiz-option" data-val="d">The string "Population: " repeated 54 times</label>
         <div class="explanation"><code>str()</code> explicitly converts the number to text first, so <code>+</code> is now combining two strings (called "concatenation"), producing one longer string.</div>
       </div>
 
       <div class="quiz-question" data-question="2" data-answer="b">
         <div class="question-num">Question 3 of 5</div>
-        <p>What happens if you write <code>"Population: " + 54000000</code> WITHOUT calling str() first?</p>
+        <p>What happens if you write <code>"Population: " + 54</code> WITHOUT calling str() first?</p>
         <label class="quiz-option" data-val="a">It silently converts the number to text and works fine</label>
         <label class="quiz-option" data-val="b">It raises a TypeError — Python refuses to implicitly combine a string and a number with +</label>
-        <label class="quiz-option" data-val="c">It returns 54000000 as a number, ignoring the text</label>
+        <label class="quiz-option" data-val="c">It returns 54 as a number, ignoring the text</label>
         <label class="quiz-option" data-val="d">It prints "Population: " and then a separate line with the number</label>
         <div class="explanation">Python does not automatically guess what you meant by mixing a string and a number with <code>+</code> — it raises a <code>TypeError</code> rather than silently doing something that might not be what you intended. This is deliberate: implicit, silent type mixing causes more bugs than it saves keystrokes.</div>
       </div>
 
       <div class="quiz-question" data-question="3" data-answer="b">
         <div class="question-num">Question 4 of 5</div>
-        <p>Given <code>population = "54000000"</code> (a string), how do you get it as an actual number you could do math with?</p>
+        <p>Given <code>population = "54"</code> (a string), how do you get it as an actual number you could do math with?</p>
         <label class="quiz-option" data-val="a"><code>str(population)</code></label>
         <label class="quiz-option" data-val="b"><code>int(population)</code></label>
         <label class="quiz-option" data-val="c"><code>population.number()</code></label>
@@ -417,8 +417,8 @@ git commit -m "session-02: arithmetic, f-strings, explicit type conversion, and 
 
       <div class="quiz-question" data-question="4" data-answer="b">
         <div class="question-num">Question 5 of 5</div>
-        <p>What does <code>population > 50000000</code> evaluate to, given <code>population = 54000000</code>?</p>
-        <label class="quiz-option" data-val="a">The number 54000000</label>
+        <p>What does <code>population > 50</code> evaluate to, given <code>population = 54</code>?</p>
+        <label class="quiz-option" data-val="a">The number 54</label>
         <label class="quiz-option" data-val="b">The bool True</label>
         <label class="quiz-option" data-val="c">The string "True"</label>
         <label class="quiz-option" data-val="d">A SyntaxError — > only works on strings</label>
@@ -448,7 +448,7 @@ git commit -m "session-02: arithmetic, f-strings, explicit type conversion, and 
     <div class="card">
       <ul>
         <li><strong>The classic string-vs-number bug:</strong> Forgetting to convert a value before doing arithmetic on it (or before combining it with text) is one of the most common bugs at every experience level, not just for beginners — this session is designed to make the error message instantly recognisable.</li>
-        <li><strong>Conditionals (next session):</strong> Every if-statement in the next session is built directly on the comparison operators from this session. If <code>population > 50000000</code> does not clearly evaluate to a bool in your head, conditionals will feel like unexplained magic.</li>
+        <li><strong>Conditionals (next session):</strong> Every if-statement in the next session is built directly on the comparison operators from this session. If <code>population > 50</code> does not clearly evaluate to a bool in your head, conditionals will feel like unexplained magic.</li>
       </ul>
     </div>
 

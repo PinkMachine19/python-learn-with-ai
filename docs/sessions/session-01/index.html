@@ -135,7 +135,7 @@
       <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
         <p>Which of these is a float, not an int?</p>
-        <label class="quiz-option" data-val="a"><code>population = 54000000</code></label>
+        <label class="quiz-option" data-val="a"><code>population = 54</code></label>
         <label class="quiz-option" data-val="b"><code>is_active = True</code></label>
         <label class="quiz-option" data-val="c"><code>growth_rate = 2.3</code></label>
         <label class="quiz-option" data-val="d"><code>name = "Kenya"</code></label>
@@ -149,7 +149,7 @@
         <label class="quiz-option" data-val="b">A clear name tells a human reader (including future you) what the value represents, without needing to trace back through the code to figure it out</label>
         <label class="quiz-option" data-val="c"><code>x</code> is actually invalid as a variable name in Python</label>
         <label class="quiz-option" data-val="d">Longer variable names make the program run faster</label>
-        <div class="explanation">Python executes <code>x = 54000000</code> and <code>population = 54000000</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
+        <div class="explanation">Python executes <code>x = 54</code> and <code>population = 54</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Pre-Quiz</button>
@@ -177,22 +177,22 @@ print("This is a second line")
 print("The answer is", 42)</code></pre>
 
     <h3>Variables — naming a value so you can use it again</h3>
-    <p>A variable is a name that refers to a value. Once created, you can use the name instead of retyping the value everywhere — and if the value needs to change, you only update it in one place.</p>
+    <p>A variable is a name that refers to a value. Once created, you can use the name instead of retyping the value everywhere — and if the value needs to change, you only update it in one place. (Population figures throughout this course are in millions, to keep the numbers easy to read.)</p>
     <pre><code>name = "Kenya"
-population = 54000000
+population = 54
 
 print(name)
 print(population)
 print(name, "has a population of", population)
 
 # The value can change — the variable is reassigned, not "locked"
-population = 55000000
-print(population)  # 55000000</code></pre>
+population = 55
+print(population)  # 55</code></pre>
 
     <h3>The four core types you will see constantly</h3>
     <p>Every value in Python has a type. These four cover almost everything you will touch in your first weeks: <code>str</code> (text), <code>int</code> (whole numbers), <code>float</code> (decimal numbers), and <code>bool</code> (True or False).</p>
     <pre><code>name = "Kenya"           # str   — text, always in quotes
-population = 54000000    # int   — a whole number
+population = 54    # int   — a whole number
 growth_rate = 2.3          # float — a number with a decimal point
 is_independent = True      # bool  — exactly True or False, capitalized, no quotes
 
@@ -203,8 +203,8 @@ print(type(is_independent)) # &lt;class 'bool'&gt;</code></pre>
 
     <h3>Quotes make all the difference</h3>
     <p>The exact same characters can be a string or a number depending entirely on whether they are in quotes. This distinction matters constantly — a number in quotes cannot be used in arithmetic without converting it first (we cover that next session).</p>
-    <pre><code>population_text = "54000000"   # str — this is TEXT that happens to look like a number
-population_number = 54000000    # int — this is an actual number
+    <pre><code>population_text = "54"   # str — this is TEXT that happens to look like a number
+population_number = 54    # int — this is an actual number
 
 print(type(population_text))    # &lt;class 'str'&gt;
 print(type(population_number))  # &lt;class 'int'&gt;</code></pre>
@@ -243,7 +243,7 @@ print("My name is Ada and I am learning Python")</code></pre>
         <p><strong>Create four variables, one of each core type</strong></p>
         <p>Use real, meaningful values — pick a country, like the rest of this course will.</p>
         <pre><code>country_name = "Kenya"
-population = 54000000
+population = 54
 growth_rate = 2.3
 is_independent = True</code></pre>
       </div>
@@ -278,7 +278,7 @@ print(type(is_independent))</code></pre>
       <div class="step-body">
         <p><strong>Reassign one variable and prove the old value is gone</strong></p>
 
-        <pre><code>population = 55000000
+        <pre><code>population = 55
 print("Updated population:", population)</code></pre>
       </div>
     </div>
@@ -318,7 +318,7 @@ print("Updated population:", population)</code></pre>
 git commit -m "session-01: print output, create variables, and check their types"</code></pre>
 
     <div class="alert alert-info">
-      Do not commit until you can answer out loud: "What is the difference between "54000000" and 54000000, and why does that difference matter?"
+      Do not commit until you can answer out loud: "What is the difference between "54" and 54, and why does that difference matter?"
     </div>
 
     <hr class="section-divider" />
@@ -396,7 +396,7 @@ git commit -m "session-01: print output, create variables, and check their types
       <div class="quiz-question" data-question="3" data-answer="c">
         <div class="question-num">Question 4 of 5</div>
         <p>Which of these is a float, not an int?</p>
-        <label class="quiz-option" data-val="a"><code>population = 54000000</code></label>
+        <label class="quiz-option" data-val="a"><code>population = 54</code></label>
         <label class="quiz-option" data-val="b"><code>is_active = True</code></label>
         <label class="quiz-option" data-val="c"><code>growth_rate = 2.3</code></label>
         <label class="quiz-option" data-val="d"><code>name = "Kenya"</code></label>
@@ -410,7 +410,7 @@ git commit -m "session-01: print output, create variables, and check their types
         <label class="quiz-option" data-val="b">A clear name tells a human reader (including future you) what the value represents, without needing to trace back through the code to figure it out</label>
         <label class="quiz-option" data-val="c"><code>x</code> is actually invalid as a variable name in Python</label>
         <label class="quiz-option" data-val="d">Longer variable names make the program run faster</label>
-        <div class="explanation">Python executes <code>x = 54000000</code> and <code>population = 54000000</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
+        <div class="explanation">Python executes <code>x = 54</code> and <code>population = 54</code> identically — the computer does not care. But code is read far more often than it is written, and a clear name is free documentation for every future reader.</div>
       </div>
 
       <button class="submit-btn" disabled>Submit Post-Quiz</button>
@@ -435,8 +435,8 @@ git commit -m "session-01: print output, create variables, and check their types
     <h2>10. What Breaks If This Knowledge Is Missing?</h2>
     <div class="card">
       <ul>
-        <li><strong>Every single session after this one:</strong> Variables and print() are used in literally every remaining lab in this curriculum without being re-explained. If reading a line like <code>population = 54000000</code> does not feel automatic yet, slow down here before continuing.</li>
-        <li><strong>Type confusion bugs:</strong> Confusing "54000000" (text) with 54000000 (a number) is one of the most common beginner mistakes — it causes errors the moment you try to do arithmetic with the text version, which the next session covers directly.</li>
+        <li><strong>Every single session after this one:</strong> Variables and print() are used in literally every remaining lab in this curriculum without being re-explained. If reading a line like <code>population = 54</code> does not feel automatic yet, slow down here before continuing.</li>
+        <li><strong>Type confusion bugs:</strong> Confusing "54" (text) with 54 (a number) is one of the most common beginner mistakes — it causes errors the moment you try to do arithmetic with the text version, which the next session covers directly.</li>
       </ul>
     </div>
 

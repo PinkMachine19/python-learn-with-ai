@@ -1,81 +1,34 @@
 /**
  * Shared session quiz logic + explanation modal.
- * Sessions 11+: modal shows the explanation inline ("Read this").
- * Sessions 01–10: funny reminder to scroll to the explanation below.
+ * Every session: clicking an option pops a modal showing whether you were
+ * right or wrong (green check / red X) and the explanation, inline.
  */
 (function () {
   'use strict';
 
-  var REMINDER_MESSAGES = [
-    {
-      title: 'Hold up, speedrunner!',
-      text: 'You answered — cool. But the explanation below is where the actual learning lives. Your friend skips it. Don\'t be your friend.',
-      sub: 'Seriously. Read the gray box. We\'ll wait.',
-      emoji: '🏃💨',
-      btn: 'Fine, I\'ll read it'
-    },
-    {
-      title: 'The explanation is not decoration',
-      text: 'That little gray box under your answer? It\'s not IKEA filler. It\'s the "ohhh, THAT\'S why" moment.',
-      sub: 'Scroll down. Absorb. Become wise.',
-      emoji: '📦❌',
-      btn: 'Ok ok, reading…'
-    },
-    {
-      title: 'Quiz goblin says: READ IT',
-      text: 'You picked an answer. The green/red told you if you\'re right. The explanation tells you WHY. One of these matters more for your brain.',
-      sub: 'Hint: it\'s not the color.',
-      emoji: '👺',
-      btn: 'I submit to the goblin'
-    },
-    {
-      title: 'Friendly intervention',
-      text: 'This modal exists because someone keeps clicking answers and sprinting past the explanation like it owes them money.',
-      sub: 'Take 15 seconds. Read it. Future you sends thanks.',
-      emoji: '🚨',
-      btn: 'I\'m not that person (reading now)'
-    },
-    {
-      title: 'Plot twist!',
-      text: 'The quiz isn\'t over when you click. It\'s over when you understand the explanation. That\'s the real boss fight.',
-      sub: 'Defeat the boss. Read the text.',
-      emoji: '🎮',
-      btn: 'Engage boss (read explanation)'
-    },
-    {
-      title: 'Certificate of Almost Learning',
-      text: 'You are hereby awarded one (1) answer click. To upgrade to Actual Learning™, please read the explanation below.',
-      sub: 'No cheat codes. Just reading.',
-      emoji: '📜',
-      btn: 'Claim my upgrade'
-    }
+  var CORRECT_INTROS = [
+    { title: 'Correct!', sub: 'Here is why, so it sticks.', emoji: '✅', btn: 'Next question' },
+    { title: 'Nailed it', sub: 'The reasoning below is the part worth remembering.', emoji: '🎯', btn: 'Got it' },
+    { title: 'Yep, that\'s it', sub: 'Read the why below — it\'s the actual lesson.', emoji: '✅', btn: 'Continue' },
   ];
 
-  var READ_THIS_INTROS = [
-    { title: 'Read this', sub: 'This is the part your friend skips. Don\'t be your friend.', emoji: '📖', btn: 'Got it' },
-    { title: 'Read this — seriously', sub: 'Right or wrong, the why matters more than the click.', emoji: '👀', btn: 'Ok, I read it' },
-    { title: 'Read this before you sprint away', sub: 'The explanation is the lesson. The option was just the quiz.', emoji: '🛑', btn: 'Understood' },
-    { title: 'Read this (boss fight)', sub: 'Defeat ignorance. Read the explanation in the box.', emoji: '🎮', btn: 'Next question' }
+  var WRONG_INTROS = [
+    { title: 'Not quite', sub: 'This is the part that actually teaches you something.', emoji: '❌', btn: 'Got it' },
+    { title: 'Close, but no', sub: 'Read the explanation below before moving on.', emoji: '❌', btn: 'Understood' },
+    { title: 'That\'s not it', sub: 'Getting it wrong and reading why is how this sticks.', emoji: '❌', btn: 'Next question' },
   ];
 
   var modalBuilt = false;
   var overlay;
   var titleEl;
-  var textEl;
   var subEl;
   var emojiEl;
   var explainEl;
+  var resultEl;
   var btnEl;
-  var msgIndex = 0;
-
-  function getSessionNumber() {
-    var m = window.location.pathname.match(/session-(\d{2})/);
-    return m ? parseInt(m[1], 10) : 0;
-  }
-
-  function useInlineExplanationModal() {
-    return getSessionNumber() >= 11;
-  }
+  var modalEl;
+  var correctMsgIndex = 0;
+  var wrongMsgIndex = 0;
 
   function buildModal() {
     if (modalBuilt) return;
@@ -89,12 +42,11 @@
     overlay.setAttribute('aria-labelledby', 'quiz-explain-title');
 
     overlay.innerHTML =
-      '<div class="quiz-explain-modal">' +
+      '<div class="quiz-explain-modal" id="quiz-explain-modal">' +
       '  <div class="quiz-explain-emoji" id="quiz-explain-emoji"></div>' +
       '  <div class="quiz-explain-body">' +
       '    <h3 id="quiz-explain-title" class="quiz-explain-title"></h3>' +
-      '    <p class="quiz-explain-text" id="quiz-explain-text"></p>' +
-      '    <div class="quiz-explain-explanation" id="quiz-explain-explanation" hidden></div>' +
+      '    <div class="quiz-explain-explanation" id="quiz-explain-explanation"></div>' +
       '    <p class="quiz-explain-sub" id="quiz-explain-sub"></p>' +
       '  </div>' +
       '  <div class="quiz-explain-actions">' +
@@ -104,8 +56,8 @@
 
     document.body.appendChild(overlay);
 
+    modalEl = document.getElementById('quiz-explain-modal');
     titleEl = document.getElementById('quiz-explain-title');
-    textEl = document.getElementById('quiz-explain-text');
     subEl = document.getElementById('quiz-explain-sub');
     emojiEl = document.getElementById('quiz-explain-emoji');
     explainEl = document.getElementById('quiz-explain-explanation');
@@ -123,35 +75,28 @@
     });
   }
 
-  function showExplainModal(explanationText) {
+  function showExplainModal(explanationText, isCorrect) {
     buildModal();
-    var inlineMode = useInlineExplanationModal() && explanationText;
 
-    if (inlineMode) {
-      var intro = READ_THIS_INTROS[msgIndex % READ_THIS_INTROS.length];
-      msgIndex += 1;
-
-      emojiEl.textContent = intro.emoji;
-      titleEl.textContent = intro.title;
-      textEl.textContent = '';
-      textEl.hidden = true;
-      explainEl.textContent = explanationText;
-      explainEl.hidden = false;
-      subEl.textContent = intro.sub;
-      btnEl.textContent = intro.btn;
+    var intro;
+    if (isCorrect) {
+      intro = CORRECT_INTROS[correctMsgIndex % CORRECT_INTROS.length];
+      correctMsgIndex += 1;
     } else {
-      var msg = REMINDER_MESSAGES[msgIndex % REMINDER_MESSAGES.length];
-      msgIndex += 1;
-
-      emojiEl.textContent = msg.emoji;
-      titleEl.textContent = msg.title;
-      textEl.textContent = msg.text;
-      textEl.hidden = false;
-      explainEl.textContent = '';
-      explainEl.hidden = true;
-      subEl.textContent = msg.sub;
-      btnEl.textContent = msg.btn;
+      intro = WRONG_INTROS[wrongMsgIndex % WRONG_INTROS.length];
+      wrongMsgIndex += 1;
     }
+
+    modalEl.classList.remove('is-correct', 'is-wrong');
+    modalEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+
+    emojiEl.textContent = intro.emoji;
+    titleEl.textContent = intro.title;
+    titleEl.classList.remove('is-correct', 'is-wrong');
+    titleEl.classList.add(isCorrect ? 'is-correct' : 'is-wrong');
+    explainEl.textContent = explanationText || '';
+    subEl.textContent = intro.sub;
+    btnEl.textContent = intro.btn;
 
     overlay.hidden = false;
     document.body.style.overflow = 'hidden';
@@ -185,19 +130,20 @@
           q.dataset.answered = 'true';
           answeredCount += 1;
           var answer = q.dataset.answer;
+          var isCorrect = opt.dataset.val === answer;
 
           q.querySelectorAll('.quiz-option').forEach(function (o) {
             o.style.pointerEvents = 'none';
             if (o.dataset.val === answer) o.classList.add('correct');
           });
 
-          if (opt.dataset.val === answer) correct += 1;
+          if (isCorrect) correct += 1;
           else opt.classList.add('wrong');
 
           var explanation = q.querySelector('.explanation');
           if (explanation) explanation.style.display = 'block';
 
-          showExplainModal(explanation ? explanation.textContent.trim() : '');
+          showExplainModal(explanation ? explanation.textContent.trim() : '', isCorrect);
 
           if (answeredCount === questions.length) btn.disabled = false;
         });
