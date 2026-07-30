@@ -106,7 +106,7 @@
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
         <p>Given <code>population = 54000000</code> and the following code, what happens?</p>
-        <pre><code>if population &gt; 50000000:
+        <pre><code>if population &gt; 50000000:  # 50,000,000
     print("Large")</code></pre>
         <label class="quiz-option" data-val="a">Nothing prints, because population is a variable, not a literal True</label>
         <label class="quiz-option" data-val="b">"Large" prints, because population > 50000000 evaluates to True</label>
@@ -118,9 +118,9 @@
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
         <p>Given the following, with <code>population = 54000000</code>, what prints?</p>
-        <pre><code>if population &gt; 100000000:
+        <pre><code>if population &gt; 100000000:  # 100,000,000
     print("Huge")
-elif population &gt; 50000000:
+elif population &gt; 50000000:  # 50,000,000
     print("Large")
 else:
     print("Small")</code></pre>
@@ -179,22 +179,22 @@ else:
 
     <h3>if — running code only when a condition is True</h3>
     <p>An if statement's indented block only runs when its condition evaluates to True. If the condition is False, Python skips straight past it.</p>
-    <pre><code>population = 54000000
+    <pre><code>population = 54000000  # 54,000,000
 
-if population &gt; 50000000:
+if population &gt; 50000000:  # 50,000,000
     print("Large country")
 
 print("This line always runs, regardless of the condition")</code></pre>
 
     <h3>elif and else — multiple, mutually exclusive branches</h3>
     <p>Python checks each condition top to bottom and runs only the FIRST branch whose condition is True — every remaining branch, including else, is skipped once one has matched.</p>
-    <pre><code>population = 54000000
+    <pre><code>population = 54000000  # 54,000,000
 
-if population &gt; 100000000:
+if population &gt; 100000000:  # 100,000,000
     print("Huge country")
-elif population &gt; 50000000:
+elif population &gt; 50000000:  # 50,000,000
     print("Large country")
-elif population &gt; 10000000:
+elif population &gt; 10000000:  # 10,000,000
     print("Medium country")
 else:
     print("Small country")
@@ -204,9 +204,9 @@ else:
     <h3>Combining conditions with and, or, not</h3>
     <p>Real conditions often depend on more than one thing. and requires every part to be True; or requires at least one; not flips a boolean.</p>
     <pre><code>region = "Africa"
-population = 54000000
+population = 54000000  # 54,000,000
 
-if region == "Africa" and population &gt; 50000000:
+if region == "Africa" and population &gt; 50000000:  # 50,000,000
     print("Large African country")
 
 if region == "Africa" or region == "Asia":
@@ -221,7 +221,7 @@ else:
     <h3>The = vs == typo</h3>
     <p>A single = assigns; a double == compares. Python treats <code>=</code> inside a condition as a SyntaxError rather than silently reassigning the variable — a deliberate safety net, since this exact typo is extremely common when writing conditionals quickly.</p>
     <pre><code># if population = 54000000:   # SyntaxError — = cannot be used as a condition
-if population == 54000000:      # correct — == compares
+if population == 54000000:      # correct — == compares (54,000,000)
     print("Exactly 54 million")</code></pre>
 
 
@@ -244,13 +244,13 @@ if population == 54000000:      # correct — == compares
         <p><strong>Create the file and classify population size with if/elif/else</strong></p>
 
         <pre><code># conditionals.py
-population = 54000000
+population = 54000000  # 54,000,000
 
-if population &gt; 100000000:
+if population &gt; 100000000:  # 100,000,000
     size = "Huge"
-elif population &gt; 50000000:
+elif population &gt; 50000000:  # 50,000,000
     size = "Large"
-elif population &gt; 10000000:
+elif population &gt; 10000000:  # 10,000,000
     size = "Medium"
 else:
     size = "Small"
@@ -266,7 +266,7 @@ print(f"Population size category: {size}")</code></pre>
 
         <pre><code>region = "Africa"
 
-if region == "Africa" and population &gt; 50000000:
+if region == "Africa" and population &gt; 50000000:  # 50,000,000
     print("This is a large African country")
 else:
     print("Does not match: large African country")</code></pre>
@@ -303,7 +303,7 @@ else:
         <p><strong>Trigger the = vs == typo deliberately, read the error, then fix it</strong></p>
         <p>Comment the broken line out after reading the SyntaxError.</p>
         <pre><code># if population = 54000000:   # uncomment to see the SyntaxError
-if population == 54000000:
+if population == 54000000:      # 54,000,000
     print("Exactly 54 million")
 else:
     print("Not exactly 54 million")</code></pre>
@@ -393,7 +393,7 @@ git commit -m "session-03: branch program flow with if/elif/else and combined co
       <div class="quiz-question" data-question="0" data-answer="b">
         <div class="question-num">Question 1 of 5</div>
         <p>Given <code>population = 54000000</code> and the following code, what happens?</p>
-        <pre><code>if population &gt; 50000000:
+        <pre><code>if population &gt; 50000000:  # 50,000,000
     print("Large")</code></pre>
         <label class="quiz-option" data-val="a">Nothing prints, because population is a variable, not a literal True</label>
         <label class="quiz-option" data-val="b">"Large" prints, because population > 50000000 evaluates to True</label>
@@ -405,9 +405,9 @@ git commit -m "session-03: branch program flow with if/elif/else and combined co
       <div class="quiz-question" data-question="1" data-answer="b">
         <div class="question-num">Question 2 of 5</div>
         <p>Given the following, with <code>population = 54000000</code>, what prints?</p>
-        <pre><code>if population &gt; 100000000:
+        <pre><code>if population &gt; 100000000:  # 100,000,000
     print("Huge")
-elif population &gt; 50000000:
+elif population &gt; 50000000:  # 50,000,000
     print("Large")
 else:
     print("Small")</code></pre>
