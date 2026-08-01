@@ -443,3 +443,23 @@ hr {
 }
 /* Academy-wide publication status watermark. */
 body::after { content: "DRAFT"; position: fixed; left: 50%; top: 50%; z-index: 999; transform: translate(-50%, -50%) rotate(-28deg); color: rgba(255, 92, 168, 0.09); font-size: clamp(88px, 18vw, 240px); font-weight: 900; letter-spacing: 0.08em; line-height: 1; pointer-events: none; user-select: none; white-space: nowrap; }
+
+/* Balanced academy palette: pink identifies the family; supporting colors carry meaning. */
+:root {
+  --accent: #58a6ff;
+  --academy-pink: #ff5ca8;
+  --diagram-blue: #58a6ff;
+  --diagram-cyan: #39c5cf;
+  --diagram-violet: #a371f7;
+  --diagram-green: #3fb950;
+  --diagram-amber: #d29922;
+  --diagram-coral: #ff7b72;
+}
+nav .brand { color: var(--academy-pink); }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n + 1) { stroke: var(--diagram-blue) !important; }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n + 2) { stroke: var(--diagram-cyan) !important; }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n + 3) { stroke: var(--diagram-violet) !important; }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n + 4) { stroke: var(--diagram-green) !important; }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n + 5) { stroke: var(--diagram-amber) !important; }
+svg :is(rect, circle, ellipse, path, line, polyline, polygon):nth-of-type(6n) { stroke: var(--diagram-coral) !important; }
+svg marker path { fill: var(--diagram-blue) !important; }
