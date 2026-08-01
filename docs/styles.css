@@ -15,7 +15,7 @@
   --border:     #30363d;
   --text:       #c9d1d9;
   --text-muted: #8b949e;
-  --accent:     #58a6ff;
+  --accent:     #ff5ca8;
   --green:      #3fb950;
   --yellow:     #d29922;
   --red:        #f85149;
@@ -81,7 +81,7 @@ nav a:hover {
 
 nav a.active {
   color: var(--accent);
-  background: rgba(88, 166, 255, 0.1);
+  background: rgba(255, 92, 168, 0.1);
 }
 
 /* ── Main ────────────────────────────────────────────────────────── */
@@ -247,10 +247,10 @@ tr:hover td {
 }
 
 .badge-locked   { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
-.badge-current  { background: rgba(88,166,255,0.12); color: var(--accent); border: 1px solid rgba(88,166,255,0.4); }
+.badge-current  { background: rgba(255,92,168,0.12); color: var(--accent); border: 1px solid rgba(255,92,168,0.4); }
 .badge-complete { background: rgba(63,185,80,0.12); color: var(--green);  border: 1px solid rgba(63,185,80,0.4); }
 .badge-gate     { background: rgba(210,153,34,0.12); color: var(--yellow); border: 1px solid rgba(210,153,34,0.4); }
-.badge-layer    { background: rgba(88,166,255,0.08); color: var(--accent); border: 1px solid var(--border); font-size: 10px; }
+.badge-layer    { background: rgba(255,92,168,0.08); color: var(--accent); border: 1px solid var(--border); font-size: 10px; }
 
 /* ── Code ────────────────────────────────────────────────────────── */
 code {
@@ -288,7 +288,7 @@ pre code {
   line-height: 1.55;
 }
 
-.alert-info    { background: rgba(88,166,255,0.08);  border-color: var(--accent); }
+.alert-info    { background: rgba(255,92,168,0.08);  border-color: var(--accent); }
 .alert-warning { background: rgba(210,153,34,0.08);  border-color: var(--yellow); }
 .alert-success { background: rgba(63,185,80,0.08);   border-color: var(--green); }
 .alert-danger  { background: rgba(248,81,73,0.08);   border-color: var(--red); }
